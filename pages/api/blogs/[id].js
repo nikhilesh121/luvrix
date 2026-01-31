@@ -14,7 +14,20 @@ export default async function handler(req, res) {
     }
     
     if (req.method === 'PUT') {
-      const updated = await updateBlog(id, req.body);
+      // Clean up data before update - convert Date strings and remove undefined
+      const cleanData = {};
+      for (const [key, value] of Object.entries(req.body)) {
+        if (value !== undefined) {
+          // Convert date strings to Date objects
+          if (key.includes('At') || key.includes('Date')) {
+            cleanData[key] = value ? new Date(value) : null;
+          } else {
+            cleanData[key] = value;
+          }
+        }
+      }
+      
+      const updated = await updateBlog(id, cleanData);
       if (!updated) {
         return res.status(404).json({ error: 'Blog not found or update failed' });
       }

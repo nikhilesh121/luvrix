@@ -9,7 +9,7 @@ import { BreadcrumbSchema, ChapterSchema } from "../../../components/SEOHead";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://luvrix.com";
 
-// Helper to serialize Firebase timestamps for SSR
+// Helper to serialize timestamps for SSR
 const serializeData = (obj) => {
   if (!obj) return null;
   const serialized = { ...obj };

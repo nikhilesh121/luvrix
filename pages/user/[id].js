@@ -61,7 +61,7 @@ export default function UserProfile() {
       }
       
       if (!userData) {
-        // Try by Firebase UID
+        // Try by user ID
         userData = await getUser(id).catch(() => null);
         userId = id;
       }

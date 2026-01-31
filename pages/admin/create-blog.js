@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 import AdminGuard from "../../components/AdminGuard";
 import AdminSidebar from "../../components/AdminSidebar";
 import { createBlog, createLog, getSettings } from "../../lib/api-client";
-
+import { auth } from "../../lib/local-auth";
 import { motion } from "framer-motion";
 import { FiSave, FiEye, FiImage, FiTag, FiFileText, FiCheckCircle, FiArrowLeft } from "react-icons/fi";
 import Link from "next/link";

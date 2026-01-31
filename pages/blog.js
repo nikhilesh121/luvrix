@@ -18,7 +18,7 @@ import {
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://luvrix.com";
 
-// Helper to serialize Firebase timestamps for SSR
+// Helper to serialize timestamps for SSR
 const serializeData = (obj) => {
   if (!obj) return null;
   const serialized = { ...obj };
@@ -806,15 +806,29 @@ export async function getServerSideProps(context) {
       return { props: { initialBlog: null, initialAuthor: null, initialSettings: null } };
     }
 
-    // Serialize timestamps for SSR
+    // Serialize data for SSR - handle timestamps, ObjectIds, and remove _id
     const serializeData = (obj) => {
       if (!obj) return null;
       const serialized = { ...obj };
+      
+      // Remove MongoDB _id field (we use 'id' instead)
+      delete serialized._id;
+      
       for (const key in serialized) {
-        if (serialized[key]?.toDate) {
-          serialized[key] = serialized[key].toDate().toISOString();
-        } else if (serialized[key]?.seconds) {
-          serialized[key] = new Date(serialized[key].seconds * 1000).toISOString();
+        const value = serialized[key];
+        // Handle date timestamps
+        if (value?.toDate) {
+          serialized[key] = value.toDate().toISOString();
+        } else if (value?.seconds) {
+          serialized[key] = new Date(value.seconds * 1000).toISOString();
+        }
+        // Handle MongoDB ObjectId
+        else if (value && typeof value === 'object' && value.constructor?.name === 'ObjectId') {
+          serialized[key] = value.toString();
+        }
+        // Handle Date objects
+        else if (value instanceof Date) {
+          serialized[key] = value.toISOString();
         }
       }
       return serialized;

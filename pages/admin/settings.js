@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import AdminGuard from "../../components/AdminGuard";
 import AdminSidebar from "../../components/AdminSidebar";
 import { getSettings, updateSettings, createLog } from "../../lib/api-client";
-
+import { auth } from "../../lib/local-auth";
 import { motion } from "framer-motion";
 import { FiSave, FiDollarSign, FiSettings, FiAlertTriangle, FiCheck, FiShield, FiBook, FiEye, FiEyeOff, FiMonitor, FiSmartphone, FiTablet, FiGlobe, FiSearch, FiFileText, FiCpu, FiKey, FiTrash2, FiRefreshCw, FiInfo } from "react-icons/fi";
 

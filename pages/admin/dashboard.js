@@ -32,7 +32,7 @@ function DashboardContent() {
     async function fetchStats() {
       try {
         const [blogs, users, manga, payments] = await Promise.all([
-          getAllBlogs(),
+          getAllBlogs('approved', true), // Fetch ALL blogs for admin dashboard
           getAllUsers(),
           getAllManga(),
           getAllPayments(),

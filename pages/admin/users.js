@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import AdminGuard from "../../components/AdminGuard";
 import AdminSidebar from "../../components/AdminSidebar";
+import Avatar from "../../components/Avatar";
 import { getAllUsers, updateUser, deleteUser, createLog, hideUserPosts, unhideUserPosts } from "../../lib/api-client";
-
+import { auth } from "../../lib/local-auth";
 import { motion } from "framer-motion";
 import { FiSearch, FiUserX, FiUserCheck, FiShield, FiUser, FiTrash2, FiLoader, FiUsers, FiCheckCircle, FiAlertCircle, FiEdit3, FiX, FiPlus } from "react-icons/fi";
 
@@ -22,6 +23,7 @@ function UsersContent() {
   const [actionLoading, setActionLoading] = useState(null);
   const [editPointsModal, setEditPointsModal] = useState({ open: false, user: null });
   const [newPoints, setNewPoints] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
   useEffect(() => {
     fetchUsers();
@@ -158,19 +160,30 @@ function UsersContent() {
         body: JSON.stringify({ points })
       });
       
+      // Get response text first to handle empty responses
+      const text = await res.text();
+      let data = {};
+      try {
+        data = text ? JSON.parse(text) : {};
+      } catch (e) {
+        console.error("Failed to parse response:", text);
+      }
+      
       if (!res.ok) {
-        const data = await res.json();
         throw new Error(data.error || 'Failed to update points');
       }
       
       await createLog({
-        adminId: "admin",
-        action: "Updated User Points",
+        adminId: auth.currentUser?.uid || "admin",
+        action: "Added User Points",
         targetId: editPointsModal.user.id,
-        details: `Set extra posts to ${points}`,
+        details: `Added ${points} extra posts`,
       });
       
       setEditPointsModal({ open: false, user: null });
+      setNewPoints("");
+      setSuccessMessage(data.message || `Added ${points} points successfully!`);
+      setTimeout(() => setSuccessMessage(""), 3000);
       fetchUsers();
     } catch (error) {
       console.error("Error updating points:", error);
@@ -226,6 +239,18 @@ function UsersContent() {
         </div>
 
         <div className="max-w-7xl mx-auto px-8 -mt-6">
+          {/* Success Message */}
+          {successMessage && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-4 p-4 bg-green-50 border border-green-200 rounded-xl flex items-center gap-3"
+            >
+              <FiCheckCircle className="w-5 h-5 text-green-600" />
+              <span className="text-green-700 font-medium">{successMessage}</span>
+            </motion.div>
+          )}
+
           {/* Search Card */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -281,9 +306,7 @@ function UsersContent() {
                         >
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-green-500 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0">
-                                {user.name?.charAt(0) || user.email?.charAt(0) || "U"}
-                              </div>
+                              <Avatar user={user} size={40} />
                               <div>
                                 <p className="font-semibold text-slate-900">{user.name || "No Name"}</p>
                                 <p className="text-sm text-slate-500">{user.email}</p>
@@ -409,9 +432,12 @@ function UsersContent() {
             className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6"
           >
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-bold text-slate-900">Edit Blog Points</h3>
+              <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                <FiPlus className="w-5 h-5 text-emerald-500" />
+                Add Blog Points
+              </h3>
               <button
-                onClick={() => setEditPointsModal({ open: false, user: null })}
+                onClick={() => { setEditPointsModal({ open: false, user: null }); setNewPoints(""); }}
                 className="p-2 hover:bg-slate-100 rounded-xl transition-colors"
               >
                 <FiX className="w-5 h-5 text-slate-500" />
@@ -419,50 +445,77 @@ function UsersContent() {
             </div>
             
             <div className="mb-6">
-              <div className="flex items-center gap-3 mb-4 p-3 bg-slate-50 rounded-xl">
-                <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-green-500 rounded-full flex items-center justify-center text-white font-bold">
-                  {editPointsModal.user?.name?.charAt(0) || editPointsModal.user?.email?.charAt(0) || "U"}
-                </div>
-                <div>
+              <div className="flex items-center gap-3 mb-4 p-4 bg-gradient-to-r from-emerald-50 to-green-50 border border-emerald-100 rounded-xl">
+                <Avatar user={editPointsModal.user} size={48} />
+                <div className="flex-1">
                   <p className="font-semibold text-slate-900">{editPointsModal.user?.name || "No Name"}</p>
                   <p className="text-sm text-slate-500">{editPointsModal.user?.email}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs text-slate-500">Current Balance</p>
+                  <p className="text-xl font-bold text-emerald-600">+{editPointsModal.user?.extraPosts || 0}</p>
                 </div>
               </div>
               
               <label className="block text-sm font-medium text-slate-700 mb-2">
-                Extra Blog Posts (Points)
+                Points to Add
               </label>
-              <input
-                type="number"
-                min="0"
-                value={newPoints}
-                onChange={(e) => setNewPoints(e.target.value)}
-                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-slate-800"
-                placeholder="Enter number of extra posts"
-              />
-              <p className="mt-2 text-sm text-slate-500">
-                Current: {editPointsModal.user?.extraPosts || 0} extra posts
-              </p>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-500 font-bold">+</span>
+                <input
+                  type="number"
+                  min="1"
+                  value={newPoints}
+                  onChange={(e) => setNewPoints(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-slate-800 text-lg font-medium"
+                  placeholder="Enter points to add"
+                />
+              </div>
+              
+              {/* Quick add buttons */}
+              <div className="flex gap-2 mt-3">
+                {[1, 5, 10, 25, 50].map(val => (
+                  <button
+                    key={val}
+                    onClick={() => setNewPoints(val.toString())}
+                    className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all ${
+                      newPoints === val.toString() 
+                        ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/25' 
+                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    }`}
+                  >
+                    +{val}
+                  </button>
+                ))}
+              </div>
+              
+              {newPoints && parseInt(newPoints) > 0 && (
+                <div className="mt-4 p-3 bg-blue-50 border border-blue-100 rounded-xl">
+                  <p className="text-sm text-blue-700">
+                    <span className="font-medium">New Balance:</span> {(editPointsModal.user?.extraPosts || 0)} + {newPoints} = <span className="font-bold text-blue-800">{(editPointsModal.user?.extraPosts || 0) + parseInt(newPoints)} points</span>
+                  </p>
+                </div>
+              )}
             </div>
             
             <div className="flex gap-3">
               <button
-                onClick={() => setEditPointsModal({ open: false, user: null })}
+                onClick={() => { setEditPointsModal({ open: false, user: null }); setNewPoints(""); }}
                 className="flex-1 px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleUpdatePoints}
-                disabled={actionLoading}
-                className="flex-1 px-4 py-3 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-medium rounded-xl transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                disabled={actionLoading || !newPoints || parseInt(newPoints) <= 0}
+                className="flex-1 px-4 py-3 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-medium rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/25 hover:shadow-xl hover:shadow-emerald-500/30"
               >
                 {actionLoading ? (
                   <FiLoader className="w-4 h-4 animate-spin" />
                 ) : (
                   <>
-                    <FiCheckCircle className="w-4 h-4" />
-                    Save Points
+                    <FiPlus className="w-4 h-4" />
+                    Add Points
                   </>
                 )}
               </button>

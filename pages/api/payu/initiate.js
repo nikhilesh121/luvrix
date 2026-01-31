@@ -15,12 +15,12 @@ export default async function handler(req, res) {
 
     const db = await getDb();
     
-    // Get PayU config
-    const payuConfig = await db.collection('settings').findOne({ type: 'payu' });
+    // Get PayU config from main settings
+    const settings = await db.collection('settings').findOne({ _id: 'main' });
     
-    const merchantKey = payuConfig?.merchantKey || process.env.PAYU_MERCHANT_KEY;
-    const merchantSalt = payuConfig?.merchantSalt || process.env.PAYU_MERCHANT_SALT;
-    const isTestMode = payuConfig?.isTestMode ?? (process.env.PAYU_TEST_MODE === 'true');
+    const merchantKey = settings?.payuMerchantKey || process.env.PAYU_MERCHANT_KEY;
+    const merchantSalt = settings?.payuMerchantSalt || process.env.PAYU_MERCHANT_SALT;
+    const isTestMode = settings?.payuTestMode ?? (process.env.PAYU_TEST_MODE === 'true');
     
     if (!merchantKey || !merchantSalt) {
       return res.status(500).json({ error: 'Payment gateway not configured' });

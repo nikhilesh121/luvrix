@@ -11,12 +11,13 @@ export default async function handler(req, res) {
     
     const db = await getDb();
     
-    // Get PayU config
-    const payuConfig = await db.collection('settings').findOne({ type: 'payu' });
-    const merchantSalt = payuConfig?.merchantSalt || process.env.PAYU_MERCHANT_SALT;
+    // Get PayU config from main settings
+    const settings = await db.collection('settings').findOne({ _id: 'main' });
+    const merchantKey = settings?.payuMerchantKey || process.env.PAYU_MERCHANT_KEY;
+    const merchantSalt = settings?.payuMerchantSalt || process.env.PAYU_MERCHANT_SALT;
     
     // Verify hash (reverse hash for response)
-    const reverseHashString = `${merchantSalt}|${status}|||||||||||${email}|${firstname}|${productinfo}|${amount}|${txnid}|${payuConfig?.merchantKey || process.env.PAYU_MERCHANT_KEY}`;
+    const reverseHashString = `${merchantSalt}|${status}|||||||||||${email}|${firstname}|${productinfo}|${amount}|${txnid}|${merchantKey}`;
     const calculatedHash = crypto.createHash('sha512').update(reverseHashString).digest('hex');
     
     if (hash !== calculatedHash) {

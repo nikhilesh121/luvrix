@@ -43,16 +43,14 @@ export default async function handler(req, res) {
     }
 
     const currentPoints = targetUser.extraPosts || 0;
-    const newPoints = currentPoints + points;
+    const newTotal = currentPoints + points;
 
-    // Increment user's extra posts
+    // ADD points to user's existing extra posts
     const result = await db.collection('users').updateOne(
       { _id: id },
       { 
-        $set: { 
-          extraPosts: newPoints,
-          updatedAt: new Date()
-        }
+        $inc: { extraPosts: points },
+        $set: { updatedAt: new Date() }
       }
     );
 
@@ -62,18 +60,20 @@ export default async function handler(req, res) {
 
     // Log the action
     await db.collection('logs').insertOne({
-      action: 'admin_update_user_points',
+      action: 'admin_add_user_points',
       adminId: decoded.uid,
       targetUserId: id,
-      pointsAdded: points,
-      newTotal: newPoints,
+      previousPoints: currentPoints,
+      addedPoints: points,
+      newTotal: newTotal,
       createdAt: new Date()
     });
 
     return res.status(200).json({ 
       success: true, 
-      message: `Added ${points} points. New total: ${newPoints}`,
-      newTotal: newPoints
+      message: `Added ${points} points. New total: ${newTotal}`,
+      addedPoints: points,
+      newTotal: newTotal
     });
   } catch (error) {
     console.error('Error updating user points:', error);

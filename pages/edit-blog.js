@@ -191,7 +191,7 @@ function EditBlogContent({ user }) {
       setTimeout(() => router.push(isAdmin ? "/admin/blogs" : "/dashboard"), 2000);
     } catch (error) {
       console.error("Error updating blog:", error);
-      setError("Failed to update blog");
+      setError(error.message || "Failed to update blog. Please try again.");
     } finally {
       setSaving(false);
     }

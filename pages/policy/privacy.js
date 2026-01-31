@@ -46,14 +46,14 @@ export default function PrivacyPolicy() {
             <h2 className="text-2xl font-semibold text-white mt-8 mb-4">4. Data Security</h2>
             <p>
               We have put in place appropriate security measures to prevent your personal data from being 
-              accidentally lost, used, or accessed in an unauthorized way. We use Firebase for authentication 
-              and data storage, which provides enterprise-grade security.
+              accidentally lost, used, or accessed in an unauthorized way. We use industry-standard encryption 
+              and secure data storage practices.
             </p>
 
             <h2 className="text-2xl font-semibold text-white mt-8 mb-4">5. Third-Party Services</h2>
             <p>We use the following third-party services:</p>
             <ul className="list-disc pl-6 space-y-2">
-              <li><strong>Firebase:</strong> For authentication, database, and storage</li>
+              <li><strong>MongoDB:</strong> For secure database storage</li>
               <li><strong>Google Analytics:</strong> For website analytics (if enabled)</li>
               <li><strong>Google AdSense:</strong> For displaying advertisements (if enabled)</li>
             </ul>

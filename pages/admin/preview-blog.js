@@ -4,7 +4,7 @@ import Link from "next/link";
 import AdminGuard from "../../components/AdminGuard";
 import AdminSidebar from "../../components/AdminSidebar";
 import { getBlog, getUser, approveBlog, rejectBlog, createLog } from "../../lib/api-client";
-
+import { auth } from "../../lib/local-auth";
 import { motion } from "framer-motion";
 import { 
   FiArrowLeft, FiCheck, FiX, FiUser, FiCalendar, FiTag, 

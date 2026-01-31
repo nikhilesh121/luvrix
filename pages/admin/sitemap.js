@@ -92,7 +92,7 @@ function SitemapAdminContent() {
           <div className="flex justify-between items-start mb-8">
             <div>
               <h1 className="text-3xl font-bold text-gray-800 mb-2">Sitemap Manager</h1>
-              <p className="text-gray-600">Dynamic sitemaps powered by Firebase Functions</p>
+              <p className="text-gray-600">Dynamic sitemaps powered by API Routes</p>
             </div>
             <button
               onClick={pingGoogle}

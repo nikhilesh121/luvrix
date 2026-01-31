@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiX, FiCheck, FiShoppingCart, FiCreditCard } from "react-icons/fi";
-import { getSettings, createPayment, addExtraPosts } from "../lib/api-client";
-
-import crypto from "crypto-js";
+import { getSettings, initiatePayment } from "../lib/api-client";
+import { auth } from "../lib/local-auth";
 
 const POST_PACKAGES = [
   { posts: 1, label: "1 Post", discount: 0 },
@@ -35,14 +34,6 @@ export default function BuyPostsModal({ isOpen, onClose, onSuccess, userData }) 
     return Math.round(basePrice - discount);
   };
 
-  const generateTxnId = () => {
-    return `TXN${Date.now()}${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
-  };
-
-  const generateHash = (params, salt) => {
-    const hashString = `${params.key}|${params.txnid}|${params.amount}|${params.productinfo}|${params.firstname}|${params.email}|||||||||||${salt}`;
-    return crypto.SHA512(hashString).toString();
-  };
 
   const handlePayment = async () => {
     if (!selectedPackage) {
@@ -62,45 +53,40 @@ export default function BuyPostsModal({ isOpen, onClose, onSuccess, userData }) 
       }
 
       const amount = calculatePrice(selectedPackage);
-      const txnId = generateTxnId();
 
-      // PayU Parameters
-      const payuParams = {
-        key: settings?.payuMerchantKey || "r5wyW4",
-        txnid: txnId,
+      // Use server-side API for secure hash generation
+      const response = await initiatePayment({
+        amount: amount.toString(),
+        productInfo: `${selectedPackage.posts} Blog Posts`,
+        firstName: userData?.name || user.displayName || "User",
+        email: user.email,
+        phone: userData?.phone || "9999999999",
+        userId: user.uid,
+        posts: selectedPackage.posts,
+      });
+
+      if (!response.success) {
+        throw new Error(response.error || "Failed to initiate payment");
+      }
+
+      // Create PayU form and submit with server-generated hash
+      const form = document.createElement("form");
+      form.method = "POST";
+      form.action = response.payuUrl;
+
+      const params = {
+        key: response.key,
+        txnid: response.txnId,
         amount: amount.toString(),
         productinfo: `${selectedPackage.posts} Blog Posts`,
         firstname: userData?.name || user.displayName || "User",
         email: user.email,
         phone: userData?.phone || "9999999999",
-        surl: `${window.location.origin}/payment-success?txnid=${txnId}&posts=${selectedPackage.posts}`,
-        furl: `${window.location.origin}/payment-failed?txnid=${txnId}`,
+        surl: response.surl,
+        furl: response.furl,
+        hash: response.hash,
       };
 
-      // Generate hash
-      const salt = settings?.payuMerchantSalt || "XsJMT8oE5cCjrQFzclX5E7JY9EJ4Q1S9";
-      const hash = generateHash(payuParams, salt);
-
-      // Create pending payment record
-      await createPayment({
-        userId: user.uid,
-        txnId,
-        amount,
-        posts: selectedPackage.posts,
-        status: "pending",
-        packageLabel: selectedPackage.label,
-      });
-
-      // Create PayU form and submit
-      const payuUrl = settings?.payuTestMode !== false
-        ? "https://test.payu.in/_payment"
-        : "https://secure.payu.in/_payment";
-
-      const form = document.createElement("form");
-      form.method = "POST";
-      form.action = payuUrl;
-
-      const params = { ...payuParams, hash };
       Object.keys(params).forEach((key) => {
         const input = document.createElement("input");
         input.type = "hidden";
@@ -112,8 +98,10 @@ export default function BuyPostsModal({ isOpen, onClose, onSuccess, userData }) 
       document.body.appendChild(form);
       form.submit();
     } catch (err) {
-      console.error("Payment error:", err);
-      setError("Payment initialization failed. Please try again.");
+      console.error("Payment error:", err?.message || err);
+      const errorMessage = err?.message || 
+        (typeof err === 'string' ? err : "Payment initialization failed. Please check PayU settings in admin panel.");
+      setError(errorMessage);
       setLoading(false);
     }
   };

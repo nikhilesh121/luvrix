@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { updateAuthUser } from "../lib/local-auth";
 
 const AuthContext = createContext({});
 
@@ -13,6 +14,11 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     checkAuthStatus();
   }, []);
+
+  // Sync user with local-auth module whenever user changes
+  useEffect(() => {
+    updateAuthUser(user);
+  }, [user]);
 
   const checkAuthStatus = async () => {
     try {

@@ -30,11 +30,11 @@ function escapeXml(str) {
 }
 
 function generateSitemap() {
-  // Sitemap is now managed dynamically via Firebase
+  // Sitemap is now managed dynamically via API routes
   // This script is kept for reference but does not generate static files
-  // The sitemap is served from /sitemap.xml page which fetches from Firebase
+  // The sitemap is served from /api/sitemap which fetches from MongoDB
 
-  console.log('ℹ Sitemap is now managed dynamically via Firebase');
+  console.log('ℹ Sitemap is now managed dynamically via API');
   console.log('ℹ Access sitemap at: /sitemap.xml');
   console.log('ℹ Manage sitemap in admin panel: /admin/sitemap');
   console.log('✓ Sitemap check complete!');

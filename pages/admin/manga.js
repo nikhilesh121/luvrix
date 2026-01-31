@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import AdminGuard from "../../components/AdminGuard";
 import AdminSidebar from "../../components/AdminSidebar";
 import { getAllManga, createManga, updateManga, deleteManga, createLog, getSettings, updateSettings } from "../../lib/api-client";
-
+import { auth } from "../../lib/local-auth";
 import { slugify } from "../../utils/slugify";
 import { motion } from "framer-motion";
 import { FiPlus, FiEdit2, FiTrash2, FiX, FiSave, FiGlobe, FiSmartphone, FiMonitor, FiBook, FiSearch, FiCheckCircle, FiClock, FiExternalLink, FiEye, FiGrid, FiList, FiTable, FiLayout, FiSettings } from "react-icons/fi";

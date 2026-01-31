@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 import AdminGuard from "../../components/AdminGuard";
 import AdminSidebar from "../../components/AdminSidebar";
 import { getBlogDraft, updateBlogDraft, publishBlogDraft } from "../../lib/api-client";
-
+import { auth } from "../../lib/local-auth";
 import { motion } from "framer-motion";
 import {
   FiSave, FiSend, FiArrowLeft, FiImage, FiTag, FiType,
