@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6366f1"/>
+      <stop offset="50%" style="stop-color:#8b5cf6"/>
+      <stop offset="100%" style="stop-color:#6366f1"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bgGrad)"/>
+  <circle cx="100" cy="100" r="150" fill="rgba(255,255,255,0.05)"/>
+  <circle cx="1100" cy="530" r="200" fill="rgba(255,255,255,0.05)"/>
+  <text x="600" y="280" font-family="Arial, sans-serif" font-size="120" fill="white" text-anchor="middle" font-weight="bold">Luvrix</text>
+  <text x="600" y="380" font-family="Arial, sans-serif" font-size="36" fill="rgba(255,255,255,0.8)" text-anchor="middle">Share Your Stories With The World</text>
+  <text x="600" y="450" font-family="Arial, sans-serif" font-size="24" fill="rgba(255,255,255,0.6)" text-anchor="middle">Blogs • Manga • Content</text>
+</svg>

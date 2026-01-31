@@ -1,0 +1,24 @@
+# Robots.txt for Luvrix
+# https://luvrix.com
+
+User-agent: *
+Allow: /
+Allow: /blog
+Allow: /manga
+Allow: /categories
+Allow: /about
+Allow: /contact
+
+# Disallow admin and private pages
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /api
+Disallow: /_next
+Disallow: /login
+Disallow: /register
+
+# Crawl delay for polite crawling
+Crawl-delay: 1
+
+# Sitemap
+Sitemap: https://luvrix.com/sitemap.xml

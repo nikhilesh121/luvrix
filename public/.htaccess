@@ -1,0 +1,63 @@
+RewriteEngine On
+RewriteBase /
+
+# =====================================================
+# SITEMAP - Handled by Cloudflare Worker
+# =====================================================
+# DO NOT add sitemap redirects here - Cloudflare Worker handles them.
+
+# =====================================================
+# DYNAMIC MANGA PAGES - SPA Fallback
+# =====================================================
+# Manga detail pages: /manga/any-slug or /manga/any-slug/
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^manga/([^/]+)/?$ /manga/_slug_/index.html [L]
+
+# Manga chapter pages: /manga/any-slug/chapter-N or /manga/any-slug/chapter-N/
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^manga/([^/]+)/chapter-([0-9]+)/?$ /manga/_slug_/_chapter_/index.html [L]
+
+# =====================================================
+# BLOG PAGES
+# =====================================================
+# Blog uses query params: /blog/?id=xxx (no rewrite needed)
+
+# =====================================================
+# STANDARD NEXT.JS STATIC EXPORT RULES
+# =====================================================
+
+# Handle trailing slashes (Next.js static export)
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_URI} !(\.[a-zA-Z0-9]{1,5}|/)$
+RewriteRule (.*)$ /$1/ [R=301,L]
+
+# Serve index.html for directories
+DirectoryIndex index.html
+
+# Enable gzip compression
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/json application/xml
+</IfModule>
+
+# Cache static assets
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType image/jpeg "access plus 1 year"
+  ExpiresByType image/png "access plus 1 year"
+  ExpiresByType image/gif "access plus 1 year"
+  ExpiresByType image/webp "access plus 1 year"
+  ExpiresByType image/svg+xml "access plus 1 year"
+  ExpiresByType text/css "access plus 1 month"
+  ExpiresByType application/javascript "access plus 1 month"
+  ExpiresByType application/font-woff2 "access plus 1 year"
+</IfModule>
+
+# Security headers
+<IfModule mod_headers.c>
+  Header set X-Content-Type-Options "nosniff"
+  Header set X-Frame-Options "SAMEORIGIN"
+  Header set X-XSS-Protection "1; mode=block"
+</IfModule>
