@@ -5,6 +5,7 @@ import Head from "next/head";
 import Layout from "../components/Layout";
 import { getBlog, getUser, getSettings, incrementBlogViews, getAllBlogs, likeBlog, unlikeBlog, isBlogLiked, isFollowing, followUser, unfollowUser } from "../lib/api-client";
 import { useAuth } from "../context/AuthContext";
+import { useSocket } from "../context/SocketContext";
 import { BlogArticleSchema, BreadcrumbSchema } from "../components/SEOHead";
 import CommentSection from "../components/CommentSection";
 import SocialShare from "../components/SocialShare";
@@ -36,6 +37,7 @@ export default function BlogPage({ initialBlog, initialAuthor, initialSettings }
   const router = useRouter();
   const { id } = router.query;
   const { user } = useAuth();
+  const { joinRoom, leaveRoom, subscribe, emitBlogView, emitBlogLike, emitFollow } = useSocket();
   const [blog, setBlog] = useState(initialBlog);
   const [author, setAuthor] = useState(initialAuthor);
   const [settings, setSettings] = useState(initialSettings);
@@ -47,9 +49,43 @@ export default function BlogPage({ initialBlog, initialAuthor, initialSettings }
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
+  const [viewCount, setViewCount] = useState(0);
   const [likeLoading, setLikeLoading] = useState(false);
   const [isFollowingAuthor, setIsFollowingAuthor] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
+
+  // Join blog room for real-time updates
+  useEffect(() => {
+    if (blog?.id) {
+      const room = `blog:${blog.id}`;
+      joinRoom(room);
+      setViewCount(blog.views || 0);
+
+      // Subscribe to real-time view updates
+      const unsubscribeViews = subscribe('blog:viewUpdate', (data) => {
+        if (data.blogId === blog.id) {
+          setViewCount(data.views);
+        }
+      });
+
+      // Subscribe to real-time like updates
+      const unsubscribeLikes = subscribe('blog:likeUpdate', (data) => {
+        if (data.blogId === blog.id) {
+          setLikeCount(data.likes);
+          // Update own like status if it was our action
+          if (data.userId === user?.uid) {
+            setIsLiked(data.action === 'like');
+          }
+        }
+      });
+
+      return () => {
+        leaveRoom(room);
+        unsubscribeViews();
+        unsubscribeLikes();
+      };
+    }
+  }, [blog?.id, joinRoom, leaveRoom, subscribe, user]);
 
   // Check if blog is liked and if following author
   useEffect(() => {
@@ -84,6 +120,8 @@ export default function BlogPage({ initialBlog, initialAuthor, initialSettings }
       } else {
         await followUser(user.uid, blog.authorId);
         setIsFollowingAuthor(true);
+        // Emit real-time follow notification
+        emitFollow(user.uid, user.displayName || 'Someone', blog.authorId);
       }
     } catch (error) {
       console.error("Error toggling follow:", error);
@@ -101,12 +139,18 @@ export default function BlogPage({ initialBlog, initialAuthor, initialSettings }
     try {
       if (isLiked) {
         await unlikeBlog(user.uid, blog.id);
+        const newLikeCount = Math.max(0, likeCount - 1);
         setIsLiked(false);
-        setLikeCount(prev => Math.max(0, prev - 1));
+        setLikeCount(newLikeCount);
+        // Emit real-time like update
+        emitBlogLike(blog.id, newLikeCount, user.uid, 'unlike');
       } else {
         await likeBlog(user.uid, blog.id);
+        const newLikeCount = likeCount + 1;
         setIsLiked(true);
-        setLikeCount(prev => prev + 1);
+        setLikeCount(newLikeCount);
+        // Emit real-time like update
+        emitBlogLike(blog.id, newLikeCount, user.uid, 'like');
       }
     } catch (error) {
       console.error("Error toggling like:", error);
@@ -143,7 +187,12 @@ export default function BlogPage({ initialBlog, initialAuthor, initialSettings }
       if (initialBlog) {
         // Just increment views and fetch related
         try {
-          await incrementBlogViews(id);
+          const result = await incrementBlogViews(id);
+          // Emit real-time view update
+          if (result?.views) {
+            setViewCount(result.views);
+            emitBlogView(id, result.views);
+          }
         } catch (e) {
           console.log("Could not increment views");
         }
@@ -449,7 +498,7 @@ export default function BlogPage({ initialBlog, initialAuthor, initialSettings }
                     </div>
                     <div className="flex items-center gap-2">
                       <FiEye className="w-4 h-4" />
-                      <span>{(blog.views || 0).toLocaleString()} views</span>
+                      <span>{viewCount.toLocaleString()} views</span>
                     </div>
                   </div>
                 </motion.div>
@@ -505,7 +554,7 @@ export default function BlogPage({ initialBlog, initialAuthor, initialSettings }
                 </div>
                 <div className="flex items-center gap-2">
                   <FiEye className="w-4 h-4" />
-                  <span>{(blog.views || 0).toLocaleString()} views</span>
+                  <span>{viewCount.toLocaleString()} views</span>
                 </div>
               </div>
             </div>
@@ -568,7 +617,7 @@ export default function BlogPage({ initialBlog, initialAuthor, initialSettings }
             </motion.button>
             <div className="flex items-center gap-2 text-gray-500">
               <FiEye className="w-5 h-5" />
-              <span>{(blog.views || 0).toLocaleString()}</span>
+              <span>{viewCount.toLocaleString()}</span>
             </div>
           </div>
           

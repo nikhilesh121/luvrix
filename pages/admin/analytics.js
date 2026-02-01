@@ -4,10 +4,11 @@ import AdminSidebar from "../../components/AdminSidebar";
 import { getSettings, updateSettings, createLog, getAllBlogs, getAllManga } from "../../lib/api-client";
 import { auth } from "../../lib/local-auth";
 import { motion, AnimatePresence } from "framer-motion";
+import { useSocket } from "../../context/SocketContext";
 import { 
   FiSave, FiBarChart2, FiToggleLeft, FiToggleRight, FiUsers, FiEye, 
   FiTrendingUp, FiActivity, FiGlobe, FiClock, FiZap, FiRefreshCw,
-  FiBookOpen, FiFileText, FiHeart, FiMessageCircle, FiAlertCircle
+  FiBookOpen, FiFileText, FiHeart, FiMessageCircle, FiAlertCircle, FiRadio
 } from "react-icons/fi";
 
 export default function AdminAnalytics() {
@@ -35,10 +36,50 @@ function AnalyticsContent() {
   });
   const [refreshing, setRefreshing] = useState(false);
   const [idError, setIdError] = useState("");
+  const [liveStats, setLiveStats] = useState({
+    liveUsers: 0,
+    avgWatchTime: 0,
+    pageBreakdown: {},
+  });
+  
+  const { subscribe, joinAdminAnalytics, isConnected } = useSocket();
 
   useEffect(() => {
     fetchSettings();
     fetchStats();
+    fetchLiveStats();
+  }, []);
+
+  // Subscribe to real-time analytics updates
+  useEffect(() => {
+    if (isConnected) {
+      joinAdminAnalytics();
+      
+      const unsubscribe = subscribe('analytics:update', (data) => {
+        setLiveStats(prev => ({ ...prev, ...data }));
+      });
+      
+      return unsubscribe;
+    }
+  }, [isConnected, subscribe, joinAdminAnalytics]);
+
+  // Fetch live stats periodically
+  const fetchLiveStats = async () => {
+    try {
+      const res = await fetch('/api/socket?analytics=true');
+      if (res.ok) {
+        const data = await res.json();
+        setLiveStats(data);
+      }
+    } catch (error) {
+      console.error('Error fetching live stats:', error);
+    }
+  };
+
+  // Refresh live stats every 10 seconds
+  useEffect(() => {
+    const interval = setInterval(fetchLiveStats, 10000);
+    return () => clearInterval(interval);
   }, []);
 
   const fetchSettings = async () => {
@@ -200,6 +241,77 @@ function AnalyticsContent() {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 20 }}
               >
+                {/* Live Stats Banner */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-2xl p-5 text-white shadow-xl relative overflow-hidden"
+                  >
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16" />
+                    <div className="relative z-10 flex items-center gap-4">
+                      <div className="w-14 h-14 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center">
+                        <FiRadio className="w-7 h-7 animate-pulse" />
+                      </div>
+                      <div>
+                        <p className="text-white/80 text-sm font-medium">Live Users Now</p>
+                        <p className="text-4xl font-black">{liveStats.liveUsers}</p>
+                      </div>
+                    </div>
+                    <div className="mt-3 flex items-center gap-2">
+                      <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
+                      <span className="text-white/80 text-xs">Real-time tracking active</span>
+                    </div>
+                  </motion.div>
+
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.1 }}
+                    className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl p-5 text-white shadow-xl relative overflow-hidden"
+                  >
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16" />
+                    <div className="relative z-10 flex items-center gap-4">
+                      <div className="w-14 h-14 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center">
+                        <FiClock className="w-7 h-7" />
+                      </div>
+                      <div>
+                        <p className="text-white/80 text-sm font-medium">Avg Watch Time</p>
+                        <p className="text-4xl font-black">
+                          {liveStats.avgWatchTime > 60 
+                            ? `${Math.floor(liveStats.avgWatchTime / 60)}m ${liveStats.avgWatchTime % 60}s`
+                            : `${liveStats.avgWatchTime}s`
+                          }
+                        </p>
+                      </div>
+                    </div>
+                    <div className="mt-3">
+                      <span className="text-white/80 text-xs">Based on {liveStats.totalSessions || 0} sessions</span>
+                    </div>
+                  </motion.div>
+
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.2 }}
+                    className="bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl p-5 text-white shadow-xl relative overflow-hidden"
+                  >
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16" />
+                    <div className="relative z-10 flex items-center gap-4">
+                      <div className="w-14 h-14 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center">
+                        <FiActivity className="w-7 h-7" />
+                      </div>
+                      <div>
+                        <p className="text-white/80 text-sm font-medium">Active Pages</p>
+                        <p className="text-4xl font-black">{Object.keys(liveStats.pageBreakdown || {}).length}</p>
+                      </div>
+                    </div>
+                    <div className="mt-3">
+                      <span className="text-white/80 text-xs">Pages being viewed right now</span>
+                    </div>
+                  </motion.div>
+                </div>
+
                 {/* Stats Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                   <StatCard icon={FiEye} label="Total Views" value={stats.totalViews} color="from-blue-500 to-cyan-500" subValue={`Blogs: ${stats.blogViews || 0} | Manga: ${stats.mangaViews || 0}`} />
@@ -208,7 +320,36 @@ function AnalyticsContent() {
                   <StatCard icon={FiHeart} label="Total Favorites" value={stats.totalFavorites} color="from-pink-500 to-rose-500" />
                 </div>
 
-                {/* Live Visitors Notice */}
+                {/* Page Breakdown */}
+                {Object.keys(liveStats.pageBreakdown || {}).length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden mb-8"
+                  >
+                    <div className="p-5 border-b border-gray-100 bg-gradient-to-r from-green-50 to-white">
+                      <h3 className="font-bold text-gray-800 flex items-center gap-2">
+                        <FiRadio className="text-green-500" />
+                        Live Page Views
+                      </h3>
+                    </div>
+                    <div className="divide-y divide-gray-50">
+                      {Object.entries(liveStats.pageBreakdown).map(([page, count]) => (
+                        <div key={page} className="flex items-center justify-between p-4 hover:bg-gray-50 transition">
+                          <div className="flex items-center gap-3">
+                            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                            <span className="font-medium text-gray-700 truncate max-w-md">{page}</span>
+                          </div>
+                          <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-bold">
+                            {count} {count === 1 ? 'viewer' : 'viewers'}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* Google Analytics Link */}
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -216,12 +357,12 @@ function AnalyticsContent() {
                 >
                   <div className="flex items-start gap-4">
                     <div className="w-12 h-12 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center">
-                      <FiUsers className="w-6 h-6" />
+                      <FiGlobe className="w-6 h-6" />
                     </div>
                     <div className="flex-1">
-                      <h3 className="text-lg font-bold mb-2">Real-Time Visitors</h3>
+                      <h3 className="text-lg font-bold mb-2">Google Analytics Integration</h3>
                       <p className="text-white/80 text-sm mb-4">
-                        To see live visitors, open Google Analytics Realtime report. Make sure your Measurement ID is correctly set in Settings tab.
+                        For detailed analytics and demographic data, connect your Google Analytics account in the Settings tab.
                       </p>
                       {settings.analyticsId && (
                         <a

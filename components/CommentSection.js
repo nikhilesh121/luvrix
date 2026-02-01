@@ -1,18 +1,99 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiSend, FiMessageCircle, FiCornerDownRight, FiTrash2, FiHeart, FiUser } from "react-icons/fi";
 import { createComment, getComments, deleteComment, likeComment } from "../lib/api-client";
 import { useAuth } from "../context/AuthContext";
+import { useSocket } from "../context/SocketContext";
 import Link from "next/link";
 
 export default function CommentSection({ targetId, targetType = "blog" }) {
   const { user, userData, isLoggedIn } = useAuth();
+  const { joinRoom, leaveRoom, subscribe, emitNewComment, emitCommentDelete, emitCommentLike, emitTyping } = useSocket();
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
   const [replyTo, setReplyTo] = useState(null);
   const [replyText, setReplyText] = useState("");
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [typingUsers, setTypingUsers] = useState([]);
+
+  // Join room and subscribe to real-time events
+  useEffect(() => {
+    if (targetId) {
+      const room = `${targetType}:${targetId}`;
+      joinRoom(room);
+
+      // Subscribe to comment events
+      const unsubscribeAdd = subscribe('comment:added', (comment) => {
+        setComments(prev => {
+          if (comment.parentId) {
+            // It's a reply - add to parent's replies
+            return prev.map(c => {
+              if (c.id === comment.parentId) {
+                return { ...c, replies: [...(c.replies || []), comment] };
+              }
+              return c;
+            });
+          } else {
+            // It's a new parent comment
+            const exists = prev.some(c => c.id === comment.id);
+            if (exists) return prev;
+            return [{ ...comment, replies: [] }, ...prev];
+          }
+        });
+      });
+
+      const unsubscribeRemove = subscribe('comment:removed', ({ commentId }) => {
+        setComments(prev => {
+          // Check if it's a parent comment
+          const isParent = prev.some(c => c.id === commentId);
+          if (isParent) {
+            return prev.filter(c => c.id !== commentId);
+          }
+          // It's a reply - remove from parent
+          return prev.map(c => ({
+            ...c,
+            replies: (c.replies || []).filter(r => r.id !== commentId)
+          }));
+        });
+      });
+
+      const unsubscribeLike = subscribe('comment:likeUpdate', ({ commentId, likes }) => {
+        setComments(prev => prev.map(c => {
+          if (c.id === commentId) {
+            return { ...c, likes };
+          }
+          // Check replies
+          return {
+            ...c,
+            replies: (c.replies || []).map(r => 
+              r.id === commentId ? { ...r, likes } : r
+            )
+          };
+        }));
+      });
+
+      const unsubscribeTyping = subscribe('comment:userTyping', ({ userId, userName, isTyping }) => {
+        if (userId === user?.uid) return; // Ignore own typing
+        setTypingUsers(prev => {
+          if (isTyping) {
+            const exists = prev.some(u => u.userId === userId);
+            if (exists) return prev;
+            return [...prev, { userId, userName }];
+          }
+          return prev.filter(u => u.userId !== userId);
+        });
+      });
+
+      return () => {
+        leaveRoom(room);
+        unsubscribeAdd();
+        unsubscribeRemove();
+        unsubscribeLike();
+        unsubscribeTyping();
+      };
+    }
+  }, [targetId, targetType, joinRoom, leaveRoom, subscribe, user]);
 
   useEffect(() => {
     fetchComments();
@@ -43,13 +124,21 @@ export default function CommentSection({ targetId, targetType = "blog" }) {
     }
   };
 
+  // Handle typing indicator
+  const handleTyping = useCallback((isTyping) => {
+    if (user) {
+      emitTyping(targetId, targetType, user.uid, userData?.name || user.displayName || "Anonymous", isTyping);
+    }
+  }, [targetId, targetType, user, userData, emitTyping]);
+
   const handleSubmitComment = async (e) => {
     e.preventDefault();
     if (!newComment.trim() || !user) return;
 
     setSubmitting(true);
+    handleTyping(false); // Stop typing indicator
     try {
-      await createComment({
+      const result = await createComment({
         targetId,
         targetType,
         content: newComment.trim(),
@@ -57,6 +146,12 @@ export default function CommentSection({ targetId, targetType = "blog" }) {
         authorName: userData?.name || user.displayName || "Anonymous",
         authorPhoto: userData?.photoURL || user.photoURL || null,
       });
+      
+      // Emit real-time event
+      if (result?.comment) {
+        emitNewComment(targetId, targetType, result.comment);
+      }
+      
       setNewComment("");
       fetchComments();
     } catch (error) {
@@ -70,8 +165,9 @@ export default function CommentSection({ targetId, targetType = "blog" }) {
     if (!replyText.trim() || !user) return;
 
     setSubmitting(true);
+    handleTyping(false);
     try {
-      await createComment({
+      const result = await createComment({
         targetId,
         targetType,
         parentId,
@@ -80,6 +176,12 @@ export default function CommentSection({ targetId, targetType = "blog" }) {
         authorName: userData?.name || user.displayName || "Anonymous",
         authorPhoto: userData?.photoURL || user.photoURL || null,
       });
+      
+      // Emit real-time event
+      if (result?.comment) {
+        emitNewComment(targetId, targetType, result.comment);
+      }
+      
       setReplyText("");
       setReplyTo(null);
       fetchComments();
@@ -94,6 +196,8 @@ export default function CommentSection({ targetId, targetType = "blog" }) {
     if (!confirm("Are you sure you want to delete this comment?")) return;
     try {
       await deleteComment(commentId);
+      // Emit real-time event
+      emitCommentDelete(targetId, targetType, commentId);
       fetchComments();
     } catch (error) {
       console.error("Error deleting comment:", error);
@@ -103,7 +207,11 @@ export default function CommentSection({ targetId, targetType = "blog" }) {
   const handleLike = async (commentId) => {
     if (!user) return;
     try {
-      await likeComment(commentId);
+      const result = await likeComment(commentId);
+      // Emit real-time event
+      if (result?.likes !== undefined) {
+        emitCommentLike(targetId, targetType, commentId, result.likes);
+      }
       fetchComments();
     } catch (error) {
       console.error("Error liking comment:", error);
@@ -238,7 +346,11 @@ export default function CommentSection({ targetId, targetType = "blog" }) {
               <input
                 type="text"
                 value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
+                onChange={(e) => {
+                  setNewComment(e.target.value);
+                  handleTyping(e.target.value.length > 0);
+                }}
+                onBlur={() => handleTyping(false)}
                 placeholder="Write a comment..."
                 className="flex-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
               />
@@ -265,6 +377,27 @@ export default function CommentSection({ targetId, targetType = "blog" }) {
             Login to Comment
           </Link>
         </div>
+      )}
+
+      {/* Typing Indicator */}
+      {typingUsers.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-4 text-sm text-gray-500 flex items-center gap-2"
+        >
+          <div className="flex gap-1">
+            <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
+            <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
+            <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+          </div>
+          <span>
+            {typingUsers.length === 1 
+              ? `${typingUsers[0].userName} is typing...`
+              : `${typingUsers.length} people are typing...`
+            }
+          </span>
+        </motion.div>
       )}
 
       {/* Comments List */}

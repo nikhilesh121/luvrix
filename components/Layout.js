@@ -4,13 +4,32 @@ import Header from "./Header";
 import Footer from "./Footer";
 import { useEffect, useState } from "react";
 import { getSettings } from "../lib/api-client";
+import { initGA, trackPageView } from "../lib/analytics";
+import { useRouter } from "next/router";
 
 export default function Layout({ children, title, description, keywords, image, canonical, type = "website", author, publishedTime, modifiedTime, noindex = false }) {
   const [settings, setSettings] = useState(null);
+  const router = useRouter();
 
+  // Fetch settings and initialize GA
   useEffect(() => {
-    getSettings().then(setSettings);
+    getSettings().then((data) => {
+      setSettings(data);
+      // Initialize Google Analytics with the settings ID
+      const gaId = (data?.analyticsEnabled && data?.analyticsId) ? data.analyticsId : process.env.NEXT_PUBLIC_GA_ID;
+      if (gaId && gaId.startsWith('G-')) {
+        initGA(gaId);
+      }
+    });
   }, []);
+
+  // Track page views on route change
+  useEffect(() => {
+    const analyticsId = (settings?.analyticsEnabled && settings?.analyticsId) ? settings.analyticsId : process.env.NEXT_PUBLIC_GA_ID;
+    if (analyticsId) {
+      trackPageView(router.asPath, title || 'Luvrix');
+    }
+  }, [router.asPath, settings, title]);
 
   const siteName = settings?.siteName || "Luvrix";
   const pageTitle = title ? `${title} | ${siteName}` : siteName;
@@ -73,21 +92,20 @@ export default function Layout({ children, title, description, keywords, image, 
           <Script
             src={`https://www.googletagmanager.com/gtag/js?id=${analyticsId}`}
             strategy="afterInteractive"
-            onLoad={() => {
-              console.log('GA script loaded successfully');
+            onError={(e) => {
+              console.error('GA script failed to load:', e);
             }}
           />
           <Script id="google-analytics" strategy="afterInteractive">
             {`
               window.dataLayer = window.dataLayer || [];
               function gtag(){dataLayer.push(arguments);}
+              window.gtag = gtag;
               gtag('js', new Date());
               gtag('config', '${analyticsId}', {
                 page_path: window.location.pathname,
-                send_page_view: true,
-                cookie_flags: 'SameSite=None;Secure'
+                send_page_view: true
               });
-              console.log('GA4 initialized:', '${analyticsId}');
             `}
           </Script>
         </>

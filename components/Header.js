@@ -4,6 +4,7 @@ import { useRouter } from "next/router";
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
 import { getSettings } from "../lib/api-client";
+import NotificationBell from "./NotificationBell";
 import { 
   FiMenu, FiX, FiUser, FiLogOut, FiSettings, FiChevronDown, 
   FiEdit3, FiGrid, FiBookOpen, FiTrendingUp, FiCpu, FiHeart,
@@ -299,6 +300,9 @@ export default function Header() {
             >
               <FiSearch className="w-5 h-5" />
             </motion.button>
+
+            {/* Notification Bell - Real-time notifications */}
+            {user && <NotificationBell />}
 
             {/* Write Button - Always visible */}
             <Link href="/create-blog" className="hidden md:flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary/10 to-secondary/10 text-primary font-medium text-sm rounded-xl hover:from-primary/20 hover:to-secondary/20 transition-all group">

@@ -10,7 +10,8 @@ export default async function handler(req, res) {
     
     if (req.method === 'POST') {
       const comment = await createComment(req.body);
-      return res.status(201).json(comment);
+      // Return the created comment for real-time updates
+      return res.status(201).json({ success: true, comment });
     }
     
     return res.status(405).json({ error: 'Method not allowed' });

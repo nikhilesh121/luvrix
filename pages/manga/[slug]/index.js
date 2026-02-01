@@ -1,15 +1,17 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import Head from "next/head";
 import Layout from "../../../components/Layout";
 import { getMangaBySlug, getSettings, incrementMangaViews, incrementMangaFavorites, decrementMangaFavorites, addToFavorites, removeFromFavorites, isItemFavorited } from "../../../lib/api-client";
 import { useAuth } from "../../../context/AuthContext";
+import { useSocket } from "../../../context/SocketContext";
 import { generateChapterList } from "../../../utils/mangaRedirectGenerator";
 import { MangaSchema, BreadcrumbSchema } from "../../../components/SEOHead";
 import CommentSection from "../../../components/CommentSection";
+import { trackMangaView, trackEngagement } from "../../../lib/analytics";
 import { motion } from "framer-motion";
-import { FiArrowLeft, FiBook, FiExternalLink, FiStar, FiClock, FiUser, FiBookOpen, FiHeart, FiShare2, FiChevronRight, FiArrowUp, FiArrowDown } from "react-icons/fi";
+import { FiArrowLeft, FiBook, FiExternalLink, FiStar, FiClock, FiUser, FiBookOpen, FiHeart, FiShare2, FiChevronRight, FiArrowUp, FiArrowDown, FiEye } from "react-icons/fi";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://luvrix.com";
 
@@ -48,6 +50,7 @@ export default function MangaDetail({ initialManga, initialSettings }) {
   const router = useRouter();
   const { slug } = router.query;
   const { user } = useAuth();
+  const { subscribe, joinRoom, leaveRoom, emitMangaView, emitMangaFavorite, isConnected } = useSocket();
   const [manga, setManga] = useState(initialManga);
   const [chapters, setChapters] = useState([]);
   const [settings, setSettings] = useState(initialSettings);
@@ -56,6 +59,8 @@ export default function MangaDetail({ initialManga, initialSettings }) {
   const [sortOrder, setSortOrder] = useState("desc");
   const [isFavorited, setIsFavorited] = useState(false);
   const [favoriteLoading, setFavoriteLoading] = useState(false);
+  const [liveViews, setLiveViews] = useState(null);
+  const [liveFavorites, setLiveFavorites] = useState(null);
 
   // Format slug to readable title for SEO (from URL)
   const formattedSlugTitle = formatSlugToTitle(slug);
@@ -86,13 +91,53 @@ export default function MangaDetail({ initialManga, initialSettings }) {
   };
   const ogImage = manga?.coverUrl ? getAbsoluteImageUrl(manga.coverUrl) : `${SITE_URL}/og-default.svg`;
 
+  // Join manga room for real-time updates
+  useEffect(() => {
+    if (manga?.id && isConnected) {
+      joinRoom(`manga:${manga.id}`);
+      return () => leaveRoom(`manga:${manga.id}`);
+    }
+  }, [manga?.id, isConnected, joinRoom, leaveRoom]);
+
+  // Subscribe to real-time manga updates
+  useEffect(() => {
+    if (!isConnected || !manga?.id) return;
+
+    const unsubViews = subscribe('manga:viewUpdate', (data) => {
+      if (data.mangaId === manga.id) {
+        setLiveViews(data.views);
+      }
+    });
+
+    const unsubFavorites = subscribe('manga:favoriteUpdate', (data) => {
+      if (data.mangaId === manga.id) {
+        setLiveFavorites(data.favorites);
+      }
+    });
+
+    return () => {
+      unsubViews();
+      unsubFavorites();
+    };
+  }, [isConnected, manga?.id, subscribe]);
+
   useEffect(() => {
     if (manga) {
       const chapterList = generateChapterList(manga);
       setChapters(chapterList);
-      incrementMangaViews(manga.id);
+      
+      // Increment views and emit to socket
+      incrementMangaViews(manga.id).then((result) => {
+        if (result?.views) {
+          setLiveViews(result.views);
+          emitMangaView(manga.id, result.views);
+        }
+      });
+      
+      // Track in Google Analytics
+      trackMangaView(manga.id, manga.title, manga.totalChapters);
     }
-  }, [manga]);
+  }, [manga, emitMangaView]);
 
   // Check if manga is favorited
   useEffect(() => {
@@ -149,12 +194,22 @@ export default function MangaDetail({ initialManga, initialSettings }) {
     try {
       if (isFavorited) {
         await removeFromFavorites(user.uid, manga.id);
-        await decrementMangaFavorites(manga.id);
+        const result = await decrementMangaFavorites(manga.id);
         setIsFavorited(false);
+        // Emit socket event for real-time update
+        const newFavorites = result?.favorites ?? (liveFavorites || manga.favorites || 0) - 1;
+        setLiveFavorites(newFavorites);
+        emitMangaFavorite(manga.id, newFavorites, user.uid, 'unfavorite');
+        trackEngagement('favorite', manga.id, manga.title);
       } else {
         await addToFavorites(user.uid, manga.id, 'manga');
-        await incrementMangaFavorites(manga.id);
+        const result = await incrementMangaFavorites(manga.id);
         setIsFavorited(true);
+        // Emit socket event for real-time update
+        const newFavorites = result?.favorites ?? (liveFavorites || manga.favorites || 0) + 1;
+        setLiveFavorites(newFavorites);
+        emitMangaFavorite(manga.id, newFavorites, user.uid, 'favorite');
+        trackEngagement('favorite', manga.id, manga.title);
       }
     } catch (error) {
       console.error('Error toggling favorite:', error);

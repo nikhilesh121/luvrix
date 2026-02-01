@@ -1,4 +1,4 @@
-import { likeBlog } from '../../../../lib/db';
+import { likeBlog, getBlog } from '../../../../lib/db';
 
 export default async function handler(req, res) {
   const { id } = req.query;
@@ -7,7 +7,13 @@ export default async function handler(req, res) {
     if (req.method === 'POST') {
       const { userId } = req.body;
       await likeBlog(id, userId);
-      return res.status(200).json({ success: true });
+      // Return updated like count for real-time updates
+      const blog = await getBlog(id);
+      return res.status(200).json({ 
+        success: true, 
+        likes: blog?.likes?.length || 0,
+        likedBy: blog?.likes || []
+      });
     }
     
     return res.status(405).json({ error: 'Method not allowed' });

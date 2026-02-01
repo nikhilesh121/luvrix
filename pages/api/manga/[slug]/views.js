@@ -9,16 +9,19 @@ export default async function handler(req, res) {
     const { slug } = req.query;
     const db = await getDb();
     
-    const result = await db.collection('manga').updateOne(
+    // Use findOneAndUpdate to get the updated document
+    const result = await db.collection('manga').findOneAndUpdate(
       { slug },
-      { $inc: { views: 1 } }
+      { $inc: { views: 1 } },
+      { returnDocument: 'after' }
     );
 
-    if (result.matchedCount === 0) {
+    if (!result) {
       return res.status(404).json({ error: 'Manga not found' });
     }
 
-    return res.status(200).json({ success: true });
+    // Return the updated view count for real-time updates
+    return res.status(200).json({ success: true, views: result.views || 0 });
   } catch (error) {
     console.error('Error incrementing manga views:', error);
     return res.status(500).json({ error: 'Failed to increment views' });

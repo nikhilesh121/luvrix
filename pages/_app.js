@@ -1,19 +1,29 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/router";
 import "../styles/globals.css";
 import "react-quill/dist/quill.snow.css";
-import { AuthProvider } from "../context/AuthContext";
+import { AuthProvider, useAuth } from "../context/AuthContext";
 import { BlogCacheProvider } from "../context/BlogCacheContext";
+import { SocketProvider, useSocket } from "../context/SocketContext";
+import { trackPageView, initGA } from "../lib/analytics";
+import { getSettings } from "../lib/api-client";
 import dynamic from 'next/dynamic';
 
 const CookieConsent = dynamic(() => import('../components/CookieConsent'), { ssr: false });
 
-// Google Analytics pageview tracking
-const pageview = (url) => {
-  if (typeof window !== 'undefined' && window.gtag) {
-    window.gtag('config', process.env.NEXT_PUBLIC_GA_ID, {
-      page_path: url,
-    });
+// Initialize GA on app load
+let gaInitialized = false;
+const initializeGA = async () => {
+  if (gaInitialized) return;
+  try {
+    const settings = await getSettings();
+    const gaId = (settings?.analyticsEnabled && settings?.analyticsId) ? settings.analyticsId : process.env.NEXT_PUBLIC_GA_ID;
+    if (gaId && gaId.startsWith('G-')) {
+      initGA(gaId);
+      gaInitialized = true;
+    }
+  } catch (error) {
+    console.error('Failed to initialize GA:', error);
   }
 };
 
@@ -31,9 +41,41 @@ function PageLoader() {
   );
 }
 
+// Inner component to use hooks
+function AppContent({ Component, pageProps, loading }) {
+  const router = useRouter();
+  const { user } = useAuth();
+  const { emitPageView, emitPageLeave, isConnected } = useSocket();
+
+  // Track page views for socket analytics
+  useEffect(() => {
+    if (isConnected) {
+      const currentPage = router.asPath;
+      emitPageView(currentPage, user?.uid);
+
+      return () => {
+        emitPageLeave(currentPage);
+      };
+    }
+  }, [router.asPath, isConnected, user?.uid, emitPageView, emitPageLeave]);
+
+  return (
+    <>
+      {loading && <PageLoader />}
+      <Component {...pageProps} />
+      <CookieConsent />
+    </>
+  );
+}
+
 function MyApp({ Component, pageProps }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+
+  // Initialize GA on mount
+  useEffect(() => {
+    initializeGA();
+  }, []);
 
   useEffect(() => {
     const handleStart = (url) => {
@@ -44,7 +86,7 @@ function MyApp({ Component, pageProps }) {
     const handleComplete = (url) => {
       setLoading(false);
       // Track pageview in Google Analytics
-      pageview(url);
+      trackPageView(url, document.title);
     };
 
     router.events.on("routeChangeStart", handleStart);
@@ -60,11 +102,11 @@ function MyApp({ Component, pageProps }) {
 
   return (
     <AuthProvider>
-      <BlogCacheProvider>
-        {loading && <PageLoader />}
-        <Component {...pageProps} />
-        <CookieConsent />
-      </BlogCacheProvider>
+      <SocketProvider>
+        <BlogCacheProvider>
+          <AppContent Component={Component} pageProps={pageProps} loading={loading} />
+        </BlogCacheProvider>
+      </SocketProvider>
     </AuthProvider>
   );
 }

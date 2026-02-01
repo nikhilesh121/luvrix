@@ -1,10 +1,11 @@
-import { useState, useEffect, useMemo, memo } from "react";
+import { useState, useEffect, useMemo, memo, useCallback } from "react";
 import Link from "next/link";
 import Head from "next/head";
 import dynamic from "next/dynamic";
 import Layout from "../components/Layout";
 import { getSettings } from "../lib/api-client";
 import { useBlogCache } from "../context/BlogCacheContext";
+import { useSocket } from "../context/SocketContext";
 import { BlogGridSkeleton } from "../components/ui/Skeleton";
 import { WebsiteSchema } from "../components/SEOHead";
 import { motion, AnimatePresence } from "framer-motion";
@@ -39,14 +40,56 @@ const categoryConfig = {
 };
 
 export default function Home() {
-  const { blogs: cachedBlogs, loading: blogsLoading, getLatestBlogs, getFeaturedBlog } = useBlogCache();
+  const { blogs: cachedBlogs, loading: blogsLoading, getLatestBlogs, getFeaturedBlog, refreshBlogs } = useBlogCache();
+  const { subscribe, isConnected } = useSocket();
   const [settings, setSettings] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState(0);
+  const [liveUpdates, setLiveUpdates] = useState({}); // Store live view/like counts
 
   // Memoize blog data to prevent unnecessary re-renders
   const featuredBlog = useMemo(() => getFeaturedBlog(), [getFeaturedBlog]);
   const latestBlogs = useMemo(() => getLatestBlogs(9), [getLatestBlogs]);
+
+  // Subscribe to real-time blog updates
+  useEffect(() => {
+    if (!isConnected) return;
+
+    // Listen for view updates on any blog
+    const unsubViews = subscribe('blog:viewUpdate', (data) => {
+      setLiveUpdates(prev => ({
+        ...prev,
+        [data.blogId]: { ...prev[data.blogId], views: data.views }
+      }));
+    });
+
+    // Listen for like updates on any blog
+    const unsubLikes = subscribe('blog:likeUpdate', (data) => {
+      setLiveUpdates(prev => ({
+        ...prev,
+        [data.blogId]: { ...prev[data.blogId], likes: data.likes }
+      }));
+    });
+
+    // Listen for new blog notifications
+    const unsubNewBlog = subscribe('notification:new', (data) => {
+      if (data.type === 'new_blog') {
+        // Refresh blogs when new one is published
+        refreshBlogs?.();
+      }
+    });
+
+    return () => {
+      unsubViews();
+      unsubLikes();
+      unsubNewBlog();
+    };
+  }, [isConnected, subscribe, refreshBlogs]);
+
+  // Helper to get live count or fallback to original
+  const getLiveCount = useCallback((blogId, field, originalValue) => {
+    return liveUpdates[blogId]?.[field] ?? originalValue;
+  }, [liveUpdates]);
 
   // Lazy load settings - non-blocking
   useEffect(() => {
