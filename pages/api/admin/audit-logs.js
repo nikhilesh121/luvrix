@@ -3,7 +3,6 @@
  * View and query audit logs for compliance and security monitoring
  */
 
-import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../auth/[...nextauth]';
 import { queryAuditLogs, getAuditStats } from '../../../lib/auditLog';
 
