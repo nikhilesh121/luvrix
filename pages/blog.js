@@ -36,12 +36,14 @@ const serializeData = (obj) => {
 export default function BlogPage({ initialBlog, initialAuthor, initialSettings }) {
   const router = useRouter();
   const { id } = router.query;
+  const isReady = router.isReady;
   const { user } = useAuth();
   const { joinRoom, leaveRoom, subscribe, emitBlogView, emitBlogLike, emitFollow } = useSocket();
   const [blog, setBlog] = useState(initialBlog);
   const [author, setAuthor] = useState(initialAuthor);
   const [settings, setSettings] = useState(initialSettings);
-  const [loading, setLoading] = useState(!initialBlog);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [relatedBlogs, setRelatedBlogs] = useState([]);
   const [readingProgress, setReadingProgress] = useState(0);
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -182,13 +184,22 @@ export default function BlogPage({ initialBlog, initialAuthor, initialSettings }
   }, []);
 
   useEffect(() => {
+    // Wait for router to be ready before fetching
+    if (!isReady) return;
+
     async function fetchBlog() {
-      // Skip fetch if we already have SSR data
-      if (initialBlog) {
+      setLoading(true);
+      setError(null);
+
+      // If we have SSR data AND the id matches, use it
+      if (initialBlog && initialBlog.id === id) {
+        setBlog(initialBlog);
+        setAuthor(initialAuthor);
+        setSettings(initialSettings);
+        setLoading(false);
         // Just increment views and fetch related
         try {
           const result = await incrementBlogViews(id);
-          // Emit real-time view update
           if (result?.views) {
             setViewCount(result.views);
             emitBlogView(id, result.views);
@@ -206,21 +217,32 @@ export default function BlogPage({ initialBlog, initialAuthor, initialSettings }
         return;
       }
 
-      if (!id) return;
+      // Client-side fetch when navigating between blogs
+      if (!id) {
+        setLoading(false);
+        return;
+      }
 
       try {
         const blogData = await getBlog(id);
         
         if (!blogData || blogData.status !== "approved") {
-          router.push("/");
+          setError("Blog not found or not approved");
+          setLoading(false);
           return;
         }
 
         setBlog(blogData);
+        setViewCount(blogData.views || 0);
+        setLikeCount(blogData.likes || 0);
 
         // Increment view count
         try {
-          await incrementBlogViews(id);
+          const result = await incrementBlogViews(id);
+          if (result?.views) {
+            setViewCount(result.views);
+            emitBlogView(id, result.views);
+          }
         } catch (e) {
           console.log("Could not increment views");
         }
@@ -240,15 +262,16 @@ export default function BlogPage({ initialBlog, initialAuthor, initialSettings }
         } catch (e) {
           console.log("Could not fetch related blogs");
         }
-      } catch (error) {
-        console.error("Error fetching blog:", error);
+      } catch (err) {
+        console.error("Error fetching blog:", err);
+        setError("Failed to load blog");
       } finally {
         setLoading(false);
       }
     }
 
     fetchBlog();
-  }, [id, router, initialBlog]);
+  }, [id, isReady]);
 
   const formatDate = (timestamp) => {
     if (!timestamp) return "";
@@ -301,7 +324,7 @@ export default function BlogPage({ initialBlog, initialAuthor, initialSettings }
     );
   }
 
-  if (!blog) {
+  if (error || !blog) {
     return (
       <Layout title="Blog Not Found">
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
@@ -310,7 +333,7 @@ export default function BlogPage({ initialBlog, initialAuthor, initialSettings }
               <FiBookmark className="w-12 h-12 text-gray-400" />
             </div>
             <h1 className="text-3xl font-bold text-gray-800 mb-2">Article Not Found</h1>
-            <p className="text-gray-500 mb-6">The article you're looking for doesn't exist or has been removed.</p>
+            <p className="text-gray-500 mb-6">{error || "The article you're looking for doesn't exist or has been removed."}</p>
             <Link href="/" className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-full font-semibold hover:bg-primary/90 transition">
               <FiArrowLeft /> Back to Home
             </Link>
