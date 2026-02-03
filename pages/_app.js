@@ -5,6 +5,7 @@ import "react-quill/dist/quill.snow.css";
 import { AuthProvider, useAuth } from "../context/AuthContext";
 import { BlogCacheProvider } from "../context/BlogCacheContext";
 import { SocketProvider, useSocket } from "../context/SocketContext";
+import { ThemeProvider } from "../context/ThemeContext";
 import { trackPageView, initGA } from "../lib/analytics";
 import { getSettings } from "../lib/api-client";
 import dynamic from 'next/dynamic';
@@ -101,13 +102,15 @@ function MyApp({ Component, pageProps }) {
   }, [router]);
 
   return (
-    <AuthProvider>
-      <SocketProvider>
-        <BlogCacheProvider>
-          <AppContent Component={Component} pageProps={pageProps} loading={loading} />
-        </BlogCacheProvider>
-      </SocketProvider>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <SocketProvider>
+          <BlogCacheProvider>
+            <AppContent Component={Component} pageProps={pageProps} loading={loading} />
+          </BlogCacheProvider>
+        </SocketProvider>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 

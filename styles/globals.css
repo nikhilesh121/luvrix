@@ -6,6 +6,28 @@
   --primary-color: #ff0055;
   --secondary-color: #1a1a2e;
   --accent-color: #3b82f6;
+  --bg-primary: #ffffff;
+  --bg-secondary: #f9fafb;
+  --text-primary: #111827;
+  --text-secondary: #6b7280;
+  --border-color: #e5e7eb;
+}
+
+.dark {
+  --primary-color: #ff3377;
+  --secondary-color: #0f172a;
+  --accent-color: #60a5fa;
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --text-primary: #f9fafb;
+  --text-secondary: #9ca3af;
+  --border-color: #334155;
+}
+
+/* Dark mode base styles */
+.dark body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
 }
 
 /* Animated Gradient */

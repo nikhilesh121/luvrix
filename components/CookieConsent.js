@@ -72,7 +72,7 @@ export default function CookieConsent() {
                 <p className="text-gray-400 text-sm">
                   {cookieSettings?.message || 'We use cookies to enhance your browsing experience, analyze site traffic, and personalize content. By clicking "Accept", you consent to our use of cookies.'}
                 </p>
-                <Link href="/policy/privacy" className="text-purple-400 text-sm hover:text-pink-400 transition-colors">
+                <Link href="/privacy" className="text-purple-400 text-sm hover:text-pink-400 transition-colors">
                   Learn more →
                 </Link>
               </div>

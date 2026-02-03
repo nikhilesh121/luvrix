@@ -25,8 +25,12 @@ export default function Document() {
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="Luvrix" />
         <meta name="application-name" content="Luvrix" />
-        <meta name="theme-color" content="#1e3a5f" />
+        <meta name="theme-color" content="#9333ea" />
         <link rel="manifest" href="/manifest.json" />
+        {/* Favicon - Animated Lightning Logo */}
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.svg" />
       </Head>
       <body>
         <Main />

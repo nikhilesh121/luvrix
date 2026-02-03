@@ -1,7 +1,10 @@
 import { getDb } from '../../../lib/mongodb';
 import { hashPassword } from '../../../lib/auth';
+import { withRateLimit } from '../../../lib/rateLimit';
 
-export default async function handler(req, res) {
+// Note: Reset-password is a public endpoint - CSRF not required (no session yet)
+// Rate limited with OTP config to prevent brute force OTP guessing
+async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -71,3 +74,5 @@ export default async function handler(req, res) {
     return res.status(500).json({ success: false, error: 'Internal server error' });
   }
 }
+
+export default withRateLimit(handler, 'otp');

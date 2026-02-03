@@ -5,6 +5,7 @@ import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion"
 import { useAuth } from "../context/AuthContext";
 import { getSettings } from "../lib/api-client";
 import NotificationBell from "./NotificationBell";
+import ThemeToggle from "./ThemeToggle";
 import { 
   FiMenu, FiX, FiUser, FiLogOut, FiSettings, FiChevronDown, 
   FiEdit3, FiGrid, FiBookOpen, FiTrendingUp, FiCpu, FiHeart,
@@ -300,6 +301,9 @@ export default function Header() {
             >
               <FiSearch className="w-5 h-5" />
             </motion.button>
+
+            {/* Theme Toggle */}
+            <ThemeToggle />
 
             {/* Notification Bell - Real-time notifications */}
             {user && <NotificationBell />}

@@ -1,7 +1,9 @@
 import { getDb } from '../../../../../lib/mongodb';
 import { verifyToken } from '../../../../../lib/auth';
+import { withCSRFProtection } from '../../../../../lib/csrf';
+import { withRateLimit } from '../../../../../lib/rateLimit';
 
-export default async function handler(req, res) {
+async function handler(req, res) {
   // Set proper headers
   res.setHeader('Content-Type', 'application/json');
   
@@ -80,3 +82,6 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Failed to update user points' });
   }
 }
+
+// Apply admin rate limiting then CSRF protection
+export default withRateLimit(withCSRFProtection(handler), 'admin');

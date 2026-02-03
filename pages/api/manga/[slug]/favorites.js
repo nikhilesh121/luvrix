@@ -1,6 +1,7 @@
 import { getDb } from '../../../../lib/mongodb';
+import { withCSRFProtection } from '../../../../lib/csrf';
 
-export default async function handler(req, res) {
+async function handler(req, res) {
   const { slug } = req.query;
   const db = await getDb();
 
@@ -38,3 +39,5 @@ export default async function handler(req, res) {
 
   return res.status(405).json({ error: 'Method not allowed' });
 }
+
+export default withCSRFProtection(handler);

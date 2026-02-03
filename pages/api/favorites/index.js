@@ -1,6 +1,7 @@
 import { getUserFavorites, addToFavorites } from '../../../lib/db';
+import { withCSRFProtection } from '../../../lib/csrf';
 
-export default async function handler(req, res) {
+async function handler(req, res) {
   try {
     if (req.method === 'GET') {
       const { userId } = req.query;
@@ -23,3 +24,5 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Internal server error' });
   }
 }
+
+export default withCSRFProtection(handler);

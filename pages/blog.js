@@ -761,14 +761,14 @@ export default function BlogPage({ initialBlog, initialAuthor, initialSettings }
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {relatedBlogs.map((related) => (
-                <Link
+                <motion.div
                   key={related.id}
-                  href={`/blog?id=${related.id}`}
+                  whileHover={{ y: -5 }}
                   className="group"
                 >
-                  <motion.div
-                    whileHover={{ y: -5 }}
-                    className="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-shadow border border-gray-100"
+                  <Link
+                    href={`/blog?id=${related.id}`}
+                    className="block bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-shadow border border-gray-100"
                   >
                     <div className="aspect-video bg-gray-100 overflow-hidden">
                       {related.thumbnail ? (
@@ -803,8 +803,8 @@ export default function BlogPage({ initialBlog, initialAuthor, initialSettings }
                         </span>
                       </div>
                     </div>
-                  </motion.div>
-                </Link>
+                  </Link>
+                </motion.div>
               ))}
             </div>
           </div>

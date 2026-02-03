@@ -1,6 +1,7 @@
 import { likeComment, getDb, toObjectId } from '../../../../lib/db';
+import { withCSRFProtection } from '../../../../lib/csrf';
 
-export default async function handler(req, res) {
+async function handler(req, res) {
   const { id } = req.query;
   
   try {
@@ -18,3 +19,5 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Internal server error' });
   }
 }
+
+export default withCSRFProtection(handler);

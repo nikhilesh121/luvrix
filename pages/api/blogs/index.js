@@ -1,6 +1,8 @@
 import { getAllBlogs, getUserBlogs, createBlog } from '../../../lib/db';
+import { withCSRFProtection } from '../../../lib/csrf';
+import { withRateLimit } from '../../../lib/rateLimit';
 
-export default async function handler(req, res) {
+async function handler(req, res) {
   res.setHeader('Content-Type', 'application/json');
   
   try {
@@ -30,3 +32,6 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Internal server error' });
   }
 }
+
+// Apply content rate limiting then CSRF protection
+export default withRateLimit(withCSRFProtection(handler), 'content');

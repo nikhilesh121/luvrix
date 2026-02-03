@@ -42,8 +42,12 @@ export default function Layout({ children, title, description, keywords, image, 
         <meta name="description" content={description || "Luvrix - Your destination for anime, manga, technology news and creative stories. Read manga, write blogs, and join a community of creators."} />
         {keywords && <meta name="keywords" content={keywords} />}
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
-        <link rel="icon" href="/favicon.ico" />
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        
+        {/* Favicon */}
+        <link rel="icon" type="image/png" href="https://res.cloudinary.com/dsga2d0bv/image/upload/v1770089324/Luvrix/Luvrix_favicon_yqovij.png" />
+        <link rel="apple-touch-icon" href="https://res.cloudinary.com/dsga2d0bv/image/upload/v1770089324/Luvrix/Luvrix_favicon_yqovij.png" />
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#6366f1" />
         
         {/* Robots */}
         {noindex ? (

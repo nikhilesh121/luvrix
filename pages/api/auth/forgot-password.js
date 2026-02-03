@@ -1,7 +1,10 @@
 import { getDb } from '../../../lib/mongodb';
 import nodemailer from 'nodemailer';
+import { withRateLimit } from '../../../lib/rateLimit';
 
-export default async function handler(req, res) {
+// Note: Forgot-password is a public endpoint - CSRF not required (no session yet)
+// Rate limited with OTP config (3 requests per hour) to prevent abuse
+async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -91,3 +94,5 @@ export default async function handler(req, res) {
     return res.status(500).json({ success: false, error: 'Internal server error' });
   }
 }
+
+export default withRateLimit(handler, 'otp');

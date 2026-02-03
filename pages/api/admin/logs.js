@@ -1,6 +1,7 @@
 import { getLogs, createLog } from '../../../lib/db';
+import { withRateLimit } from '../../../lib/rateLimit';
 
-export default async function handler(req, res) {
+async function handler(req, res) {
   try {
     if (req.method === 'GET') {
       const logs = await getLogs();
@@ -18,3 +19,5 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Internal server error' });
   }
 }
+
+export default withRateLimit(handler, 'admin');

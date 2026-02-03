@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import Head from "next/head";
 import AdminGuard from "../../components/AdminGuard";
 import AdminSidebar from "../../components/AdminSidebar";
 import { getAllBlogs, getAllUsers, getAllManga, getAllPayments, getSettings } from "../../lib/api-client";
@@ -137,8 +138,13 @@ function DashboardContent() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#f8fafc]">
-      <AdminSidebar />
+    <>
+      <Head>
+        <title>Admin Dashboard - Luvrix</title>
+        <link rel="icon" type="image/png" href="https://res.cloudinary.com/dsga2d0bv/image/upload/v1770089324/Luvrix/Luvrix_favicon_yqovij.png" />
+      </Head>
+      <div className="min-h-screen bg-[#f8fafc]">
+        <AdminSidebar />
 
       <div className="admin-layout">
         {/* Header */}
@@ -332,6 +338,7 @@ function DashboardContent() {
           )}
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }

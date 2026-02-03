@@ -1,7 +1,8 @@
 import { getDb } from '../../../lib/mongodb';
 import { ObjectId } from 'mongodb';
+import { withCSRFProtection } from '../../../lib/csrf';
 
-export default async function handler(req, res) {
+async function handler(req, res) {
   const { id } = req.query;
 
   if (req.method === 'PUT') {
@@ -49,3 +50,5 @@ export default async function handler(req, res) {
 
   return res.status(405).json({ error: 'Method not allowed' });
 }
+
+export default withCSRFProtection(handler);
