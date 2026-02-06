@@ -118,55 +118,65 @@ export default function BlogEditor({ value, onChange, placeholder }) {
     clipboard: { matchVisual: false },
   }), []);
 
+  const editorElRef = useRef(null);
+
   const handlePaste = useCallback((e) => {
-    const clip = e.clipboardData || window.clipboardData;
-    if (!clip) return;
+    try {
+      const clip = e.clipboardData || window.clipboardData;
+      if (!clip) return;
 
-    const html = clip.getData("text/html");
-    const plainText = clip.getData("text/plain");
+      const editor = quillRef.current?.getEditor?.();
+      if (!editor) return;
 
-    // Case 1: Clipboard has HTML data (copy from browser/word)
-    if (html && html.trim()) {
-      e.preventDefault();
-      e.stopPropagation();
-      const cleanHtml = cleanWordPaste(html);
-      if (quillRef.current) {
-        const editor = quillRef.current.getEditor();
-        if (editor) {
-          const range = editor.getSelection(true);
-          editor.clipboard.dangerouslyPasteHTML(range?.index || 0, cleanHtml, "user");
-        }
+      const html = clip.getData("text/html");
+      const plainText = clip.getData("text/plain");
+
+      // Case 1: Clipboard has real HTML data (copy from browser/word)
+      if (html && html.trim() && html.includes("<")) {
+        e.preventDefault();
+        const cleanHtml = cleanWordPaste(html);
+        const range = editor.getSelection(true);
+        const idx = range ? range.index : editor.getLength();
+        editor.clipboard.dangerouslyPasteHTML(idx, cleanHtml, "user");
+        return;
       }
-      return;
-    }
 
-    // Case 2: Plain text that contains HTML tags (pasted from text editor/notepad)
-    if (plainText && HTML_REGEX.test(plainText)) {
-      e.preventDefault();
-      e.stopPropagation();
-      const cleanHtml = cleanWordPaste(plainText);
-      if (quillRef.current) {
-        const editor = quillRef.current.getEditor();
-        if (editor) {
-          const range = editor.getSelection(true);
-          editor.clipboard.dangerouslyPasteHTML(range?.index || 0, cleanHtml, "user");
-        }
+      // Case 2: Plain text that contains HTML tags (pasted from text editor/notepad)
+      if (plainText && HTML_REGEX.test(plainText)) {
+        e.preventDefault();
+        const cleanHtml = cleanWordPaste(plainText);
+        const range = editor.getSelection(true);
+        const idx = range ? range.index : editor.getLength();
+        editor.clipboard.dangerouslyPasteHTML(idx, cleanHtml, "user");
+        return;
       }
-      return;
-    }
 
-    // Case 3: Regular plain text - let Quill handle it normally
+      // Case 3: Regular plain text - don't interfere, let Quill handle it
+    } catch (err) {
+      console.error("Paste handler error:", err);
+      // On any error, let Quill's default paste handle it
+    }
   }, []);
 
   useEffect(() => {
     const timer = setTimeout(() => {
       const el = document.querySelector('.blog-editor .ql-editor');
       if (el) {
-        el.addEventListener('paste', handlePaste, true);
-        return () => el.removeEventListener('paste', handlePaste, true);
+        // Remove any previously attached listener
+        if (editorElRef.current) {
+          editorElRef.current.removeEventListener('paste', handlePaste);
+        }
+        editorElRef.current = el;
+        el.addEventListener('paste', handlePaste);
       }
     }, 500);
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      if (editorElRef.current) {
+        editorElRef.current.removeEventListener('paste', handlePaste);
+        editorElRef.current = null;
+      }
+    };
   }, [handlePaste]);
 
   return (
