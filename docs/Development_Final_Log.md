@@ -3928,3 +3928,263 @@ Created comprehensive scale architecture plan with:
 
 *Document Version: 1.0*  
 *Last Modified: February 3, 2026*
+
+---
+
+# Meeting 10 – Mobile Header, Real Stats, Contact Fix, Blog Editor Fix
+
+**Date:** February 6, 2026  
+**Type:** Bug Fixes + UX Improvements  
+**Status:** ✅ ALL ISSUES RESOLVED
+
+---
+
+## Issues Solved
+
+### Issue 1: Mobile Header Layout Broken
+**Severity:** High  
+**Description:** Search, theme toggle, and sign-in buttons were cluttering the mobile header bar, leaving no space.
+
+**Root Cause:** All action items were always visible regardless of screen size.
+
+**Solution:**
+- Hidden search button, theme toggle, and sign-in on mobile (`hidden sm:flex` / `hidden sm:block`)
+- Added mobile search bar, theme toggle, sign-in, and write button inside the hamburger menu
+- Made "Get Started" button smaller on mobile (shows "Start" instead of "Get Started")
+- Tightened gap between action items on small screens (`gap-1 sm:gap-2`)
+
+**Files Changed:**
+- `components/Header.js` (lines 293-319, 423-440, 464-492)
+
+---
+
+### Issue 2: Hardcoded Demo Stats on Homepage & About Page
+**Severity:** High  
+**Description:** Hero section showed fake/hardcoded numbers for "Active Readers", "Writers", and "Articles" instead of real data from the database.
+
+**Solution:**
+- Created `/api/stats/platform` API endpoint that fetches real counts from MongoDB:
+  - Readers = total blog views (sum of all approved blog views)
+  - Writers = total registered users
+  - Articles = total approved blogs
+  - Categories = distinct categories from approved blogs
+- Added `formatNumber` utility for compact display: `999` → `999`, `1000` → `1K+`, `1000000` → `1M+`
+- Integrated real stats into `index.js`, `about.js`, and `register.js`
+- Added unique visitor tracking (once per session via `sessionStorage`) in `Layout.js`
+
+**Files Changed:**
+- `pages/api/stats/platform.js` (new — GET for stats, POST for visitor tracking)
+- `pages/index.js` (lines 27-33, 57-69, 312-327, 439-440)
+- `pages/about.js` (lines 1-15, 17-25, 54-59)
+- `pages/register.js` (lines 10-29, 316-327)
+- `components/Layout.js` (lines 34-40 — visitor tracking)
+
+---
+
+### Issue 3: Contact Form CSRF Token Error
+**Severity:** High  
+**Description:** Contact form submission failed with a CSRF token error. The `/api/send-email` endpoint was wrapped with `withCSRFProtection`, but as a public form, no CSRF token was available.
+
+**Root Cause:** `withCSRFProtection` middleware was applied to a public endpoint that doesn't have authentication/session context.
+
+**Solution:**
+- Removed `withCSRFProtection` from `/api/send-email`
+- Rate limiting remains in place for protection against abuse
+
+**Files Changed:**
+- `pages/api/send-email.js` (line 149-150)
+
+---
+
+### Issue 4: Blog Editor Paste Handling + Default Colors
+**Severity:** Medium  
+**Description:** Pasting plain text containing HTML tags (e.g., `<h1>Hello</h1>`) into the blog editor showed raw tags instead of rendered HTML. Also, the editor had no default text/background colors.
+
+**Root Cause:** The paste handler only checked `text/html` clipboard data, ignoring `text/plain` that contained HTML markup. Also used `stopPropagation` which blocked Quill's own paste handler.
+
+**Solution:**
+- Rewrote `handlePaste` to handle both `text/html` and `text/plain` containing HTML tags
+- Used bubble phase instead of capture phase to not block Quill
+- Added proper cleanup with ref tracking
+- Added try-catch so errors never break normal paste
+- Set default text color to `#000` and background to `#fff` via CSS on `.ql-editor`
+
+**Files Changed:**
+- `components/BlogEditor.js` (lines 121-180, 185-186)
+
+---
+
+# Meeting 11 – SEO Fixes: Google Images + Meta Titles & Descriptions
+
+**Date:** February 6, 2026  
+**Type:** SEO Critical Fixes  
+**Status:** ✅ ALL ISSUES RESOLVED
+
+---
+
+## Issues Solved
+
+### Issue 1: Images Not Showing in Google Search Results
+**Severity:** Critical  
+**Description:** Blog thumbnails, manga covers, and chapter images were not appearing in Google search results or social media shares.
+
+**Root Cause:** All fallback OG images pointed to `/og-default.svg`. **Google does NOT support SVG format** for `og:image` thumbnails — only PNG/JPG/GIF/WebP work.
+
+**Solution:**
+- Created a proper 1200×630 PNG OG image via Cloudinary transformation:
+  `https://res.cloudinary.com/dsga2d0bv/image/upload/w_1200,h_630,c_pad,b_rgb:6366f1/Luvrix/Luvrix_favicon_yqovij.png`
+- Replaced **all** `og-default.svg` references across the entire codebase (verified zero remaining)
+- `Layout.js` now **always** outputs `og:image` with the PNG fallback
+- Blog and manga pages now pass `image={ogImage}` prop to Layout for consistency
+
+**Files Changed:**
+- `components/Layout.js` (lines 50, 73, 76-79, 85-86)
+- `components/SEOHead.js` (lines 3-11, 30, 35, 50, 57, 131-137, 170-176, 216-222, 269)
+- `components/OptimizedImage.js` (line 4)
+- `pages/index.js` (og:image and og:title updated)
+- `pages/blog.js` (line 367 fallback + line 378 image prop to Layout)
+- `pages/manga/[slug]/index.js` (lines 88, 92 + line 290 image prop to Layout)
+- `pages/manga/[slug]/[chapter].js` (lines 93, 97)
+- `pages/user/[id].js` (line 174)
+
+---
+
+### Issue 2: Unattractive Google Search Titles & Descriptions
+**Severity:** High  
+**Description:** Homepage showed "Home | Luvrix" in Google — generic and not click-worthy.
+
+**Solution:**
+- **Homepage title:** `"Read Blogs, Manga & Stories | Luvrix"` (was `"Home | Luvrix"`)
+- **Homepage description:** `"Discover amazing blogs, manga, and stories from creators worldwide..."`
+- **About page description:** `"Learn about Luvrix - the free platform for reading blogs, manga & stories..."`
+- **Layout default description:** Improved to mention blogs, manga, stories, writers, readers
+- **WebsiteSchema description:** Updated to match
+
+**Files Changed:**
+- `pages/index.js` (Layout title/description, og:title, og:description, twitter:title, twitter:description)
+- `pages/about.js` (Layout description)
+
+---
+
+### Issue 3: Structured Data Missing Image Objects
+**Severity:** High  
+**Description:** Google's structured data (JSON-LD) for blogs and manga didn't include proper `ImageObject` entries, preventing Google from indexing images.
+
+**Solution:**
+- Added `getAbsoluteImageUrl()` helper in `SEOHead.js` to ensure all image URLs are absolute
+- `BlogArticleSchema`: `image` now uses `ImageObject` with absolute URL + `thumbnailUrl`
+- `MangaSchema`: `image` now uses `ImageObject` with absolute URL + `thumbnailUrl`
+- `ChapterSchema`: `image` now uses `ImageObject` with absolute URL + `thumbnailUrl`
+
+**Files Changed:**
+- `components/SEOHead.js` (BlogArticleSchema, MangaSchema, ChapterSchema)
+
+---
+
+# Meeting 12 – Follow/Unfollow Negative Count Bug Fix
+
+**Date:** February 6, 2026  
+**Type:** Critical Bug Fix  
+**Status:** ✅ RESOLVED
+
+---
+
+## Issue: Follower Count Going Negative (-5, -2, -1, -8)
+**Severity:** Critical  
+**Description:** User profile pages showed negative follower/following counts (e.g., DracoL showed "-5 Followers"). Following/unfollowing repeatedly caused counts to go below zero.
+
+**Root Cause (2 bugs in `lib/db.js`):**
+1. **`followUser`** used `upsert: true` — every call incremented counts even if already following (no duplicate check)
+2. **`unfollowUser`** always decremented counts without checking if the follow relationship actually existed
+
+**Solution:**
+- `followUser`: Now checks if follow doc exists first → skips if already following
+- `unfollowUser`: Only decrements if `deleteOne` actually removed a doc (`deletedCount > 0`)
+- `unfollowUser`: Added `{ $gt: 0 }` guard on both decrement queries so counts can **never go below zero**
+
+**Database Repair:**
+Ran a one-time script to recalculate all users' counts from the actual `follows` collection:
+- **Manhuain**: followers `-1` → `1`, following `-8` → `0`
+- **DracoL**: followers `-5` → `0`, following `0` → `2`
+- **Priti Pattnayak**: followers `-2` → `1`, following `undefined` → `0`
+
+**Files Changed:**
+- `lib/db.js` (lines 944-990 — followUser & unfollowUser rewritten)
+
+---
+
+# Meeting 13 – Instagram-Style Notifications (No Spam)
+
+**Date:** February 6, 2026  
+**Type:** Feature Improvement  
+**Status:** ✅ RESOLVED
+
+---
+
+## Issue: Notification Spam on Repeated Follow/Unfollow/Like/Unlike
+**Severity:** High  
+**Description:** If a user follows/unfollows/follows the same person repeatedly, multiple duplicate "New Follower" notifications were created. Same issue with likes. Unlike had no notification cleanup.
+
+**Solution — Instagram-Style Behavior:**
+
+### Follow Notifications
+- **On follow:** Delete any existing follow notification from the same user, then create a fresh one (prevents duplicates)
+- **On unfollow:** Delete the follow notification entirely (clean removal)
+
+### Like Notifications
+- **On like:** Delete any existing like notification from the same user for the same blog, then create a fresh one
+- **On unlike:** Delete the like notification entirely
+- **Created missing `/api/blogs/[id]/unlike.js` endpoint** — previously the unlike API didn't exist
+
+### Like Count Bug Fix (Bonus — same pattern as follow bug)
+- `likeBlog`: Now checks if already liked before incrementing (was using upsert, always incremented)
+- `unlikeBlog`: Only decrements if the like actually existed + `{$gt: 0}` guard to prevent negative likes
+
+**Files Changed:**
+- `lib/notifications.js` (lines 104-131, 133-156 — notifyBlogLiked & notifyNewFollower now delete old notifications before creating)
+- `pages/api/follow.js` (lines 1-4, 32-47 — delete follow notification on unfollow)
+- `pages/api/blogs/[id]/unlike.js` (new file — unlike endpoint with notification cleanup)
+- `lib/db.js` (lines 1019-1059 — likeBlog & unlikeBlog rewritten with same guards as follow)
+
+---
+
+## Git Commits (February 6, 2026)
+
+| Commit | Description |
+|--------|-------------|
+| `6bd62b3` | SEO: Fix Google images + improve titles & descriptions |
+| `1be896f` | Fix follow/unfollow negative counts bug |
+| `b497678` | Instagram-style notifications: no spam on follow/unfollow/like/unlike |
+
+---
+
+## Summary of All Changes (February 6, 2026)
+
+### Files Created
+- `pages/api/blogs/[id]/unlike.js` — Unlike API with notification cleanup
+
+### Files Modified
+| File | Changes |
+|------|---------|
+| `components/Header.js` | Mobile header layout fix |
+| `components/Layout.js` | Visitor tracking + default og:image PNG + improved descriptions |
+| `components/SEOHead.js` | PNG OG image + absolute URLs + ImageObject in structured data |
+| `components/OptimizedImage.js` | PNG fallback instead of SVG |
+| `components/BlogEditor.js` | Paste handler rewrite + default colors |
+| `lib/db.js` | followUser, unfollowUser, likeBlog, unlikeBlog — all rewritten to prevent double-counting and negative values |
+| `lib/notifications.js` | Instagram-style: delete old notifications before creating new ones |
+| `pages/index.js` | Real platform stats + improved SEO meta |
+| `pages/about.js` | Real platform stats + improved description |
+| `pages/register.js` | Real platform stats |
+| `pages/blog.js` | PNG fallback + image prop to Layout |
+| `pages/manga/[slug]/index.js` | PNG fallback + image prop to Layout |
+| `pages/manga/[slug]/[chapter].js` | PNG fallback |
+| `pages/user/[id].js` | PNG fallback |
+| `pages/api/stats/platform.js` | Categories count added |
+| `pages/api/follow.js` | Delete notification on unfollow |
+| `pages/api/send-email.js` | Removed CSRF protection |
+
+---
+
+*Document Version: 2.0*  
+*Last Modified: February 6, 2026*
