@@ -7,11 +7,26 @@ import { useForm } from "react-hook-form";
 import { motion } from "framer-motion";
 import { FiUser, FiMail, FiLock, FiAlertCircle, FiCheck, FiZap, FiArrowRight, FiGift, FiTrendingUp, FiAward } from "react-icons/fi";
 
+function formatNumber(num) {
+  if (!num || num < 0) return '0';
+  if (num < 1000) return `${num}`;
+  if (num < 1000000) return `${Math.floor(num / 1000)}K+`;
+  return `${(num / 1000000).toFixed(1).replace(/\.0$/, '')}M+`;
+}
+
 export default function Register() {
   const router = useRouter();
   const { register: registerUser, isLoggedIn, userData, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [platformStats, setPlatformStats] = useState({ readers: 0, writers: 0, articles: 0 });
+
+  useEffect(() => {
+    fetch('/api/stats/platform')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data) setPlatformStats(data); })
+      .catch(() => {});
+  }, []);
 
   const {
     register,
@@ -298,15 +313,15 @@ export default function Register() {
               {/* Stats */}
               <div className="grid grid-cols-3 gap-4 mb-10">
                 <div className="p-4 bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 text-center">
-                  <p className="text-2xl font-black text-white">10K+</p>
+                  <p className="text-2xl font-black text-white">{formatNumber(platformStats.readers)}</p>
                   <p className="text-gray-500 text-xs">Readers</p>
                 </div>
                 <div className="p-4 bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 text-center">
-                  <p className="text-2xl font-black text-white">500+</p>
+                  <p className="text-2xl font-black text-white">{formatNumber(platformStats.writers)}</p>
                   <p className="text-gray-500 text-xs">Writers</p>
                 </div>
                 <div className="p-4 bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 text-center">
-                  <p className="text-2xl font-black text-white">1K+</p>
+                  <p className="text-2xl font-black text-white">{formatNumber(platformStats.articles)}</p>
                   <p className="text-gray-500 text-xs">Articles</p>
                 </div>
               </div>

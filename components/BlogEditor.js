@@ -121,7 +121,11 @@ export default function BlogEditor({ value, onChange, placeholder }) {
   const handlePaste = useCallback((e) => {
     const clip = e.clipboardData || window.clipboardData;
     if (!clip) return;
+
     const html = clip.getData("text/html");
+    const plainText = clip.getData("text/plain");
+
+    // Case 1: Clipboard has HTML data (copy from browser/word)
     if (html && html.trim()) {
       e.preventDefault();
       e.stopPropagation();
@@ -133,7 +137,25 @@ export default function BlogEditor({ value, onChange, placeholder }) {
           editor.clipboard.dangerouslyPasteHTML(range?.index || 0, cleanHtml, "user");
         }
       }
+      return;
     }
+
+    // Case 2: Plain text that contains HTML tags (pasted from text editor/notepad)
+    if (plainText && HTML_REGEX.test(plainText)) {
+      e.preventDefault();
+      e.stopPropagation();
+      const cleanHtml = cleanWordPaste(plainText);
+      if (quillRef.current) {
+        const editor = quillRef.current.getEditor();
+        if (editor) {
+          const range = editor.getSelection(true);
+          editor.clipboard.dangerouslyPasteHTML(range?.index || 0, cleanHtml, "user");
+        }
+      }
+      return;
+    }
+
+    // Case 3: Regular plain text - let Quill handle it normally
   }, []);
 
   useEffect(() => {
@@ -161,7 +183,7 @@ export default function BlogEditor({ value, onChange, placeholder }) {
       />
       <style jsx global>{`
         .blog-editor .ql-container { min-height: 300px; font-size: 16px; }
-        .blog-editor .ql-editor { min-height: 300px; }
+        .blog-editor .ql-editor { min-height: 300px; color: #000; background-color: #fff; }
         .blog-editor .ql-editor pre.ql-syntax {
           background-color: #1e1e1e; color: #d4d4d4; padding: 16px;
           border-radius: 8px; overflow-x: auto;

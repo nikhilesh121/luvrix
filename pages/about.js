@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import Layout from "../components/Layout";
 import { motion } from "framer-motion";
 import { FiUsers, FiTarget, FiHeart, FiAward, FiZap, FiGlobe, FiEdit3, FiBook, FiTrendingUp, FiStar } from "react-icons/fi";
@@ -6,7 +7,23 @@ import Link from "next/link";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://luvrix.com";
 
+function formatNumber(num) {
+  if (!num || num < 0) return '0';
+  if (num < 1000) return `${num}`;
+  if (num < 1000000) return `${Math.floor(num / 1000)}K+`;
+  return `${(num / 1000000).toFixed(1).replace(/\.0$/, '')}M+`;
+}
+
 export default function About() {
+  const [platformStats, setPlatformStats] = useState({ readers: 0, writers: 0, articles: 0, categories: 0 });
+
+  useEffect(() => {
+    fetch('/api/stats/platform')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data) setPlatformStats(data); })
+      .catch(() => {});
+  }, []);
+
   const features = [
     {
       icon: FiTarget,
@@ -35,10 +52,10 @@ export default function About() {
   ];
 
   const stats = [
-    { value: "10K+", label: "Active Readers", icon: FiUsers },
-    { value: "500+", label: "Writers", icon: FiEdit3 },
-    { value: "1K+", label: "Articles", icon: FiBook },
-    { value: "50+", label: "Categories", icon: FiGlobe }
+    { value: formatNumber(platformStats.readers), label: "Active Readers", icon: FiUsers },
+    { value: formatNumber(platformStats.writers), label: "Writers", icon: FiEdit3 },
+    { value: formatNumber(platformStats.articles), label: "Articles", icon: FiBook },
+    { value: formatNumber(platformStats.categories), label: "Categories", icon: FiGlobe }
   ];
 
   return (

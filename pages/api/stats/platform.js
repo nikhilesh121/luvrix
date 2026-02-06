@@ -6,7 +6,7 @@ export default async function handler(req, res) {
       const db = await getDb();
 
       // Get real counts in parallel
-      const [usersCount, blogsCount, totalViews] = await Promise.all([
+      const [usersCount, blogsCount, totalViews, categoriesList] = await Promise.all([
         // Count all registered users (writers)
         db.collection('users').countDocuments({}),
         // Count approved blogs
@@ -16,6 +16,8 @@ export default async function handler(req, res) {
           { $match: { status: 'approved' } },
           { $group: { _id: null, total: { $sum: { $ifNull: ['$views', 0] } } } },
         ]).toArray(),
+        // Count distinct categories
+        db.collection('blogs').distinct('category', { status: 'approved' }),
       ]);
 
       // Get site_stats doc for tracked visitor count
@@ -31,6 +33,7 @@ export default async function handler(req, res) {
         readers,
         writers: usersCount,
         articles: blogsCount,
+        categories: categoriesList?.length || 0,
       });
     } catch (error) {
       console.error('Platform stats error:', error);

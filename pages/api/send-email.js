@@ -146,5 +146,5 @@ async function handler(req, res) {
   }
 }
 
-// Apply contact rate limiting (5/hour) then CSRF protection
-export default withRateLimit(withCSRFProtection(handler), 'contact');
+// Apply contact rate limiting (5/hour) - no CSRF for public contact form
+export default withRateLimit(handler, 'contact');
