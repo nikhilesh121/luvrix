@@ -212,7 +212,7 @@ function EditBlogContent({ user }) {
 
   if (loading) {
     return (
-      <Layout title="Edit Blog">
+      <Layout title="Edit Blog" noindex={true}>
         <div className="flex justify-center items-center min-h-[60vh]">
           <div className="spinner"></div>
         </div>
@@ -222,7 +222,7 @@ function EditBlogContent({ user }) {
 
   if (error && !blog) {
     return (
-      <Layout title="Edit Blog">
+      <Layout title="Edit Blog" noindex={true}>
         <div className="max-w-4xl mx-auto px-4 py-8">
           <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
             <FiAlertCircle className="w-12 h-12 mx-auto text-red-500 mb-4" />
@@ -237,7 +237,7 @@ function EditBlogContent({ user }) {
   }
 
   return (
-    <Layout title="Edit Blog">
+    <Layout title="Edit Blog" noindex={true}>
       <div className="min-h-screen bg-slate-50">
         {/* Compact Header */}
         <div className="bg-white border-b">

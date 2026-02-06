@@ -27,7 +27,7 @@ export default function PaymentFailed() {
   }, [txnid]);
 
   return (
-    <Layout title="Payment Failed">
+    <Layout title="Payment Failed" noindex={true}>
       <div className="min-h-[70vh] flex items-center justify-center px-4">
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}

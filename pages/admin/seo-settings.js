@@ -16,20 +16,59 @@ Allow: /manga
 Allow: /categories
 Allow: /about
 Allow: /contact
+Allow: /publishers
+Allow: /leaderboard
+Allow: /policy/
 
 # Disallow admin and private pages
-Disallow: /admin
-Disallow: /dashboard
-Disallow: /api
-Disallow: /_next
-Disallow: /login
-Disallow: /register
+Disallow: /admin/
+Disallow: /dashboard/
+Disallow: /api/
+Disallow: /_next/
+Disallow: /login/
+Disallow: /register/
+
+# Disallow user-specific / transactional pages
+Disallow: /profile/
+Disallow: /favorites/
+Disallow: /create-blog/
+Disallow: /edit-blog/
+Disallow: /preview-blog/
+Disallow: /payment-success/
+Disallow: /payment-failed/
+
+# Disallow e-commerce / account paths
+Disallow: /cart/
+Disallow: /checkout/
+Disallow: /my-account/
+
+# Block parameter-based crawling (spam / low-value URLs)
+Disallow: /*?amp
+Disallow: /*?noamp
+Disallow: /*?share
+Disallow: /*?add_to_wishlist
+Disallow: /*?orderby
+Disallow: /*?type
+Disallow: /*?replytocom
+Disallow: /*?product-page
+Disallow: /*?nb
+
+# Block feeds and pagination from crawling
+Disallow: /feed/
+Disallow: /*/feed/
+Disallow: /page/
+Disallow: /*/page/
 
 # Crawl delay for polite crawling
 Crawl-delay: 1
 
-# Sitemap
+# Sitemaps
 Sitemap: https://luvrix.com/sitemap.xml
+Sitemap: https://luvrix.com/sitemap-pages.xml
+Sitemap: https://luvrix.com/sitemap-posts.xml
+Sitemap: https://luvrix.com/sitemap-manga.xml
+Sitemap: https://luvrix.com/sitemap-chapters.xml
+Sitemap: https://luvrix.com/sitemap-categories.xml
 `;
 
 const DEFAULT_ADS_TXT = `google.com, pub-9162211780712502, DIRECT, f08c47fec0942fa0
@@ -90,20 +129,27 @@ function SeoSettingsContent() {
 
       // 2. Write files to disk (live sync)
       try {
-        const token = await auth.currentUser?.getIdToken();
-        const writeRes = await fetch('/api/admin/write-system-files', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-          body: JSON.stringify({ robotsTxt, adsTxt }),
-        });
-        const writeData = await writeRes.json();
-        if (writeRes.ok && writeData.success) {
-          setWriteStatus({ type: 'success', message: 'robots.txt & ads.txt updated live on server' });
+        const token = (typeof auth.currentUser?.getIdToken === 'function'
+          ? await auth.currentUser.getIdToken()
+          : null) || (typeof window !== 'undefined' ? localStorage.getItem('luvrix_auth_token') : null);
+
+        if (!token) {
+          setWriteStatus({ type: 'error', message: 'Saved to DB but file write failed: No auth token available. Please re-login.' });
         } else {
-          setWriteStatus({ type: 'warning', message: `Saved to DB but file write had issues: ${writeData.errors?.join(', ') || 'Unknown error'}` });
+          const writeRes = await fetch('/api/admin/write-system-files', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+            body: JSON.stringify({ robotsTxt, adsTxt }),
+          });
+          const writeData = await writeRes.json();
+          if (writeRes.ok && writeData.success) {
+            setWriteStatus({ type: 'success', message: 'robots.txt & ads.txt updated live on server' });
+          } else {
+            setWriteStatus({ type: 'error', message: `Saved to DB but file write failed: ${writeData.errors?.join(', ') || writeData.error || 'Unknown error'}` });
+          }
         }
       } catch (writeErr) {
-        setWriteStatus({ type: 'warning', message: 'Saved to DB but could not write files to disk: ' + writeErr.message });
+        setWriteStatus({ type: 'error', message: 'Saved to DB but could not write files to disk: ' + writeErr.message });
       }
 
       await createLog({
@@ -375,12 +421,14 @@ function SeoSettingsContent() {
                 <div className={`p-4 rounded-xl border ${
                   writeStatus.type === 'success' 
                     ? 'bg-green-50 border-green-200' 
+                    : writeStatus.type === 'error'
+                    ? 'bg-red-50 border-red-200'
                     : 'bg-yellow-50 border-yellow-200'
                 }`}>
                   <p className={`text-sm font-medium ${
-                    writeStatus.type === 'success' ? 'text-green-700' : 'text-yellow-700'
+                    writeStatus.type === 'success' ? 'text-green-700' : writeStatus.type === 'error' ? 'text-red-700' : 'text-yellow-700'
                   }`}>
-                    {writeStatus.type === 'success' ? '✓' : '⚠'} {writeStatus.message}
+                    {writeStatus.type === 'success' ? '✓' : writeStatus.type === 'error' ? '✗' : '⚠'} {writeStatus.message}
                   </p>
                   <div className="mt-2 flex gap-3 text-xs">
                     <a href="https://luvrix.com/robots.txt" target="_blank" rel="noreferrer" className="text-blue-600 underline">Verify robots.txt</a>

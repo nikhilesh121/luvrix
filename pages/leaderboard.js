@@ -42,7 +42,7 @@ export default function Leaderboard() {
   const totalViews = leaderboard.reduce((sum, u) => sum + u.totalViews, 0);
 
   return (
-    <Layout title="Leaderboard" description="Top bloggers on Luvrix based on views">
+    <Layout title="Leaderboard" description="Top bloggers on Luvrix based on views" canonical="https://luvrix.com/leaderboard">
       {/* Hero Header */}
       <div className="relative bg-[#0a0a0f] overflow-hidden">
         <div className="absolute inset-0">

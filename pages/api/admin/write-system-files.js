@@ -5,6 +5,36 @@ import { verifyToken } from '../../../lib/auth';
 
 const PUBLIC_DIR = path.join(process.cwd(), 'public');
 
+function safeWriteAndVerify(filePath, content) {
+  // Check directory exists and is writable
+  const dir = path.dirname(filePath);
+  if (!fs.existsSync(dir)) {
+    throw new Error(`Directory does not exist: ${dir}`);
+  }
+  try {
+    fs.accessSync(dir, fs.constants.W_OK);
+  } catch {
+    throw new Error(`Directory is not writable: ${dir}`);
+  }
+
+  // Backup existing file
+  if (fs.existsSync(filePath)) {
+    const backup = fs.readFileSync(filePath, 'utf8');
+    fs.writeFileSync(filePath + '.bak', backup, 'utf8');
+  }
+
+  // Write new content
+  fs.writeFileSync(filePath, content, { encoding: 'utf8', mode: 0o644 });
+
+  // Read-back verification
+  const written = fs.readFileSync(filePath, 'utf8');
+  if (written !== content) {
+    throw new Error('Read-back verification failed: written content does not match');
+  }
+
+  return true;
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -32,18 +62,17 @@ export default async function handler(req, res) {
     const results = { robots: null, ads: null };
     const errors = [];
 
+    console.log('[write-system-files] PUBLIC_DIR:', PUBLIC_DIR);
+
     // Write robots.txt
     if (typeof robotsTxt === 'string') {
       try {
         const robotsPath = path.join(PUBLIC_DIR, 'robots.txt');
-        // Backup current file
-        if (fs.existsSync(robotsPath)) {
-          const backup = fs.readFileSync(robotsPath, 'utf8');
-          fs.writeFileSync(robotsPath + '.bak', backup, 'utf8');
-        }
-        fs.writeFileSync(robotsPath, robotsTxt, 'utf8');
+        safeWriteAndVerify(robotsPath, robotsTxt);
         results.robots = 'success';
+        console.log('[write-system-files] robots.txt written and verified at', robotsPath);
       } catch (err) {
+        console.error('[write-system-files] robots.txt write error:', err.message);
         errors.push(`robots.txt: ${err.message}`);
         results.robots = 'failed';
       }
@@ -53,14 +82,11 @@ export default async function handler(req, res) {
     if (typeof adsTxt === 'string') {
       try {
         const adsPath = path.join(PUBLIC_DIR, 'ads.txt');
-        // Backup current file
-        if (fs.existsSync(adsPath)) {
-          const backup = fs.readFileSync(adsPath, 'utf8');
-          fs.writeFileSync(adsPath + '.bak', backup, 'utf8');
-        }
-        fs.writeFileSync(adsPath, adsTxt, 'utf8');
+        safeWriteAndVerify(adsPath, adsTxt);
         results.ads = 'success';
+        console.log('[write-system-files] ads.txt written and verified at', adsPath);
       } catch (err) {
+        console.error('[write-system-files] ads.txt write error:', err.message);
         errors.push(`ads.txt: ${err.message}`);
         results.ads = 'failed';
       }

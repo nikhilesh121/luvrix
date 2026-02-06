@@ -288,7 +288,7 @@ function ProfileContent({ user, initialUserData }) {
   ];
 
   return (
-    <Layout title="My Profile">
+    <Layout title="My Profile" noindex={true}>
       <div className="min-h-screen bg-[#0a0a0f]">
         {/* Ultra Modern Hero Header */}
         <div className="relative overflow-hidden">

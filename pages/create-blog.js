@@ -234,7 +234,7 @@ function CreateBlogContent({ user, userData }) {
   }
 
   return (
-    <Layout title="Create Blog">
+    <Layout title="Create Blog" noindex={true}>
       <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
         {/* Hero Header */}
         <div className="relative overflow-hidden">

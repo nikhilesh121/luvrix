@@ -345,7 +345,7 @@ export default function BlogPage({ initialBlog, initialAuthor, initialSettings }
     );
   }
 
-  const pageUrl = `/blog?id=${blog.id}`;
+  const pageUrl = blog.slug ? `/blog/${blog.slug}` : `/blog?id=${blog.id}`;
   const fullUrl = `${SITE_URL}${pageUrl}`;
   const publishedDate = blog.createdAt?.toDate?.()?.toISOString() || new Date().toISOString();
   const modifiedDate = blog.updatedAt?.toDate?.()?.toISOString() || publishedDate;

@@ -108,7 +108,7 @@ export default function PublishersPage() {
   );
 
   return (
-    <Layout title="Discover Creators" description="Find and follow your favorite content creators on Luvrix">
+    <Layout title="Discover Creators" description="Find and follow your favorite content creators on Luvrix" canonical="https://luvrix.com/publishers">
       <Head>
         <meta property="og:title" content="Discover Creators - Luvrix" />
         <meta property="og:description" content="Find amazing storytellers, news publishers, and content creators" />

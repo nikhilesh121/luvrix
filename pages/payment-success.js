@@ -69,7 +69,7 @@ export default function PaymentSuccess() {
   }, [txnid, posts, authChecked, processed]);
 
   return (
-    <Layout title="Payment Successful">
+    <Layout title="Payment Successful" noindex={true}>
       <div className="min-h-[80vh] flex items-center justify-center px-4 bg-gradient-to-br from-slate-50 via-white to-pink-50">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

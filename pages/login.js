@@ -103,7 +103,7 @@ export default function Login() {
 
   if (authLoading) {
     return (
-      <Layout title="Login">
+      <Layout title="Login" noindex={true}>
         <div className="min-h-screen flex items-center justify-center bg-[#0a0a0f]">
           <div className="w-12 h-12 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin" />
         </div>
@@ -130,7 +130,7 @@ export default function Login() {
   };
 
   return (
-    <Layout title="Login">
+    <Layout title="Login" noindex={true}>
       {/* Forgot Password Modal */}
       <AnimatePresence>
         {showForgotPassword && (

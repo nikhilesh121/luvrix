@@ -2,7 +2,7 @@ import { useState } from "react";
 import AdminGuard from "../../components/AdminGuard";
 import AdminSidebar from "../../components/AdminSidebar";
 import { motion } from "framer-motion";
-import { FiExternalLink, FiGlobe, FiBook, FiFileText, FiLayers, FiGrid, FiCheck, FiZap, FiSend } from "react-icons/fi";
+import { FiExternalLink, FiGlobe, FiBook, FiFileText, FiLayers, FiGrid, FiCheck, FiZap, FiSend, FiRefreshCw } from "react-icons/fi";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://luvrix.com";
 
@@ -62,12 +62,14 @@ export default function SitemapAdmin() {
 function SitemapAdminContent() {
   const [pinging, setPinging] = useState(false);
   const [pingResult, setPingResult] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [refreshResult, setRefreshResult] = useState(null);
+  const [sitemapCounts, setSitemapCounts] = useState({});
 
   const pingGoogle = async () => {
     setPinging(true);
     setPingResult(null);
     try {
-      // Use local API to ping Google
       const response = await fetch("/api/sitemap/ping-google");
       const data = await response.json();
       if (data.success) {
@@ -83,6 +85,38 @@ function SitemapAdminContent() {
     }
   };
 
+  const refreshSitemaps = async () => {
+    setRefreshing(true);
+    setRefreshResult(null);
+    const endpoints = [
+      { name: "Index", url: "/api/sitemap/?nocache=1" },
+      { name: "Pages", url: "/api/sitemap/pages/?nocache=1" },
+      { name: "Posts", url: "/api/sitemap/posts/?nocache=1" },
+      { name: "Manga", url: "/api/sitemap/manga/?nocache=1" },
+      { name: "Chapters", url: "/api/sitemap/chapters/?nocache=1" },
+      { name: "Categories", url: "/api/sitemap/categories/?nocache=1" },
+    ];
+    try {
+      const results = await Promise.all(
+        endpoints.map(async (ep) => {
+          const res = await fetch(ep.url);
+          const text = await res.text();
+          const urlCount = (text.match(/<url>/g) || []).length || (text.match(/<sitemap>/g) || []).length;
+          return { name: ep.name, ok: res.ok, urls: urlCount };
+        })
+      );
+      const counts = {};
+      results.forEach((r) => { counts[r.name] = r.urls; });
+      setSitemapCounts(counts);
+      setRefreshResult(results.every((r) => r.ok) ? "success" : "partial");
+    } catch (error) {
+      console.error("Error refreshing sitemaps:", error);
+      setRefreshResult("error");
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-100">
       <AdminSidebar />
@@ -94,19 +128,54 @@ function SitemapAdminContent() {
               <h1 className="text-3xl font-bold text-gray-800 mb-2">Sitemap Manager</h1>
               <p className="text-gray-600">Dynamic sitemaps powered by API Routes</p>
             </div>
-            <button
-              onClick={pingGoogle}
-              disabled={pinging}
-              className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg flex items-center gap-2 disabled:opacity-50"
-            >
-              {pinging ? (
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              ) : (
-                <FiSend />
-              )}
-              Ping Google
-            </button>
+            <div className="flex gap-3">
+              <button
+                onClick={refreshSitemaps}
+                disabled={refreshing}
+                className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg flex items-center gap-2 disabled:opacity-50"
+              >
+                {refreshing ? (
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <FiRefreshCw />
+                )}
+                Refresh All Sitemaps
+              </button>
+              <button
+                onClick={pingGoogle}
+                disabled={pinging}
+                className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg flex items-center gap-2 disabled:opacity-50"
+              >
+                {pinging ? (
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <FiSend />
+                )}
+                Ping Google
+              </button>
+            </div>
           </div>
+
+          {/* Refresh/Ping Results */}
+          {pingResult && (
+            <div className={`mb-4 p-4 rounded-xl text-sm font-medium ${pingResult === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
+              {pingResult === 'success' ? '✓ Google pinged successfully! Sitemap submitted.' : '✗ Failed to ping Google. Try again.'}
+            </div>
+          )}
+          {refreshResult && (
+            <div className={`mb-4 p-4 rounded-xl text-sm font-medium ${refreshResult === 'success' ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-yellow-50 text-yellow-700 border border-yellow-200'}`}>
+              {refreshResult === 'success' ? (
+                <div>
+                  <p className="font-bold mb-2">✓ All sitemaps refreshed successfully!</p>
+                  <div className="flex flex-wrap gap-2">
+                    {Object.entries(sitemapCounts).map(([name, count]) => (
+                      <span key={name} className="px-2 py-1 bg-blue-100 rounded text-xs">{name}: {count} URLs</span>
+                    ))}
+                  </div>
+                </div>
+              ) : '⚠ Some sitemaps had issues refreshing.'}
+            </div>
+          )}
 
           {/* Success Banner */}
           <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl p-6 mb-8 text-white">

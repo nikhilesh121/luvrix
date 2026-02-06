@@ -17,8 +17,7 @@ export default function Document() {
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9162211780712502"
           crossOrigin="anonymous"
         />
-        {/* Google Search Console Verification */}
-        <meta name="google-site-verification" content="YOUR_VERIFICATION_CODE" />
+        {/* Google Search Console Verification - Set real code in admin settings */}
         {/* Mobile App Compatibility */}
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />

@@ -15,7 +15,8 @@ function escapeXml(str) {
 export default async function handler(req, res) {
   try {
     res.setHeader('Content-Type', 'application/xml');
-    res.setHeader('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=86400');
+    const noCache = req.query.nocache === '1';
+    res.setHeader('Cache-Control', noCache ? 'no-cache, no-store' : 'public, s-maxage=60, stale-while-revalidate=300');
 
     const blogs = await getAllBlogs('approved', true, 1000);
 

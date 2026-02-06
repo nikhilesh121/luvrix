@@ -50,7 +50,7 @@ export default function Register() {
 
   if (authLoading) {
     return (
-      <Layout title="Register">
+      <Layout title="Register" noindex={true}>
         <div className="min-h-screen flex items-center justify-center bg-[#0a0a0f]">
           <div className="w-12 h-12 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin" />
         </div>
@@ -73,7 +73,7 @@ export default function Register() {
   };
 
   return (
-    <Layout title="Register">
+    <Layout title="Register" noindex={true}>
       <div className="min-h-screen flex relative overflow-hidden">
         {/* Left Side - Form */}
         <div className="w-full lg:w-1/2 flex items-center justify-center p-6 md:p-12 bg-[#0a0a0f]">

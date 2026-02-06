@@ -8,8 +8,6 @@ const staticPages = [
   { url: '/manga', changefreq: 'daily', priority: '0.9' },
   { url: '/leaderboard', changefreq: 'daily', priority: '0.7' },
   { url: '/publishers', changefreq: 'weekly', priority: '0.7' },
-  { url: '/login', changefreq: 'monthly', priority: '0.5' },
-  { url: '/register', changefreq: 'monthly', priority: '0.5' },
   { url: '/policy/privacy', changefreq: 'yearly', priority: '0.3' },
   { url: '/policy/terms', changefreq: 'yearly', priority: '0.3' },
   { url: '/policy/disclaimer', changefreq: 'yearly', priority: '0.3' },
@@ -28,7 +26,8 @@ function escapeXml(str) {
 
 export default async function handler(req, res) {
   res.setHeader('Content-Type', 'application/xml');
-  res.setHeader('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=86400');
+  const noCache = req.query.nocache === '1';
+  res.setHeader('Cache-Control', noCache ? 'no-cache, no-store' : 'public, s-maxage=60, stale-while-revalidate=300');
 
   const urls = staticPages.map(page => `
   <url>

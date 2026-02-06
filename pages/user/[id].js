@@ -167,8 +167,9 @@ export default function UserProfile() {
   }
 
   return (
-    <Layout title={`${profileUser.name || "User"}'s Profile`}>
+    <Layout title={`${profileUser.name || "User"}'s Profile`} noindex={true}>
       <Head>
+        <meta name="robots" content="noindex, follow" />
         <meta name="description" content={`View ${profileUser.name}'s profile and published blogs on Luvrix`} />
         <meta property="og:title" content={`${profileUser.name} - Luvrix Creator`} />
         <meta property="og:image" content={profileUser.photoURL || "https://res.cloudinary.com/dsga2d0bv/image/upload/w_1200,h_630,c_pad,b_rgb:6366f1/Luvrix/Luvrix_favicon_yqovij.png"} />

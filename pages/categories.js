@@ -193,6 +193,7 @@ export default function Categories() {
     <Layout
       title={selectedCategory === "All" ? "All Categories" : selectedCategory}
       description={config.description}
+      canonical="https://luvrix.com/categories"
     >
       <div className="min-h-screen bg-[#fafafa]">
         {/* Hero Section */}

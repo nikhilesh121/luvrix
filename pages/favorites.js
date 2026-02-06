@@ -65,7 +65,7 @@ export default function Favorites() {
 
   if (!user) {
     return (
-      <Layout title="Favorites">
+      <Layout title="Favorites" noindex={true}>
         <div className="min-h-screen flex items-center justify-center">
           <div className="w-12 h-12 border-4 border-gray-200 border-t-primary rounded-full animate-spin" />
         </div>
@@ -74,7 +74,7 @@ export default function Favorites() {
   }
 
   return (
-    <Layout title="My Favorites" description="Your saved articles and content">
+    <Layout title="My Favorites" description="Your saved articles and content" noindex={true}>
       <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
         {/* Hero Section */}
         <div className="relative overflow-hidden bg-gradient-to-br from-pink-600 via-rose-500 to-red-500">

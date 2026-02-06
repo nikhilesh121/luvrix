@@ -1,18 +1,5 @@
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://luvrix.com';
 
-const categories = [
-  'news',
-  'anime',
-  'manga',
-  'technology',
-  'gaming',
-  'entertainment',
-  'lifestyle',
-  'sports',
-  'business',
-  'health',
-];
-
 function escapeXml(str) {
   if (!str) return '';
   return str
@@ -25,18 +12,17 @@ function escapeXml(str) {
 
 export default async function handler(req, res) {
   res.setHeader('Content-Type', 'application/xml');
-  res.setHeader('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=86400');
+  const noCache = req.query.nocache === '1';
+  res.setHeader('Cache-Control', noCache ? 'no-cache, no-store' : 'public, s-maxage=60, stale-while-revalidate=300');
 
-  const urls = categories.map(category => `
-  <url>
-    <loc>${escapeXml(SITE_URL)}/categories?category=${escapeXml(category)}</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>`).join('');
-
+  // Only include the clean /categories URL — no parameter-based URLs
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${urls}
+  <url>
+    <loc>${escapeXml(SITE_URL)}/categories</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
 </urlset>`;
 
   res.status(200).send(xml);

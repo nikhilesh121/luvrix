@@ -4,7 +4,8 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://luvrix.com';
 
 export default async function handler(req, res) {
   res.setHeader('Content-Type', 'application/xml');
-  res.setHeader('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=86400');
+  const noCache = req.query.nocache === '1';
+  res.setHeader('Cache-Control', noCache ? 'no-cache, no-store' : 'public, s-maxage=60, stale-while-revalidate=300');
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
