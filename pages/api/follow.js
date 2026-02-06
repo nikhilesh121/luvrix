@@ -1,7 +1,7 @@
 import { followUser, unfollowUser, isFollowing } from '../../lib/db';
 import { getDb } from '../../lib/mongodb';
 import { withCSRFProtection } from '../../lib/csrf';
-import { notifyNewFollower } from '../../lib/notifications';
+import { notifyNewFollower, NOTIFICATION_TYPES } from '../../lib/notifications';
 
 async function handler(req, res) {
   try {
@@ -32,6 +32,17 @@ async function handler(req, res) {
     if (req.method === 'DELETE') {
       const { followerId, followingId } = req.body;
       await unfollowUser(followerId, followingId);
+
+      // Delete the follow notification (Instagram-style: unfollow = remove notification)
+      if (followerId !== followingId) {
+        const db = await getDb();
+        await db.collection('notifications').deleteMany({
+          userId: followingId,
+          type: NOTIFICATION_TYPES.NEW_FOLLOWER,
+          fromUserId: followerId,
+        });
+      }
+
       return res.status(200).json({ success: true });
     }
     
