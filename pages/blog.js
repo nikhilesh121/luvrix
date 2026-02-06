@@ -5,6 +5,7 @@ import Head from "next/head";
 import Layout from "../components/Layout";
 import { getBlog, getUser, getSettings, incrementBlogViews, getAllBlogs, likeBlog, unlikeBlog, isBlogLiked, isFollowing, followUser, unfollowUser } from "../lib/api-client";
 import { cleanContentForDisplay } from "../components/BlogEditor";
+import { MagazineHero, MinimalHero, MagazineContent, MinimalContent } from "../components/BlogTemplates";
 import { useAuth } from "../context/AuthContext";
 import { useSocket } from "../context/SocketContext";
 import { BlogArticleSchema, BreadcrumbSchema } from "../components/SEOHead";
@@ -454,167 +455,121 @@ export default function BlogPage({ initialBlog, initialAuthor, initialSettings }
         </motion.button>
       </div>
 
-      {/* Hero Section */}
-      <div className="relative">
-        {blog.thumbnail ? (
-          <div className="relative aspect-video md:h-[60vh] md:aspect-auto overflow-hidden">
-            <img
-              src={blog.thumbnail}
-              alt={blog.title}
-              className="w-full h-full object-cover"
-              loading="eager"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
-            
-            {/* Hero Content */}
-            <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 md:p-12">
-              <div className="max-w-4xl mx-auto">
-                <motion.div
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6 }}
-                >
-                  {/* Back Button */}
-                  <Link
-                    href="/"
-                    className="inline-flex items-center gap-2 text-white/80 hover:text-white mb-6 transition"
-                  >
-                    <FiArrowLeft className="w-4 h-4" /> Back to Home
-                  </Link>
-
-                  {/* Category Badge */}
-                  {blog.category && (
-                    <Link
-                      href={`/categories?cat=${blog.category.toLowerCase()}`}
-                      className="inline-block px-4 py-1.5 bg-primary text-white rounded-full text-sm font-semibold mb-4 hover:bg-primary/90 transition"
-                    >
-                      {blog.category}
+      {/* Hero Section - Template Aware */}
+      {blog.template === "magazine" ? (
+        <MagazineHero blog={blog} author={author} readingTime={`${readingTime} min read`} viewCount={viewCount} />
+      ) : blog.template === "minimal" ? (
+        <MinimalHero blog={blog} author={author} readingTime={`${readingTime} min read`} viewCount={viewCount} />
+      ) : (
+        <div className="relative">
+          {blog.thumbnail ? (
+            <div className="relative aspect-video md:h-[60vh] md:aspect-auto overflow-hidden">
+              <img src={blog.thumbnail} alt={blog.title} className="w-full h-full object-cover" loading="eager" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+              <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 md:p-12">
+                <div className="max-w-4xl mx-auto">
+                  <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
+                    <Link href="/" className="inline-flex items-center gap-2 text-white/80 hover:text-white mb-6 transition">
+                      <FiArrowLeft className="w-4 h-4" /> Back to Home
                     </Link>
-                  )}
-
-                  {/* Title */}
-                  <h1 className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-bold text-white mb-4 md:mb-6 leading-tight break-words line-clamp-4">
-                    {blog.title}
-                  </h1>
-
-                  {/* Meta Info */}
-                  <div className="flex flex-wrap items-center gap-4 md:gap-6 text-white/80 text-sm md:text-base">
-                    {author && (
-                      <Link href={`/user/${blog.authorId}`} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-                        <div className="w-8 h-8 rounded-full bg-white/20 overflow-hidden">
-                          {author.photoURL ? (
-                            <img src={author.photoURL} alt="" className="w-full h-full object-cover" />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center text-white font-bold">
-                              {author.name?.charAt(0)}
-                            </div>
-                          )}
-                        </div>
-                        <span className="font-medium hover:underline">{author.name}</span>
+                    {blog.category && (
+                      <Link href={`/categories?cat=${blog.category.toLowerCase()}`} className="inline-block px-4 py-1.5 bg-primary text-white rounded-full text-sm font-semibold mb-4 hover:bg-primary/90 transition">
+                        {blog.category}
                       </Link>
                     )}
-                    <div className="flex items-center gap-2">
-                      <FiCalendar className="w-4 h-4" />
-                      <span>{formatDate(blog.createdAt)}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <FiClock className="w-4 h-4" />
-                      <span>{readingTime} min read</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <FiEye className="w-4 h-4" />
-                      <span>{viewCount.toLocaleString()} views</span>
-                    </div>
-                  </div>
-                </motion.div>
-              </div>
-            </div>
-          </div>
-        ) : (
-          /* No Thumbnail Header */
-          <div className="bg-gradient-to-br from-primary/10 via-purple-50 to-pink-50 pt-8 pb-16">
-            <div className="max-w-4xl mx-auto px-4">
-              <Link
-                href="/"
-                className="inline-flex items-center gap-2 text-gray-600 hover:text-primary mb-8 transition"
-              >
-                <FiArrowLeft className="w-4 h-4" /> Back to Home
-              </Link>
-
-              {blog.category && (
-                <Link
-                  href={`/categories?cat=${blog.category.toLowerCase()}`}
-                  className="inline-block px-4 py-1.5 bg-primary text-white rounded-full text-sm font-semibold mb-4"
-                >
-                  {blog.category}
-                </Link>
-              )}
-
-              <h1 className="text-2xl sm:text-3xl md:text-5xl font-bold text-gray-900 mb-4 md:mb-6 leading-tight break-words line-clamp-4">
-                {blog.title}
-              </h1>
-
-              <div className="flex flex-wrap items-center gap-4 md:gap-6 text-gray-600">
-                {author && (
-                  <Link href={`/user/${blog.authorId}`} className="flex items-center gap-2 hover:text-primary transition-colors">
-                    <div className="w-8 h-8 rounded-full bg-primary/20 overflow-hidden">
-                      {author.photoURL ? (
-                        <img src={author.photoURL} alt="" className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-primary font-bold">
-                          {author.name?.charAt(0)}
-                        </div>
+                    <h1 className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-bold text-white mb-4 md:mb-6 leading-tight break-words line-clamp-4">{blog.title}</h1>
+                    <div className="flex flex-wrap items-center gap-4 md:gap-6 text-white/80 text-sm md:text-base">
+                      {author && (
+                        <Link href={`/user/${blog.authorId}`} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+                          <div className="w-8 h-8 rounded-full bg-white/20 overflow-hidden">
+                            {author.photoURL ? <img src={author.photoURL} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-white font-bold">{author.name?.charAt(0)}</div>}
+                          </div>
+                          <span className="font-medium hover:underline">{author.name}</span>
+                        </Link>
                       )}
+                      <div className="flex items-center gap-2"><FiCalendar className="w-4 h-4" /><span>{formatDate(blog.createdAt)}</span></div>
+                      <div className="flex items-center gap-2"><FiClock className="w-4 h-4" /><span>{readingTime} min read</span></div>
+                      <div className="flex items-center gap-2"><FiEye className="w-4 h-4" /><span>{viewCount.toLocaleString()} views</span></div>
                     </div>
-                    <span className="font-medium hover:underline">{author.name}</span>
-                  </Link>
-                )}
-                <div className="flex items-center gap-2">
-                  <FiCalendar className="w-4 h-4" />
-                  <span>{formatDate(blog.createdAt)}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <FiClock className="w-4 h-4" />
-                  <span>{readingTime} min read</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <FiEye className="w-4 h-4" />
-                  <span>{viewCount.toLocaleString()} views</span>
+                  </motion.div>
                 </div>
               </div>
             </div>
-          </div>
-        )}
-      </div>
+          ) : (
+            <div className="bg-gradient-to-br from-primary/10 via-purple-50 to-pink-50 pt-8 pb-16">
+              <div className="max-w-4xl mx-auto px-4">
+                <Link href="/" className="inline-flex items-center gap-2 text-gray-600 hover:text-primary mb-8 transition"><FiArrowLeft className="w-4 h-4" /> Back to Home</Link>
+                {blog.category && <Link href={`/categories?cat=${blog.category.toLowerCase()}`} className="inline-block px-4 py-1.5 bg-primary text-white rounded-full text-sm font-semibold mb-4">{blog.category}</Link>}
+                <h1 className="text-2xl sm:text-3xl md:text-5xl font-bold text-gray-900 mb-4 md:mb-6 leading-tight break-words line-clamp-4">{blog.title}</h1>
+                <div className="flex flex-wrap items-center gap-4 md:gap-6 text-gray-600">
+                  {author && (
+                    <Link href={`/user/${blog.authorId}`} className="flex items-center gap-2 hover:text-primary transition-colors">
+                      <div className="w-8 h-8 rounded-full bg-primary/20 overflow-hidden">
+                        {author.photoURL ? <img src={author.photoURL} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-primary font-bold">{author.name?.charAt(0)}</div>}
+                      </div>
+                      <span className="font-medium hover:underline">{author.name}</span>
+                    </Link>
+                  )}
+                  <div className="flex items-center gap-2"><FiCalendar className="w-4 h-4" /><span>{formatDate(blog.createdAt)}</span></div>
+                  <div className="flex items-center gap-2"><FiClock className="w-4 h-4" /><span>{readingTime} min read</span></div>
+                  <div className="flex items-center gap-2"><FiEye className="w-4 h-4" /><span>{viewCount.toLocaleString()} views</span></div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
-      {/* Main Content */}
-      <article className="max-w-4xl mx-auto px-3 sm:px-4 py-6 md:py-12">
-        {/* Ad Space - Top */}
-        {settings?.adsEnabled && (
-          <div className="mb-10 p-6 bg-gradient-to-r from-gray-50 to-gray-100 rounded-2xl text-center border border-gray-200">
-            <p className="text-xs text-gray-400 mb-2">Advertisement</p>
-            <div id="blog-top-ad" className="min-h-[100px]"></div>
-          </div>
-        )}
+      {/* Main Content - Template Aware */}
+      {blog.template === "magazine" ? (
+        <MagazineContent>
+          {settings?.adsEnabled && (
+            <div className="mb-10 p-6 bg-gradient-to-r from-gray-50 to-gray-100 rounded-2xl text-center border border-gray-200">
+              <p className="text-xs text-gray-400 mb-2">Advertisement</p>
+              <div id="blog-top-ad" className="min-h-[100px]"></div>
+            </div>
+          )}
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
+            className="blog-content prose prose-base md:prose-lg max-w-none prose-headings:font-bold prose-headings:text-gray-900 prose-p:text-gray-700 prose-p:leading-loose prose-a:text-primary prose-img:rounded-xl prose-img:shadow-lg prose-blockquote:border-l-4 prose-blockquote:border-amber-400 prose-blockquote:bg-amber-50 prose-blockquote:rounded-r-xl prose-code:bg-gray-100 prose-code:rounded prose-pre:bg-gray-900 prose-pre:rounded-xl"
+            dangerouslySetInnerHTML={{ __html: cleanContentForDisplay(blog.content) }}
+          />
+        </MagazineContent>
+      ) : blog.template === "minimal" ? (
+        <MinimalContent>
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
+            className="blog-content prose prose-lg max-w-none prose-headings:font-serif prose-headings:text-gray-900 prose-p:text-gray-600 prose-p:leading-loose prose-p:text-lg prose-a:text-primary prose-img:rounded-lg prose-blockquote:border-l-2 prose-blockquote:border-gray-300 prose-blockquote:italic prose-code:bg-gray-50 prose-code:rounded prose-pre:bg-gray-900 prose-pre:rounded-lg"
+            dangerouslySetInnerHTML={{ __html: cleanContentForDisplay(blog.content) }}
+          />
+        </MinimalContent>
+      ) : (
+        <article className="max-w-4xl mx-auto px-3 sm:px-4 py-6 md:py-12">
+          {settings?.adsEnabled && (
+            <div className="mb-10 p-6 bg-gradient-to-r from-gray-50 to-gray-100 rounded-2xl text-center border border-gray-200">
+              <p className="text-xs text-gray-400 mb-2">Advertisement</p>
+              <div id="blog-top-ad" className="min-h-[100px]"></div>
+            </div>
+          )}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="blog-content prose prose-base md:prose-lg max-w-none
+              prose-headings:font-bold prose-headings:text-gray-900 prose-headings:break-words
+              prose-h2:text-2xl md:prose-h2:text-3xl prose-h2:mt-8 md:prose-h2:mt-12 prose-h2:mb-4 md:prose-h2:mb-6
+              prose-h3:text-xl md:prose-h3:text-2xl prose-h3:mt-6 md:prose-h3:mt-10 prose-h3:mb-3 md:prose-h3:mb-4
+              prose-p:text-gray-700 prose-p:leading-relaxed md:prose-p:leading-loose prose-p:text-base md:prose-p:text-lg
+              prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-a:break-words
+              prose-img:rounded-xl prose-img:shadow-lg prose-img:w-full
+              prose-blockquote:border-l-4 prose-blockquote:border-primary prose-blockquote:bg-primary/5 prose-blockquote:rounded-r-xl prose-blockquote:py-4 prose-blockquote:italic
+              prose-code:bg-gray-100 prose-code:px-2 prose-code:py-1 prose-code:rounded prose-code:text-primary prose-code:break-words
+              prose-pre:bg-gray-900 prose-pre:rounded-xl prose-pre:overflow-x-auto"
+            dangerouslySetInnerHTML={{ __html: cleanContentForDisplay(blog.content) }}
+          />
+        </article>
+      )}
 
-        {/* Article Content */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="blog-content prose prose-base md:prose-lg max-w-none
-            prose-headings:font-bold prose-headings:text-gray-900 prose-headings:break-words
-            prose-h2:text-2xl md:prose-h2:text-3xl prose-h2:mt-8 md:prose-h2:mt-12 prose-h2:mb-4 md:prose-h2:mb-6
-            prose-h3:text-xl md:prose-h3:text-2xl prose-h3:mt-6 md:prose-h3:mt-10 prose-h3:mb-3 md:prose-h3:mb-4
-            prose-p:text-gray-700 prose-p:leading-relaxed md:prose-p:leading-loose prose-p:text-base md:prose-p:text-lg
-            prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-a:break-words
-            prose-img:rounded-xl prose-img:shadow-lg prose-img:w-full
-            prose-blockquote:border-l-4 prose-blockquote:border-primary prose-blockquote:bg-primary/5 prose-blockquote:rounded-r-xl prose-blockquote:py-4 prose-blockquote:italic
-            prose-code:bg-gray-100 prose-code:px-2 prose-code:py-1 prose-code:rounded prose-code:text-primary prose-code:break-words
-            prose-pre:bg-gray-900 prose-pre:rounded-xl prose-pre:overflow-x-auto"
-          dangerouslySetInnerHTML={{ __html: cleanContentForDisplay(blog.content) }}
-        />
-
+      {/* Shared sections for all templates */}
+      <article className="max-w-4xl mx-auto px-3 sm:px-4 py-6">
         {/* Engagement Bar */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}

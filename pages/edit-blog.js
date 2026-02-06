@@ -7,6 +7,7 @@ import SeoForm from "../components/SeoForm";
 import ContentValidator from "../components/ContentValidator";
 import { getBlog, updateBlog, getUser, getSettings, createLog } from "../lib/api-client";
 import { processContent, cleanContentForDisplay } from "../components/BlogEditor";
+import { TemplateSelector } from "../components/BlogTemplates";
 import { calculateSeoScore, MIN_SEO_SCORE } from "../utils/seoScore";
 import { checkForSpam } from "../utils/spamFilter";
 import { canAutoApprove } from "../utils/contentValidator";
@@ -46,6 +47,7 @@ function EditBlogContent({ user }) {
     content: "",
     category: "",
     thumbnail: "",
+    template: "default",
   });
 
   const [seoData, setSeoData] = useState({
@@ -100,6 +102,7 @@ function EditBlogContent({ user }) {
         content: cleanContentForDisplay(blogData.content || ""),
         category: blogData.category || "",
         thumbnail: blogData.thumbnail || "",
+        template: blogData.template || "default",
       });
       setSeoData({
         seoTitle: blogData.seoTitle || "",
@@ -312,6 +315,11 @@ function EditBlogContent({ user }) {
                   />
                 </div>
               </div>
+
+              {/* Template */}
+                <div className="bg-white rounded-xl border p-4">
+                  <TemplateSelector value={blog.template} onChange={(t) => setBlog({ ...blog, template: t })} />
+                </div>
 
               {/* Content */}
                 <div className="bg-white rounded-xl border p-4">

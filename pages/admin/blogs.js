@@ -342,6 +342,11 @@ function BlogsContent() {
                             <span className="px-3 py-1.5 bg-slate-100 text-slate-700 text-xs font-semibold rounded-full">
                               {blog.category || "General"}
                             </span>
+                            {blog.template && blog.template !== "default" && (
+                              <span className="ml-1 px-2 py-0.5 bg-purple-100 text-purple-700 text-[10px] font-semibold rounded-full uppercase">
+                                {blog.template}
+                              </span>
+                            )}
                           </td>
                           <td className="px-6 py-4">
                             <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold ${

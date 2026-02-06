@@ -9,6 +9,7 @@ import ContentValidator from "../components/ContentValidator";
 import { createBlog, getUser, incrementFreePostsUsed, decrementExtraPosts, getSettings } from "../lib/api-client";
 
 import { processContent } from "../components/BlogEditor";
+import { TemplateSelector } from "../components/BlogTemplates";
 import { calculateSeoScore, MIN_SEO_SCORE } from "../utils/seoScore";
 import { checkForSpam } from "../utils/spamFilter";
 import { canUserPost } from "../utils/paymentLogic";
@@ -61,6 +62,7 @@ function CreateBlogContent({ user, userData }) {
     content: "",
     category: "",
     thumbnail: null,
+    template: "default",
   });
 
   const [seoData, setSeoData] = useState({
@@ -160,6 +162,7 @@ function CreateBlogContent({ user, userData }) {
         ...seoData,
         content: content_html,
         content_text,
+        template: blog.template || "default",
         seoScore: seoResult.score,
         contentScore: validationResult?.score || 0,
         authorId: user.uid,
@@ -447,6 +450,25 @@ function CreateBlogContent({ user, userData }) {
                     disabled={!postStatus.canPost}
                   />
                 </div>
+              </div>
+            </motion.div>
+
+            {/* Template Selector Card */}
+            <motion.div 
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.25 }}
+              className="group relative"
+            >
+              <div className="relative bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 hover:border-white/20 transition-all duration-300 shadow-2xl shadow-black/20">
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="w-10 h-10 bg-gradient-to-r from-amber-500 to-rose-500 rounded-xl flex items-center justify-center">
+                    <FiZap className="w-5 h-5 text-white" />
+                  </div>
+                  <h2 className="text-lg font-bold text-white">Template</h2>
+                  <span className="text-xs text-slate-500">(optional)</span>
+                </div>
+                <TemplateSelector value={blog.template} onChange={(t) => setBlog({ ...blog, template: t })} />
               </div>
             </motion.div>
 
