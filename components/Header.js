@@ -291,24 +291,26 @@ export default function Header() {
           </nav>
 
           {/* User Actions */}
-          <div className="flex items-center gap-2">
-            {/* Search Button */}
+          <div className="flex items-center gap-1 sm:gap-2">
+            {/* Search Button - hidden on mobile, available in mobile menu */}
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => setSearchOpen(!searchOpen)}
-              className="p-2.5 text-gray-500 hover:text-primary hover:bg-primary/5 rounded-xl transition-all"
+              className="hidden sm:flex p-2.5 text-gray-500 hover:text-primary hover:bg-primary/5 rounded-xl transition-all"
             >
               <FiSearch className="w-5 h-5" />
             </motion.button>
 
-            {/* Theme Toggle */}
-            <ThemeToggle />
+            {/* Theme Toggle - hidden on mobile */}
+            <div className="hidden sm:block">
+              <ThemeToggle />
+            </div>
 
             {/* Notification Bell - Real-time notifications */}
             {user && <NotificationBell />}
 
-            {/* Write Button - Always visible */}
+            {/* Write Button - Always visible on desktop */}
             <Link href="/create-blog" className="hidden md:flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary/10 to-secondary/10 text-primary font-medium text-sm rounded-xl hover:from-primary/20 hover:to-secondary/20 transition-all group">
               <motion.div whileHover={{ rotate: 15 }}>
                 <FiEdit3 className="w-4 h-4" />
@@ -418,20 +420,21 @@ export default function Header() {
                 </AnimatePresence>
               </div>
             ) : (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 sm:gap-2">
                 <Link
                   href="/login"
-                  className="px-4 py-2 text-sm font-semibold text-gray-600 hover:text-primary transition-colors rounded-xl hover:bg-gray-50"
+                  className="hidden sm:inline-flex px-3 sm:px-4 py-2 text-sm font-semibold text-gray-600 hover:text-primary transition-colors rounded-xl hover:bg-gray-50"
                 >
                   Sign In
                 </Link>
                 <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
                   <Link
                     href="/register"
-                    className="px-5 py-2.5 bg-gradient-to-r from-primary via-purple-500 to-secondary text-white text-sm font-semibold rounded-xl shadow-lg shadow-primary/30 hover:shadow-primary/50 transition-all duration-300 flex items-center gap-2"
+                    className="px-3 sm:px-5 py-2 sm:py-2.5 bg-gradient-to-r from-primary via-purple-500 to-secondary text-white text-xs sm:text-sm font-semibold rounded-xl shadow-lg shadow-primary/30 hover:shadow-primary/50 transition-all duration-300 flex items-center gap-1.5 sm:gap-2"
                   >
-                    <FiZap className="w-4 h-4" />
-                    Get Started
+                    <FiZap className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                    <span className="hidden sm:inline">Get Started</span>
+                    <span className="sm:hidden">Start</span>
                   </Link>
                 </motion.div>
               </div>
@@ -459,6 +462,35 @@ export default function Header() {
               className="lg:hidden overflow-hidden border-t border-gray-100"
             >
               <div className="py-4 space-y-1">
+                {/* Mobile Search */}
+                <div className="px-4 pb-3 sm:hidden">
+                  <form onSubmit={(e) => { e.preventDefault(); if (searchQuery.trim()) { router.push(`/categories?search=${encodeURIComponent(searchQuery)}`); setMenuOpen(false); setSearchQuery(""); } }}>
+                    <div className="relative">
+                      <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="Search..."
+                        className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary"
+                      />
+                    </div>
+                  </form>
+                </div>
+
+                {/* Mobile Quick Actions */}
+                <div className="flex items-center gap-2 px-4 pb-3 sm:hidden border-b border-gray-100 mb-2">
+                  <ThemeToggle />
+                  {!user && (
+                    <Link href="/login" onClick={() => setMenuOpen(false)} className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-primary bg-gray-50 rounded-lg">
+                      Sign In
+                    </Link>
+                  )}
+                  <Link href="/create-blog" onClick={() => setMenuOpen(false)} className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-primary to-secondary rounded-lg flex items-center gap-1.5">
+                    <FiEdit3 className="w-3.5 h-3.5" /> Write
+                  </Link>
+                </div>
+
                 {menuData.map((item) => (
                   <div key={item.label}>
                     <Link

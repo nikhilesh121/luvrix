@@ -31,6 +31,14 @@ export default function Layout({ children, title, description, keywords, image, 
     }
   }, [router.asPath, settings, title]);
 
+  // Track unique visitor for platform stats
+  useEffect(() => {
+    if (typeof window !== 'undefined' && !sessionStorage.getItem('_lv_tracked')) {
+      fetch('/api/stats/platform', { method: 'POST' }).catch(() => {});
+      sessionStorage.setItem('_lv_tracked', '1');
+    }
+  }, []);
+
   const siteName = settings?.siteName || "Luvrix";
   const pageTitle = title ? `${title} | ${siteName}` : siteName;
   const analyticsId = (settings?.analyticsEnabled && settings?.analyticsId) ? settings.analyticsId : process.env.NEXT_PUBLIC_GA_ID;

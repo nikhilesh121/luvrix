@@ -24,6 +24,14 @@ import {
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://luvrix.com";
 
+// Compact number formatter: 999 → 999, 1000 → 1K+, 10500 → 10K+, 1000000 → 1M+
+function formatNumber(num) {
+  if (!num || num < 0) return '0';
+  if (num < 1000) return `${num}`;
+  if (num < 1000000) return `${Math.floor(num / 1000)}K+`;
+  return `${(num / 1000000).toFixed(1).replace(/\.0$/, '')}M+`;
+}
+
 const categoryConfig = {
   "Technology": { icon: FiCpu, color: "from-blue-500 to-cyan-500", bg: "bg-blue-500/10" },
   "Anime": { icon: FiStar, color: "from-pink-500 to-rose-500", bg: "bg-pink-500/10" },
@@ -46,10 +54,19 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState(0);
   const [liveUpdates, setLiveUpdates] = useState({}); // Store live view/like counts
+  const [platformStats, setPlatformStats] = useState({ readers: 0, writers: 0, articles: 0 });
 
   // Memoize blog data to prevent unnecessary re-renders
   const featuredBlog = useMemo(() => getFeaturedBlog(), [getFeaturedBlog]);
   const latestBlogs = useMemo(() => getLatestBlogs(9), [getLatestBlogs]);
+
+  // Fetch real platform stats
+  useEffect(() => {
+    fetch('/api/stats/platform')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data) setPlatformStats(data); })
+      .catch(() => {});
+  }, []);
 
   // Subscribe to real-time blog updates
   useEffect(() => {
@@ -292,20 +309,20 @@ export default function Home() {
               </motion.div>
 
               {/* Stats */}
-              <motion.div variants={itemVariants} className="flex items-center gap-8">
+              <motion.div variants={itemVariants} className="flex items-center gap-6 sm:gap-8">
                 <div>
-                  <p className="text-3xl font-bold text-white">10K+</p>
-                  <p className="text-gray-500 text-sm">Active Readers</p>
+                  <p className="text-2xl sm:text-3xl font-bold text-white">{formatNumber(platformStats.readers)}</p>
+                  <p className="text-gray-500 text-xs sm:text-sm">Active Readers</p>
                 </div>
-                <div className="w-px h-12 bg-white/10" />
+                <div className="w-px h-10 sm:h-12 bg-white/10" />
                 <div>
-                  <p className="text-3xl font-bold text-white">500+</p>
-                  <p className="text-gray-500 text-sm">Writers</p>
+                  <p className="text-2xl sm:text-3xl font-bold text-white">{formatNumber(platformStats.writers)}</p>
+                  <p className="text-gray-500 text-xs sm:text-sm">Writers</p>
                 </div>
-                <div className="w-px h-12 bg-white/10" />
+                <div className="w-px h-10 sm:h-12 bg-white/10" />
                 <div>
-                  <p className="text-3xl font-bold text-white">{cachedBlogs.length}+</p>
-                  <p className="text-gray-500 text-sm">Articles</p>
+                  <p className="text-2xl sm:text-3xl font-bold text-white">{formatNumber(platformStats.articles)}</p>
+                  <p className="text-gray-500 text-xs sm:text-sm">Articles</p>
                 </div>
               </motion.div>
             </motion.div>
@@ -419,8 +436,8 @@ export default function Home() {
                   ))}
                 </div>
                 <div>
-                  <p className="text-white font-medium text-sm">500+ Writers</p>
-                  <p className="text-gray-500 text-xs">Joined this month</p>
+                  <p className="text-white font-medium text-sm">{formatNumber(platformStats.writers)} Writers</p>
+                  <p className="text-gray-500 text-xs">Active creators</p>
                 </div>
               </motion.div>
             </motion.div>
