@@ -45,19 +45,19 @@ async function handler(req, res) {
       { upsert: true }
     );
 
-    // Send email with OTP
+    // Send email with OTP via Hostinger SMTP
     const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST || 'smtp.gmail.com',
-      port: parseInt(process.env.SMTP_PORT || '587'),
-      secure: false,
+      host: process.env.SMTP_HOST || 'smtp.hostinger.com',
+      port: parseInt(process.env.SMTP_PORT || '465'),
+      secure: true,
       auth: {
-        user: process.env.SMTP_USER,
+        user: process.env.SMTP_USER || 'support@luvrix.com',
         pass: process.env.SMTP_PASS,
       },
     });
 
     const mailOptions = {
-      from: process.env.SMTP_FROM || 'noreply@luvrix.com',
+      from: '"Luvrix" <support@luvrix.com>',
       to: email,
       subject: 'Password Reset OTP - Luvrix',
       html: `

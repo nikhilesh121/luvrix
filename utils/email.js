@@ -135,6 +135,37 @@ export const emailTemplates = {
     `,
   }),
 
+  passwordReset: (name, newPassword) => ({
+    subject: "Your Password Has Been Reset - Luvrix",
+    html: `
+      <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff;">
+        <div style="background: linear-gradient(135deg, #1e3a5f 0%, #0f2942 100%); padding: 40px 30px; text-align: center;">
+          <h1 style="color: #ffffff; margin: 0; font-size: 28px;">Password Reset</h1>
+        </div>
+        <div style="padding: 40px 30px;">
+          <p style="font-size: 16px; color: #333; line-height: 1.6;">Hi ${name},</p>
+          <p style="font-size: 16px; color: #333; line-height: 1.6;">
+            Your password has been reset by an administrator. Here is your new temporary password:
+          </p>
+          <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; margin: 20px 0; text-align: center; border: 2px dashed #1e3a5f;">
+            <p style="margin: 0 0 5px; color: #666; font-size: 14px;">Temporary Password</p>
+            <p style="margin: 0; font-size: 24px; font-weight: bold; color: #1e3a5f; letter-spacing: 2px; font-family: monospace;">${newPassword}</p>
+          </div>
+          <p style="font-size: 16px; color: #333; line-height: 1.6;">
+            Please log in with this password and change it immediately from your profile settings for security.
+          </p>
+          <div style="text-align: center; margin-top: 30px;">
+            <a href="https://luvrix.com/login" style="display: inline-block; padding: 14px 40px; background: linear-gradient(135deg, #1e3a5f 0%, #0f2942 100%); color: #ffffff; text-decoration: none; border-radius: 8px; font-weight: 600;">Login Now</a>
+          </div>
+        </div>
+        <div style="background: #f8f9fa; padding: 20px 30px; text-align: center; border-top: 1px solid #e9ecef;">
+          <p style="margin: 0; color: #999; font-size: 12px;">If you did not request this, please contact support immediately at support@luvrix.com</p>
+          <p style="margin: 5px 0 0; color: #666; font-size: 14px;">© ${new Date().getFullYear()} Luvrix. All rights reserved.</p>
+        </div>
+      </div>
+    `,
+  }),
+
   contactForm: (name, email, message) => ({
     subject: `New Contact Form Submission from ${name}`,
     html: `
@@ -196,6 +227,10 @@ export const sendBlogRejectedEmail = async (email, name, blogTitle) => {
 
 export const sendPaymentSuccessEmail = async (email, name, posts, amount) => {
   return sendEmail(email, emailTemplates.paymentSuccess, { name, posts, amount });
+};
+
+export const sendPasswordResetEmail = async (email, name, newPassword) => {
+  return sendEmail(email, emailTemplates.passwordReset, { name, newPassword });
 };
 
 export const sendContactEmail = async (name, email, message) => {

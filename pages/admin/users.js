@@ -5,7 +5,7 @@ import Avatar from "../../components/Avatar";
 import { getAllUsers, updateUser, deleteUser, createLog, hideUserPosts, unhideUserPosts } from "../../lib/api-client";
 import { auth } from "../../lib/local-auth";
 import { motion } from "framer-motion";
-import { FiSearch, FiUserX, FiUserCheck, FiShield, FiUser, FiTrash2, FiLoader, FiUsers, FiCheckCircle, FiAlertCircle, FiEdit3, FiX, FiPlus } from "react-icons/fi";
+import { FiSearch, FiUserX, FiUserCheck, FiShield, FiUser, FiTrash2, FiLoader, FiUsers, FiCheckCircle, FiAlertCircle, FiEdit3, FiX, FiPlus, FiKey } from "react-icons/fi";
 
 export default function AdminUsers() {
   return (
@@ -22,6 +22,8 @@ function UsersContent() {
   const [searchQuery, setSearchQuery] = useState("");
   const [actionLoading, setActionLoading] = useState(null);
   const [editPointsModal, setEditPointsModal] = useState({ open: false, user: null });
+  const [resetPasswordModal, setResetPasswordModal] = useState({ open: false, user: null });
+  const [resetResult, setResetResult] = useState(null);
   const [newPoints, setNewPoints] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
@@ -129,6 +131,36 @@ function UsersContent() {
     } catch (error) {
       console.error("Error deleting user:", error);
       alert("Failed to delete user");
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleResetPassword = async (user) => {
+    setResetPasswordModal({ open: true, user });
+    setResetResult(null);
+  };
+
+  const confirmResetPassword = async () => {
+    if (!resetPasswordModal.user) return;
+    setActionLoading(resetPasswordModal.user.id);
+    try {
+      const token = localStorage.getItem('luvrix_auth_token');
+      const res = await fetch(`/api/admin/users/${resetPasswordModal.user.id}/reset-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to reset password');
+      setResetResult(data);
+      setSuccessMessage(data.message);
+      setTimeout(() => setSuccessMessage(""), 5000);
+    } catch (error) {
+      console.error("Error resetting password:", error);
+      setResetResult({ success: false, message: error.message });
     } finally {
       setActionLoading(null);
     }
@@ -391,6 +423,16 @@ function UsersContent() {
                                   <motion.button
                                     whileHover={{ scale: 1.05 }}
                                     whileTap={{ scale: 0.95 }}
+                                    onClick={() => handleResetPassword(user)}
+                                    disabled={actionLoading === user.id}
+                                    className="p-2.5 rounded-xl text-blue-600 hover:bg-blue-50 transition-all"
+                                    title="Reset Password"
+                                  >
+                                    <FiKey className="w-4 h-4" />
+                                  </motion.button>
+                                  <motion.button
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
                                     onClick={() => handleDeleteUser(user.id, user.email)}
                                     disabled={actionLoading === user.id}
                                     className="p-2.5 rounded-xl text-red-600 hover:bg-red-50 transition-all"
@@ -519,6 +561,92 @@ function UsersContent() {
                   </>
                 )}
               </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
+      {/* Reset Password Modal */}
+      {resetPasswordModal.open && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6"
+          >
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                <FiKey className="w-5 h-5 text-blue-500" />
+                Reset Password
+              </h3>
+              <button
+                onClick={() => { setResetPasswordModal({ open: false, user: null }); setResetResult(null); }}
+                className="p-2 hover:bg-slate-100 rounded-xl transition-colors"
+              >
+                <FiX className="w-5 h-5 text-slate-500" />
+              </button>
+            </div>
+
+            <div className="mb-6">
+              <div className="flex items-center gap-3 mb-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 rounded-xl">
+                <Avatar user={resetPasswordModal.user} size={48} />
+                <div className="flex-1">
+                  <p className="font-semibold text-slate-900">{resetPasswordModal.user?.name || "No Name"}</p>
+                  <p className="text-sm text-slate-500">{resetPasswordModal.user?.email}</p>
+                </div>
+              </div>
+
+              {!resetResult ? (
+                <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl">
+                  <p className="text-sm text-amber-800">
+                    <strong>Warning:</strong> This will generate a new random password and send it to the user&apos;s email. The user&apos;s current password will be invalidated.
+                  </p>
+                </div>
+              ) : resetResult.success ? (
+                <div className="p-4 bg-green-50 border border-green-200 rounded-xl">
+                  <p className="text-sm text-green-800 font-medium mb-1">
+                    <FiCheckCircle className="w-4 h-4 inline mr-1" />
+                    {resetResult.emailSent ? "Password reset email sent!" : "Password reset successful"}
+                  </p>
+                  {resetResult.tempPassword && (
+                    <div className="mt-2 p-3 bg-white rounded-lg border border-green-200">
+                      <p className="text-xs text-gray-500 mb-1">Email failed. Temp password (copy it now):</p>
+                      <p className="font-mono text-lg font-bold text-gray-900 select-all">{resetResult.tempPassword}</p>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="p-4 bg-red-50 border border-red-200 rounded-xl">
+                  <p className="text-sm text-red-800">
+                    <FiAlertCircle className="w-4 h-4 inline mr-1" />
+                    {resetResult.message || "Failed to reset password"}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => { setResetPasswordModal({ open: false, user: null }); setResetResult(null); }}
+                className="flex-1 px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl transition-colors"
+              >
+                {resetResult ? "Close" : "Cancel"}
+              </button>
+              {!resetResult && (
+                <button
+                  onClick={confirmResetPassword}
+                  disabled={actionLoading}
+                  className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-medium rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-blue-500/25"
+                >
+                  {actionLoading ? (
+                    <FiLoader className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <>
+                      <FiKey className="w-4 h-4" />
+                      Reset Password
+                    </>
+                  )}
+                </button>
+              )}
             </div>
           </motion.div>
         </div>

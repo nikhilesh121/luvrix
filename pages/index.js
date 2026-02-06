@@ -532,62 +532,62 @@ export default function Home() {
       )}
 
       {/* Latest Articles */}
-      <section className="py-20 bg-white">
+      <section className="py-16 md:py-24 bg-gradient-to-b from-gray-50 to-white">
         <div className="max-w-7xl mx-auto px-4">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-12"
+            className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-10"
           >
             <div>
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">Latest Articles</h2>
-              <p className="text-gray-500">Fresh content from our community of writers</p>
+              <motion.span
+                initial={{ opacity: 0, x: -10 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 text-primary text-xs font-bold rounded-full mb-3 uppercase tracking-wider"
+              >
+                <span className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" />
+                Fresh Reads
+              </motion.span>
+              <h2 className="text-3xl md:text-4xl font-black text-gray-900">Latest Articles</h2>
             </div>
             <Link
               href="/categories"
-              className="group inline-flex items-center gap-2 px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-xl font-medium transition-all"
+              className="group inline-flex items-center gap-2 px-5 py-2.5 bg-gray-900 hover:bg-gray-800 text-white text-sm rounded-full font-medium transition-all shadow-sm"
             >
-              View All Articles
-              <FiArrowRight className="group-hover:translate-x-1 transition-transform" />
+              View All
+              <FiArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
             </Link>
           </motion.div>
 
           {blogsLoading ? (
             <BlogGridSkeleton count={9} />
           ) : latestBlogs.length > 0 ? (
-            <motion.div 
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
-            >
-              {latestBlogs.map((blog, index) => (
-                <motion.div
-                  key={blog.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.05 }}
-                >
-                  <BlogCard blog={blog} index={index} />
-                </motion.div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+              {/* Featured first article */}
+              {latestBlogs.length > 0 && (
+                <BlogCard blog={latestBlogs[0]} index={0} variant="featured" />
+              )}
+              {/* Remaining articles */}
+              {latestBlogs.slice(1).map((blog, index) => (
+                <BlogCard key={blog.id} blog={blog} index={index + 1} />
               ))}
-            </motion.div>
+            </div>
           ) : (
             <motion.div 
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
-              className="text-center py-20 bg-gray-50 rounded-3xl"
+              className="text-center py-20 bg-white rounded-3xl border border-gray-100"
             >
-              <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <FiEdit3 className="w-10 h-10 text-gray-400" />
+              <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-5">
+                <FiEdit3 className="w-8 h-8 text-gray-400" />
               </div>
-              <h3 className="text-2xl font-bold text-gray-800 mb-3">No articles yet</h3>
-              <p className="text-gray-500 mb-8 max-w-md mx-auto">Be the first to share your story with our growing community!</p>
-              <Link href="/create-blog" className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-medium">
-                <FiEdit3 className="w-5 h-5" /> Write Article
+              <h3 className="text-xl font-bold text-gray-800 mb-2">No articles yet</h3>
+              <p className="text-gray-500 mb-6 max-w-sm mx-auto text-sm">Be the first to share your story with our community</p>
+              <Link href="/create-blog" className="inline-flex items-center gap-2 px-5 py-2.5 bg-gray-900 text-white rounded-full text-sm font-medium hover:bg-gray-800 transition">
+                <FiEdit3 className="w-4 h-4" /> Write Article
               </Link>
             </motion.div>
           )}
