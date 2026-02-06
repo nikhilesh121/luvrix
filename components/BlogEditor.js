@@ -1,122 +1,102 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef, useCallback, useMemo } from "react";
 import dynamic from "next/dynamic";
 import DOMPurify from "isomorphic-dompurify";
 
 const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 
-const modules = {
-  toolbar: [
-    [{ header: [1, 2, 3, 4, 5, 6, false] }],
-    ["bold", "italic", "underline", "strike"],
-    [{ list: "ordered" }, { list: "bullet" }],
-    [{ indent: "-1" }, { indent: "+1" }],
-    ["link", "image", "video"],
-    [{ color: [] }, { background: [] }],
-    [{ align: [] }],
-    ["blockquote", "code-block"],
-    ["clean"],
-  ],
-  clipboard: {
-    matchVisual: false,
-  },
-};
+const HTML_REGEX = /<[a-z][\s\S]*>/i;
 
-const formats = [
-  "header",
-  "bold",
-  "italic",
-  "underline",
-  "strike",
-  "list",
-  "bullet",
-  "indent",
-  "link",
-  "image",
-  "video",
-  "color",
-  "background",
-  "align",
-  "blockquote",
-  "code-block",
+const ALLOWED_TAGS = [
+  "p", "br", "h1", "h2", "h3", "h4", "h5", "h6",
+  "b", "strong", "i", "em", "u", "s", "strike",
+  "ul", "ol", "li", "a", "blockquote", "pre", "code",
+  "table", "thead", "tbody", "tr", "th", "td", "img",
 ];
 
-/**
- * Sanitize and convert HTML/Word paste content to clean text
- * Handles: HTML tags, Word formatting, Google Docs paste
- * Security: Removes scripts, iframes, event handlers (XSS protection)
- */
-const sanitizePastedContent = (html) => {
-  if (!html) return "";
+const formats = [
+  "header", "bold", "italic", "underline", "strike",
+  "list", "bullet", "indent", "link", "image", "video",
+  "color", "background", "align", "blockquote", "code-block",
+];
 
-  // First, sanitize with DOMPurify to remove XSS vectors
-  const sanitized = DOMPurify.sanitize(html, {
-    ALLOWED_TAGS: ["p", "br", "h1", "h2", "h3", "h4", "h5", "h6", "b", "strong", "i", "em", "u", "s", "strike", "ul", "ol", "li", "a", "blockquote", "pre", "code"],
-    ALLOWED_ATTR: ["href"],
+export function sanitizeHtml(html) {
+  if (!html) return "";
+  return DOMPurify.sanitize(html, {
+    ALLOWED_TAGS,
+    ALLOWED_ATTR: ["href", "src", "alt", "title"],
     FORBID_TAGS: ["script", "iframe", "object", "embed", "form", "input", "style"],
     FORBID_ATTR: ["onclick", "onerror", "onload", "onmouseover", "onfocus", "onblur"],
   });
+}
 
-  // Create a temporary DOM element to parse HTML
-  const tempDiv = document.createElement("div");
-  tempDiv.innerHTML = sanitized;
+export function htmlToPlainText(html) {
+  if (!html) return "";
+  const clean = sanitizeHtml(html);
+  const div = typeof document !== "undefined"
+    ? document.createElement("div")
+    : { innerHTML: "", textContent: "" };
+  div.innerHTML = clean;
+  return (div.textContent || div.innerText || "").replace(/\s+/g, " ").trim();
+}
 
-  // Remove Word-specific junk (mso-*, MsoNormal, etc.)
-  const wordJunkSelectors = [
-    '[class*="Mso"]',
-    '[style*="mso-"]',
-    'o\\:p',
-    'style',
-  ];
-  wordJunkSelectors.forEach(selector => {
-    try {
-      tempDiv.querySelectorAll(selector).forEach(el => {
-        if (el.tagName.toLowerCase() === 'style') {
-          el.remove();
-        } else {
-          // Keep content but remove Word classes
-          el.removeAttribute('class');
-          el.removeAttribute('style');
-        }
-      });
-    } catch (e) {
-      // Selector might be invalid, skip
-    }
-  });
+export function isHtmlContent(text) {
+  return HTML_REGEX.test(text);
+}
 
-  // Clean all remaining elements of Word styles
-  tempDiv.querySelectorAll('*').forEach(el => {
+export function processContent(raw) {
+  if (!raw) return { content_html: "", content_text: "" };
+  if (isHtmlContent(raw)) {
+    const content_html = sanitizeHtml(raw);
+    const content_text = htmlToPlainText(content_html);
+    return { content_html, content_text };
+  }
+  return { content_html: raw, content_text: raw.replace(/<[^>]*>/g, "").trim() };
+}
+
+function cleanWordPaste(html) {
+  if (!html) return "";
+  const sanitized = sanitizeHtml(html);
+  if (typeof document === "undefined") return sanitized;
+  const tmp = document.createElement("div");
+  tmp.innerHTML = sanitized;
+  tmp.querySelectorAll('*').forEach(el => {
     el.removeAttribute('class');
     el.removeAttribute('style');
-    // Remove Word-specific attributes
     Array.from(el.attributes).forEach(attr => {
       if (attr.name.startsWith('data-') || attr.name.startsWith('mso')) {
         el.removeAttribute(attr.name);
       }
     });
   });
-
-  return tempDiv.innerHTML;
-};
+  return tmp.innerHTML;
+}
 
 export default function BlogEditor({ value, onChange, placeholder }) {
   const quillRef = useRef(null);
 
-  // Handle paste events for HTML/Word content sanitization
+  const modules = useMemo(() => ({
+    toolbar: [
+      [{ header: [1, 2, 3, 4, 5, 6, false] }],
+      ["bold", "italic", "underline", "strike"],
+      [{ list: "ordered" }, { list: "bullet" }],
+      [{ indent: "-1" }, { indent: "+1" }],
+      ["link", "image", "video"],
+      [{ color: [] }, { background: [] }],
+      [{ align: [] }],
+      ["blockquote", "code-block"],
+      ["clean"],
+    ],
+    clipboard: { matchVisual: false },
+  }), []);
+
   const handlePaste = useCallback((e) => {
-    const clipboardData = e.clipboardData || window.clipboardData;
-    if (!clipboardData) return;
-
-    const html = clipboardData.getData("text/html");
-    const plainText = clipboardData.getData("text/plain");
-
-    // If there's HTML content, sanitize it
+    const clip = e.clipboardData || window.clipboardData;
+    if (!clip) return;
+    const html = clip.getData("text/html");
     if (html && html.trim()) {
       e.preventDefault();
       e.stopPropagation();
-
-      const cleanHtml = sanitizePastedContent(html);
-      
-      // Get Quill instance and insert sanitized content
+      const cleanHtml = cleanWordPaste(html);
       if (quillRef.current) {
         const editor = quillRef.current.getEditor();
         if (editor) {
@@ -125,18 +105,17 @@ export default function BlogEditor({ value, onChange, placeholder }) {
         }
       }
     }
-    // Plain text paste is handled normally by Quill
   }, []);
 
-  // Attach paste handler to editor
   useEffect(() => {
-    const editorContainer = document.querySelector('.blog-editor .ql-editor');
-    if (editorContainer) {
-      editorContainer.addEventListener('paste', handlePaste, true);
-      return () => {
-        editorContainer.removeEventListener('paste', handlePaste, true);
-      };
-    }
+    const timer = setTimeout(() => {
+      const el = document.querySelector('.blog-editor .ql-editor');
+      if (el) {
+        el.addEventListener('paste', handlePaste, true);
+        return () => el.removeEventListener('paste', handlePaste, true);
+      }
+    }, 500);
+    return () => clearTimeout(timer);
   }, [handlePaste]);
 
   return (
@@ -152,44 +131,24 @@ export default function BlogEditor({ value, onChange, placeholder }) {
         className="bg-white rounded-lg"
       />
       <style jsx global>{`
-        .blog-editor .ql-container {
-          min-height: 300px;
-          font-size: 16px;
-        }
-        .blog-editor .ql-editor {
-          min-height: 300px;
-        }
+        .blog-editor .ql-container { min-height: 300px; font-size: 16px; }
+        .blog-editor .ql-editor { min-height: 300px; }
         .blog-editor .ql-editor pre.ql-syntax {
-          background-color: #1e1e1e;
-          color: #d4d4d4;
-          padding: 16px;
-          border-radius: 8px;
-          overflow-x: auto;
+          background-color: #1e1e1e; color: #d4d4d4; padding: 16px;
+          border-radius: 8px; overflow-x: auto;
           font-family: 'Fira Code', 'Monaco', 'Consolas', monospace;
-          font-size: 14px;
-          line-height: 1.5;
-          white-space: pre-wrap;
-          word-wrap: break-word;
+          font-size: 14px; line-height: 1.5; white-space: pre-wrap; word-wrap: break-word;
         }
         .blog-editor .ql-editor code {
-          background-color: #f0f0f0;
-          padding: 2px 6px;
-          border-radius: 4px;
-          font-family: 'Fira Code', 'Monaco', 'Consolas', monospace;
-          font-size: 0.9em;
+          background-color: #f0f0f0; padding: 2px 6px; border-radius: 4px;
+          font-family: 'Fira Code', 'Monaco', 'Consolas', monospace; font-size: 0.9em;
         }
         .blog-editor .ql-snow .ql-picker.ql-header .ql-picker-label[data-value="1"]::before,
-        .blog-editor .ql-snow .ql-picker.ql-header .ql-picker-item[data-value="1"]::before {
-          content: 'Heading 1';
-        }
+        .blog-editor .ql-snow .ql-picker.ql-header .ql-picker-item[data-value="1"]::before { content: 'Heading 1'; }
         .blog-editor .ql-snow .ql-picker.ql-header .ql-picker-label[data-value="2"]::before,
-        .blog-editor .ql-snow .ql-picker.ql-header .ql-picker-item[data-value="2"]::before {
-          content: 'Heading 2';
-        }
+        .blog-editor .ql-snow .ql-picker.ql-header .ql-picker-item[data-value="2"]::before { content: 'Heading 2'; }
         .blog-editor .ql-snow .ql-picker.ql-header .ql-picker-label[data-value="3"]::before,
-        .blog-editor .ql-snow .ql-picker.ql-header .ql-picker-item[data-value="3"]::before {
-          content: 'Heading 3';
-        }
+        .blog-editor .ql-snow .ql-picker.ql-header .ql-picker-item[data-value="3"]::before { content: 'Heading 3'; }
       `}</style>
     </div>
   );

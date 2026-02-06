@@ -8,6 +8,7 @@ import BuyPostsModal from "../components/BuyPostsModal";
 import ContentValidator from "../components/ContentValidator";
 import { createBlog, getUser, incrementFreePostsUsed, decrementExtraPosts, getSettings } from "../lib/api-client";
 
+import { processContent } from "../components/BlogEditor";
 import { calculateSeoScore, MIN_SEO_SCORE } from "../utils/seoScore";
 import { checkForSpam } from "../utils/spamFilter";
 import { canUserPost } from "../utils/paymentLogic";
@@ -145,7 +146,6 @@ function CreateBlogContent({ user, userData }) {
     }
 
     try {
-      // Check if auto-approval is enabled and content passes
       const autoApprovalEnabled = settings?.autoApproval === true;
       const minSeoScore = settings?.minSeoScoreForAutoApproval || 80;
       const minContentScore = settings?.minContentScoreForAutoApproval || 80;
@@ -153,9 +153,13 @@ function CreateBlogContent({ user, userData }) {
       const canAutoApproveContent = validationResult?.isValid && contentScore >= minContentScore;
       const shouldAutoApprove = autoApprovalEnabled && canAutoApproveContent && seoResult.score >= minSeoScore;
 
+      const { content_html, content_text } = processContent(blog.content);
+
       const blogData = {
         ...blog,
         ...seoData,
+        content: content_html,
+        content_text,
         seoScore: seoResult.score,
         contentScore: validationResult?.score || 0,
         authorId: user.uid,
@@ -165,9 +169,14 @@ function CreateBlogContent({ user, userData }) {
         status: shouldAutoApprove ? "approved" : "pending",
       };
 
-      await createBlog(blogData);
+      const result = await createBlog(blogData);
 
-      // Update user post count
+      if (!result?.id) {
+        setError("Blog created but no ID returned. Please check your dashboard.");
+        setLoading(false);
+        return;
+      }
+
       if (postStatus.isFree) {
         await incrementFreePostsUsed(user.uid);
       } else {
@@ -175,9 +184,11 @@ function CreateBlogContent({ user, userData }) {
       }
 
       setSuccess(true);
-      setTimeout(() => router.push("/"), 2000);
+      const destination = shouldAutoApprove ? `/blog?id=${result.id}` : "/profile";
+      setTimeout(() => router.push(destination), 2000);
     } catch (err) {
-      setError("Failed to create blog. Please try again.");
+      console.error("Blog creation error:", err);
+      setError(err.message || "Failed to create blog. Please try again.");
     } finally {
       setLoading(false);
     }

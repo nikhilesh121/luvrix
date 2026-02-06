@@ -456,16 +456,17 @@ export default function BlogPage({ initialBlog, initialAuthor, initialSettings }
       {/* Hero Section */}
       <div className="relative">
         {blog.thumbnail ? (
-          <div className="relative h-[50vh] md:h-[60vh] overflow-hidden">
+          <div className="relative aspect-video md:h-[60vh] md:aspect-auto overflow-hidden">
             <img
               src={blog.thumbnail}
               alt={blog.title}
               className="w-full h-full object-cover"
+              loading="eager"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
             
             {/* Hero Content */}
-            <div className="absolute bottom-0 left-0 right-0 p-6 md:p-12">
+            <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 md:p-12">
               <div className="max-w-4xl mx-auto">
                 <motion.div
                   initial={{ opacity: 0, y: 30 }}
@@ -491,7 +492,7 @@ export default function BlogPage({ initialBlog, initialAuthor, initialSettings }
                   )}
 
                   {/* Title */}
-                  <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
+                  <h1 className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-bold text-white mb-4 md:mb-6 leading-tight break-words line-clamp-4">
                     {blog.title}
                   </h1>
 
@@ -548,7 +549,7 @@ export default function BlogPage({ initialBlog, initialAuthor, initialSettings }
                 </Link>
               )}
 
-              <h1 className="text-3xl md:text-5xl font-bold text-gray-900 mb-6 leading-tight">
+              <h1 className="text-2xl sm:text-3xl md:text-5xl font-bold text-gray-900 mb-4 md:mb-6 leading-tight break-words line-clamp-4">
                 {blog.title}
               </h1>
 
@@ -586,7 +587,7 @@ export default function BlogPage({ initialBlog, initialAuthor, initialSettings }
       </div>
 
       {/* Main Content */}
-      <article className="max-w-4xl mx-auto px-4 py-12">
+      <article className="max-w-4xl mx-auto px-3 sm:px-4 py-6 md:py-12">
         {/* Ad Space - Top */}
         {settings?.adsEnabled && (
           <div className="mb-10 p-6 bg-gradient-to-r from-gray-50 to-gray-100 rounded-2xl text-center border border-gray-200">
@@ -600,16 +601,16 @@ export default function BlogPage({ initialBlog, initialAuthor, initialSettings }
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="blog-content prose prose-lg max-w-none
-            prose-headings:font-bold prose-headings:text-gray-900
-            prose-h2:text-3xl prose-h2:mt-12 prose-h2:mb-6
-            prose-h3:text-2xl prose-h3:mt-10 prose-h3:mb-4
-            prose-p:text-gray-700 prose-p:leading-relaxed prose-p:text-lg
-            prose-a:text-primary prose-a:no-underline hover:prose-a:underline
-            prose-img:rounded-xl prose-img:shadow-lg
+          className="blog-content prose prose-base md:prose-lg max-w-none
+            prose-headings:font-bold prose-headings:text-gray-900 prose-headings:break-words
+            prose-h2:text-2xl md:prose-h2:text-3xl prose-h2:mt-8 md:prose-h2:mt-12 prose-h2:mb-4 md:prose-h2:mb-6
+            prose-h3:text-xl md:prose-h3:text-2xl prose-h3:mt-6 md:prose-h3:mt-10 prose-h3:mb-3 md:prose-h3:mb-4
+            prose-p:text-gray-700 prose-p:leading-relaxed md:prose-p:leading-loose prose-p:text-base md:prose-p:text-lg
+            prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-a:break-words
+            prose-img:rounded-xl prose-img:shadow-lg prose-img:w-full
             prose-blockquote:border-l-4 prose-blockquote:border-primary prose-blockquote:bg-primary/5 prose-blockquote:rounded-r-xl prose-blockquote:py-4 prose-blockquote:italic
-            prose-code:bg-gray-100 prose-code:px-2 prose-code:py-1 prose-code:rounded prose-code:text-primary
-            prose-pre:bg-gray-900 prose-pre:rounded-xl"
+            prose-code:bg-gray-100 prose-code:px-2 prose-code:py-1 prose-code:rounded prose-code:text-primary prose-code:break-words
+            prose-pre:bg-gray-900 prose-pre:rounded-xl prose-pre:overflow-x-auto"
           dangerouslySetInnerHTML={{ __html: blog.content }}
         />
 

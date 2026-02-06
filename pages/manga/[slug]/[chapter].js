@@ -246,10 +246,140 @@ export default function ChapterPage({ initialManga, initialSettings, initialChap
         mangaTitle={manga?.title}
         chapterNumber={chapterNumber}
         redirectUrl={redirectUrl}
-        delay={3000}
+        autoRedirect={manga?.autoRedirect === true}
+        redirectDelay={manga?.redirectDelay || settings?.mangaRedirectDelay || 5}
         backUrl={`/manga/${slug}`}
       />
+
+      <ChapterContent
+        mangaTitle={manga?.title || formattedSlugTitle}
+        chapterNumber={currentChapterNum}
+        genre={manga?.genre}
+        author={manga?.author}
+        status={manga?.status}
+        totalChapters={manga?.totalChapters}
+        description={manga?.description}
+      />
     </>
+  );
+}
+
+function ChapterContent({ mangaTitle, chapterNumber, genre, author, status, totalChapters, description }) {
+  const prevChapter = chapterNumber > 1 ? chapterNumber - 1 : null;
+  const nextChapter = totalChapters && chapterNumber < totalChapters ? chapterNumber + 1 : null;
+  const plainDesc = (description || "").replace(/<[^>]*>/g, "").trim();
+  const shortDesc = plainDesc.slice(0, 200) || `${mangaTitle} is a captivating ${genre || "manga"} series that has garnered a dedicated following among readers worldwide.`;
+
+  return (
+    <article className="bg-gradient-to-b from-indigo-950 to-slate-900 px-4 py-12 md:py-16">
+      <div className="max-w-3xl mx-auto prose prose-invert prose-lg">
+        <h1 className="text-3xl md:text-4xl font-bold text-white mb-6">
+          {mangaTitle} Chapter {chapterNumber} — Full Summary &amp; Analysis
+        </h1>
+
+        <section>
+          <h2 className="text-2xl font-semibold text-purple-300">Chapter {chapterNumber} Overview</h2>
+          <p>
+            Welcome to the comprehensive guide for <strong>{mangaTitle} Chapter {chapterNumber}</strong>.
+            This chapter continues the gripping narrative that fans have come to love, delivering intense
+            plot developments and meaningful character interactions. {shortDesc}
+          </p>
+          <p>
+            In this installment, readers will discover pivotal moments that shape the future direction
+            of the storyline. Whether you are a long-time follower or a newcomer exploring the series
+            for the first time, Chapter {chapterNumber} offers essential context and thrilling revelations
+            that connect directly to the overarching plot of {mangaTitle}.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="text-2xl font-semibold text-purple-300">Detailed Plot Summary</h2>
+          <p>
+            Chapter {chapterNumber} of {mangaTitle} opens with a powerful sequence that immediately draws
+            the reader into the current story arc. The pacing masterfully balances exposition with action,
+            ensuring that each panel serves a clear narrative purpose. Tension builds steadily as
+            relationships between key characters are tested by new challenges and revelations.
+          </p>
+          <p>
+            As the chapter unfolds, critical information is revealed that recontextualizes earlier events
+            in the series. The author weaves together multiple plot threads with precision, rewarding
+            attentive readers who have followed the story from the beginning. The stakes escalate
+            significantly, setting the stage for what promises to be an even more dramatic continuation.
+          </p>
+          <p>
+            The closing scenes of Chapter {chapterNumber} leave readers with a compelling cliffhanger
+            that raises urgent questions about the direction of the narrative. This technique has become
+            a hallmark of {mangaTitle}, keeping audiences eagerly anticipating each new release.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="text-2xl font-semibold text-purple-300">Character Development &amp; Analysis</h2>
+          <p>
+            One of the greatest strengths of {mangaTitle} is its rich character development, and Chapter
+            {" "}{chapterNumber} is no exception. The protagonists face moral dilemmas that force them to
+            confront their deepest beliefs and motivations. This internal conflict adds layers of complexity
+            to characters who are already well-established within the series.
+          </p>
+          <p>
+            Supporting characters also receive meaningful screen time in this chapter, with their
+            individual arcs intersecting with the main storyline in surprising ways. The dynamic between
+            allies and antagonists shifts in subtle but important ways, creating an atmosphere of
+            uncertainty that keeps readers engaged. {author ? `Author ${author} demonstrates exceptional skill in balancing multiple character perspectives without losing narrative coherence.` : "The mangaka demonstrates exceptional skill in balancing multiple character perspectives without losing narrative coherence."}
+          </p>
+          <p>
+            The emotional depth presented in this chapter resonates powerfully with the audience.
+            Moments of vulnerability, determination, and sacrifice are portrayed with nuance, making
+            the characters feel authentic and relatable despite the fantastical setting of the story.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="text-2xl font-semibold text-purple-300">Art Style &amp; Visual Storytelling</h2>
+          <p>
+            The visual presentation in Chapter {chapterNumber} maintains the high standard that {mangaTitle}
+            {" "}is known for. Action sequences are choreographed with dynamic panel layouts that guide the
+            reader's eye naturally through each scene. The use of contrast between detailed close-ups and
+            sweeping wide shots creates a cinematic reading experience.
+          </p>
+          <p>
+            Particularly noteworthy in this chapter is the attention to environmental detail. Backgrounds
+            are rendered with care, establishing atmosphere and mood that complement the emotional beats
+            of the story. Character expressions are drawn with subtlety, conveying complex emotions
+            through minimal but effective artistic choices.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="text-2xl font-semibold text-purple-300">Series Context &amp; What to Expect Next</h2>
+          <p>
+            {mangaTitle} currently has {totalChapters || "multiple"} chapters available
+            {status ? ` and is ${status.toLowerCase()}` : ""}
+            {genre ? `. As a ${genre} series, it` : ". It"} continues to attract new readers while
+            maintaining its dedicated fanbase. Chapter {chapterNumber} plays a crucial role in the
+            larger narrative, bridging earlier story arcs with upcoming developments.
+          </p>
+          <p>
+            For readers who are up to date, the events of this chapter carry significant implications
+            for the future of the series. The seeds planted here are likely to bloom in upcoming
+            chapters, making this an essential installment that should not be skipped. We recommend
+            reading closely and paying attention to the details, as they may become relevant in
+            surprising ways as the story progresses.
+          </p>
+          <p>
+            Whether you are reading {mangaTitle} for the action, the character drama, or the intricate
+            world-building, Chapter {chapterNumber} delivers on all fronts. It stands as a testament to
+            the quality storytelling that has made this series a standout in its genre.
+          </p>
+        </section>
+
+        <div className="flex flex-wrap gap-3 mt-8 not-prose">
+          {[mangaTitle, `Chapter ${chapterNumber}`, genre, "Read Online", "Manga", status].filter(Boolean).map(tag => (
+            <span key={tag} className="px-3 py-1 bg-white/10 text-purple-200 rounded-full text-sm">{tag}</span>
+          ))}
+        </div>
+      </div>
+    </article>
   );
 }
 

@@ -131,6 +131,9 @@ function MangaContent() {
         showOnWeb: item.showOnWeb !== false,
         showOnAndroid: item.showOnAndroid !== false,
         showOnIOS: item.showOnIOS !== false,
+        autoRedirect: item.autoRedirect === true,
+        redirectDelay: item.redirectDelay || 5,
+        redirectUrl: item.redirectUrl || "",
       });
     } else {
       setEditingManga(null);
@@ -154,6 +157,9 @@ function MangaContent() {
         showOnWeb: true,
         showOnAndroid: true,
         showOnIOS: true,
+        autoRedirect: false,
+        redirectDelay: 5,
+        redirectUrl: "",
       });
     }
     setShowModal(true);
@@ -861,6 +867,58 @@ function MangaContent() {
                         <p className="text-xs text-gray-500">{formData.showOnIOS ? 'Visible' : 'Hidden'}</p>
                       </div>
                     </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Redirect Settings */}
+              <div className="border-t pt-4 mt-4">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">Chapter Redirect Settings</h3>
+                <p className="text-sm text-gray-500 mb-4">
+                  Control how chapter pages handle redirection. Default is manual click only.
+                </p>
+                <div className="space-y-4">
+                  <div 
+                    onClick={() => setFormData({ ...formData, autoRedirect: !formData.autoRedirect })}
+                    className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                      formData.autoRedirect ? 'border-orange-500 bg-orange-50' : 'border-gray-200 bg-gray-50'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                        formData.autoRedirect ? 'bg-orange-500 text-white' : 'bg-gray-200 text-gray-500'
+                      }`}>
+                        <FiExternalLink className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-gray-800">Auto Redirect</p>
+                        <p className="text-xs text-gray-500">{formData.autoRedirect ? 'Enabled — redirects after delay' : 'Disabled — manual click only'}</p>
+                      </div>
+                    </div>
+                  </div>
+                  {formData.autoRedirect && (
+                    <div>
+                      <label className="form-label">Redirect Delay (seconds)</label>
+                      <input
+                        type="number"
+                        min="1"
+                        max="300"
+                        value={formData.redirectDelay}
+                        onChange={(e) => setFormData({ ...formData, redirectDelay: parseInt(e.target.value, 10) || 5 })}
+                        className="form-input"
+                        placeholder="5"
+                      />
+                    </div>
+                  )}
+                  <div>
+                    <label className="form-label">Custom Redirect URL (optional override)</label>
+                    <input
+                      type="text"
+                      value={formData.redirectUrl}
+                      onChange={(e) => setFormData({ ...formData, redirectUrl: e.target.value })}
+                      className="form-input"
+                      placeholder="Leave empty to use auto-generated URL"
+                    />
                   </div>
                 </div>
               </div>

@@ -1,16 +1,28 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 
-export default function MangaRedirectBox({ 
-  mangaTitle, 
-  chapterNumber, 
-  redirectUrl, 
-  delay = 3000 
+const BOT_UA = /bot|crawl|spider|slurp|bingbot|googlebot|yandex|baidu|duckduck|semrush|ahref/i;
+
+export default function MangaRedirectBox({
+  mangaTitle,
+  chapterNumber,
+  redirectUrl,
+  autoRedirect = false,
+  redirectDelay = 5,
+  backUrl,
 }) {
-  const [countdown, setCountdown] = useState(Math.ceil(delay / 1000));
+  const [countdown, setCountdown] = useState(redirectDelay);
   const [redirecting, setRedirecting] = useState(false);
+  const [isBot, setIsBot] = useState(false);
 
   useEffect(() => {
+    if (typeof navigator !== "undefined" && BOT_UA.test(navigator.userAgent)) {
+      setIsBot(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!autoRedirect || isBot || !redirectUrl) return;
     const timer = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
@@ -22,12 +34,11 @@ export default function MangaRedirectBox({
         return prev - 1;
       });
     }, 1000);
-
     return () => clearInterval(timer);
-  }, [redirectUrl]);
+  }, [autoRedirect, redirectUrl, isBot]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 to-indigo-900 flex items-center justify-center p-4">
+    <div className="bg-gradient-to-br from-purple-900 to-indigo-900 flex items-center justify-center p-4 py-16">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -35,59 +46,50 @@ export default function MangaRedirectBox({
       >
         <div className="mb-6">
           <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg
-              className="w-8 h-8 text-white animate-spin"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-              />
-              <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-              />
+            <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
             </svg>
           </div>
-          
-          <h1 className="text-2xl font-bold text-gray-800 mb-2">
-            {mangaTitle}
-          </h1>
-          <p className="text-lg text-primary font-semibold">
-            Chapter {chapterNumber}
-          </p>
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">{mangaTitle}</h2>
+          <p className="text-lg text-primary font-semibold">Chapter {chapterNumber}</p>
         </div>
 
-        <div className="mb-6">
-          <p className="text-gray-600 mb-2">
-            {redirecting ? "Redirecting now..." : "Redirecting in"}
-          </p>
-          {!redirecting && (
-            <div className="text-5xl font-bold text-primary">
-              {countdown}
-            </div>
-          )}
-        </div>
+        {autoRedirect && !isBot && (
+          <div className="mb-6">
+            <p className="text-gray-600 mb-2">
+              {redirecting ? "Redirecting now..." : `Redirecting in ${countdown}s`}
+            </p>
+            {!redirecting && (
+              <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                <motion.div
+                  className="bg-primary h-2 rounded-full"
+                  initial={{ width: "100%" }}
+                  animate={{ width: "0%" }}
+                  transition={{ duration: redirectDelay, ease: "linear" }}
+                />
+              </div>
+            )}
+          </div>
+        )}
 
         <div className="space-y-3">
           <a
             href={redirectUrl}
-            className="block w-full py-3 px-6 bg-primary text-white rounded-lg font-semibold hover:opacity-90 transition"
+            rel="nofollow noopener"
+            className="block w-full py-3 px-6 bg-primary text-white rounded-lg font-semibold hover:opacity-90 transition text-lg"
           >
-            Read Now
+            Read Now →
           </a>
-          <p className="text-xs text-gray-400">
-            You will be redirected to the manga reading page automatically
-          </p>
+          {backUrl && (
+            <a href={backUrl} className="block text-sm text-gray-500 hover:text-primary transition">
+              ← Back to Manga
+            </a>
+          )}
+          {!autoRedirect && (
+            <p className="text-xs text-gray-400">Click the button above to read this chapter</p>
+          )}
         </div>
 
-        {/* Ad Space */}
         <div className="mt-6 p-4 bg-gray-100 rounded-lg">
           <p className="text-xs text-gray-400">Advertisement</p>
           <div id="manga-redirect-ad" className="min-h-[100px]"></div>
