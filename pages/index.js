@@ -148,7 +148,7 @@ export default function Home() {
   };
 
   return (
-    <Layout title="Home" description="Discover amazing stories, insights, and knowledge">
+    <Layout title="Read Blogs, Manga & Stories" description="Discover amazing blogs, manga, and stories from creators worldwide. Write, share, and explore content on the #1 free platform for writers and readers.">
       <Head>
         {/* Primary SEO */}
         <meta name="robots" content="index, follow, max-image-preview:large" />
@@ -157,16 +157,16 @@ export default function Home() {
         {/* Open Graph */}
         <meta property="og:type" content="website" />
         <meta property="og:url" content={SITE_URL} />
-        <meta property="og:title" content="Luvrix - Share Your Stories With The World" />
-        <meta property="og:description" content="Discover amazing stories, insights, and knowledge. The #1 platform for content creators and manga readers." />
-        <meta property="og:image" content={`${SITE_URL}/og-default.svg`} />
+        <meta property="og:title" content="Luvrix - Read Blogs, Manga & Stories Free" />
+        <meta property="og:description" content="Discover amazing blogs, manga, and stories from creators worldwide. Write, share, and explore content on the #1 free platform for writers and readers." />
+        <meta property="og:image" content="https://res.cloudinary.com/dsga2d0bv/image/upload/w_1200,h_630,c_pad,b_rgb:6366f1/Luvrix/Luvrix_favicon_yqovij.png" />
         <meta property="og:site_name" content="Luvrix" />
         
         {/* Twitter */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Luvrix - Share Your Stories With The World" />
-        <meta name="twitter:description" content="Discover amazing stories, insights, and knowledge. The #1 platform for content creators and manga readers." />
-        <meta name="twitter:image" content={`${SITE_URL}/og-default.svg`} />
+        <meta name="twitter:title" content="Luvrix - Read Blogs, Manga & Stories Free" />
+        <meta name="twitter:description" content="Discover amazing blogs, manga, and stories from creators worldwide. Write, share, and explore content on the #1 free platform for writers and readers." />
+        <meta name="twitter:image" content="https://res.cloudinary.com/dsga2d0bv/image/upload/w_1200,h_630,c_pad,b_rgb:6366f1/Luvrix/Luvrix_favicon_yqovij.png" />
       </Head>
       
       {/* Website Schema for Sitelinks */}

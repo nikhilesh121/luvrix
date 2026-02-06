@@ -85,11 +85,11 @@ export default function MangaDetail({ initialManga, initialSettings }) {
 
   // Ensure absolute image URL for SEO
   const getAbsoluteImageUrl = (url) => {
-    if (!url) return `${SITE_URL}/og-default.svg`;
+    if (!url) return "https://res.cloudinary.com/dsga2d0bv/image/upload/w_1200,h_630,c_pad,b_rgb:6366f1/Luvrix/Luvrix_favicon_yqovij.png";
     if (url.startsWith("http")) return url;
     return `${SITE_URL}${url.startsWith("/") ? url : "/" + url}`;
   };
-  const ogImage = manga?.coverUrl ? getAbsoluteImageUrl(manga.coverUrl) : `${SITE_URL}/og-default.svg`;
+  const ogImage = manga?.coverUrl ? getAbsoluteImageUrl(manga.coverUrl) : "https://res.cloudinary.com/dsga2d0bv/image/upload/w_1200,h_630,c_pad,b_rgb:6366f1/Luvrix/Luvrix_favicon_yqovij.png";
 
   // Join manga room for real-time updates
   useEffect(() => {
@@ -287,6 +287,7 @@ export default function MangaDetail({ initialManga, initialSettings }) {
       title={seoTitle}
       description={seoDescription}
       keywords={seoKeywords}
+      image={ogImage}
     >
       <Head>
         {/* Primary SEO */}

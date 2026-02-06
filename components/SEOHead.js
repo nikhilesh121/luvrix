@@ -2,6 +2,13 @@ import Head from "next/head";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://luvrix.com";
 const SITE_NAME = "Luvrix";
+const OG_DEFAULT_IMAGE = "https://res.cloudinary.com/dsga2d0bv/image/upload/w_1200,h_630,c_pad,b_rgb:6366f1/Luvrix/Luvrix_favicon_yqovij.png";
+
+export function getAbsoluteImageUrl(url) {
+  if (!url) return OG_DEFAULT_IMAGE;
+  if (url.startsWith("http")) return url;
+  return `${SITE_URL}${url.startsWith("/") ? url : "/" + url}`;
+}
 
 export default function SEOHead({
   title,
@@ -20,7 +27,7 @@ export default function SEOHead({
 }) {
   const fullTitle = title ? `${title} - ${SITE_NAME}` : SITE_NAME;
   const fullUrl = url ? `${SITE_URL}${url}` : SITE_URL;
-  const ogImage = image || `${SITE_URL}/og-default.svg`;
+  const ogImage = getAbsoluteImageUrl(image);
 
   // Generate keywords string
   const keywordsString = focusKeyword 
@@ -32,7 +39,7 @@ export default function SEOHead({
       {/* Primary Meta Tags */}
       <title>{fullTitle}</title>
       <meta name="title" content={fullTitle} />
-      <meta name="description" content={description || `${SITE_NAME} - Your source for blogs and manga`} />
+      <meta name="description" content={description || `${SITE_NAME} - Read blogs, manga, and stories from creators worldwide. Free platform for writers and readers.`} />
       {keywordsString && <meta name="keywords" content={keywordsString} />}
       {author && <meta name="author" content={author} />}
       
@@ -47,7 +54,7 @@ export default function SEOHead({
       <meta property="og:type" content={type} />
       <meta property="og:url" content={fullUrl} />
       <meta property="og:title" content={fullTitle} />
-      <meta property="og:description" content={description || `${SITE_NAME} - Your source for blogs and manga`} />
+      <meta property="og:description" content={description || `${SITE_NAME} - Read blogs, manga, and stories from creators worldwide. Free platform for writers and readers.`} />
       <meta property="og:image" content={ogImage} />
       <meta property="og:image:width" content="1200" />
       <meta property="og:image:height" content="630" />
@@ -71,7 +78,7 @@ export default function SEOHead({
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:url" content={fullUrl} />
       <meta name="twitter:title" content={fullTitle} />
-      <meta name="twitter:description" content={description || `${SITE_NAME} - Your source for blogs and manga`} />
+      <meta name="twitter:description" content={description || `${SITE_NAME} - Read blogs, manga, and stories from creators worldwide. Free platform for writers and readers.`} />
       <meta name="twitter:image" content={ogImage} />
 
       {/* Additional SEO */}
@@ -121,7 +128,13 @@ export function BlogArticleSchema({ blog, url }) {
     },
     headline: blog.title,
     description: blog.seoDescription || blog.content?.replace(/<[^>]*>/g, "").slice(0, 160),
-    image: blog.thumbnail || `${SITE_URL}/og-default.svg`,
+    image: {
+      "@type": "ImageObject",
+      url: getAbsoluteImageUrl(blog.thumbnail),
+      width: 1200,
+      height: 630,
+    },
+    thumbnailUrl: getAbsoluteImageUrl(blog.thumbnail),
     author: {
       "@type": "Person",
       name: blog.authorName || "Luvrix Author",
@@ -154,7 +167,13 @@ export function MangaSchema({ manga, url }) {
     "@type": "Book",
     name: manga.title,
     description: manga.seoDescription || manga.description,
-    image: manga.coverUrl || `${SITE_URL}/og-default.svg`,
+    image: {
+      "@type": "ImageObject",
+      url: getAbsoluteImageUrl(manga.coverUrl),
+      width: 800,
+      height: 1200,
+    },
+    thumbnailUrl: getAbsoluteImageUrl(manga.coverUrl),
     url: `${SITE_URL}${url}`,
     author: {
       "@type": "Person",
@@ -194,7 +213,13 @@ export function ChapterSchema({ manga, chapterNumber, url }) {
     },
     position: chapterNumber,
     url: `${SITE_URL}${url}`,
-    image: manga.coverUrl || `${SITE_URL}/og-default.svg`,
+    image: {
+      "@type": "ImageObject",
+      url: getAbsoluteImageUrl(manga.coverUrl),
+      width: 800,
+      height: 1200,
+    },
+    thumbnailUrl: getAbsoluteImageUrl(manga.coverUrl),
     publisher: {
       "@type": "Organization",
       name: SITE_NAME,
@@ -241,7 +266,7 @@ export function WebsiteSchema() {
     "@type": "WebSite",
     name: SITE_NAME,
     url: SITE_URL,
-    description: "Your source for blogs and manga content",
+    description: "Read blogs, manga, and stories from creators worldwide. Free platform for writers and readers.",
     potentialAction: {
       "@type": "SearchAction",
       target: {

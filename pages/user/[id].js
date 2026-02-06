@@ -171,7 +171,7 @@ export default function UserProfile() {
       <Head>
         <meta name="description" content={`View ${profileUser.name}'s profile and published blogs on Luvrix`} />
         <meta property="og:title" content={`${profileUser.name} - Luvrix Creator`} />
-        <meta property="og:image" content={profileUser.photoURL || `${SITE_URL}/og-default.svg`} />
+        <meta property="og:image" content={profileUser.photoURL || "https://res.cloudinary.com/dsga2d0bv/image/upload/w_1200,h_630,c_pad,b_rgb:6366f1/Luvrix/Luvrix_favicon_yqovij.png"} />
       </Head>
 
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">

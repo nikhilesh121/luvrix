@@ -364,7 +364,7 @@ export default function BlogPage({ initialBlog, initialAuthor, initialSettings }
 
   // Ensure absolute image URL
   const getAbsoluteImageUrl = (url) => {
-    if (!url) return `${SITE_URL}/og-default.svg`;
+    if (!url) return "https://res.cloudinary.com/dsga2d0bv/image/upload/w_1200,h_630,c_pad,b_rgb:6366f1/Luvrix/Luvrix_favicon_yqovij.png";
     if (url.startsWith("http")) return url;
     return `${SITE_URL}${url.startsWith("/") ? url : "/" + url}`;
   };
@@ -375,6 +375,7 @@ export default function BlogPage({ initialBlog, initialAuthor, initialSettings }
       title={blog.seoTitle || blog.title}
       description={blog.seoDescription}
       keywords={blog.focusKeyword || blog.keywords}
+      image={ogImage}
     >
       <Head>
         <meta name="robots" content="index, follow, max-image-preview:large" />

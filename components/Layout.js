@@ -47,7 +47,7 @@ export default function Layout({ children, title, description, keywords, image, 
     <>
       <Head>
         <title>{pageTitle}</title>
-        <meta name="description" content={description || "Luvrix - Your destination for anime, manga, technology news and creative stories. Read manga, write blogs, and join a community of creators."} />
+        <meta name="description" content={description || "Luvrix - Read blogs, manga & stories from creators worldwide. Write, share, and discover amazing content. Free platform for writers and readers."} />
         {keywords && <meta name="keywords" content={keywords} />}
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
         
@@ -70,19 +70,20 @@ export default function Layout({ children, title, description, keywords, image, 
         {/* Open Graph */}
         <meta property="og:site_name" content={siteName} />
         <meta property="og:title" content={pageTitle} />
-        <meta property="og:description" content={description || "Luvrix - Your destination for anime, manga, technology news and creative stories."} />
+        <meta property="og:description" content={description || "Luvrix - Read blogs, manga & stories from creators worldwide. Write, share, and discover amazing content."} />
         <meta property="og:type" content={type} />
         <meta property="og:locale" content="en_US" />
-        {image && <meta property="og:image" content={image} />}
-        {image && <meta property="og:image:width" content="1200" />}
-        {image && <meta property="og:image:height" content="630" />}
+        <meta property="og:image" content={image || "https://res.cloudinary.com/dsga2d0bv/image/upload/w_1200,h_630,c_pad,b_rgb:6366f1/Luvrix/Luvrix_favicon_yqovij.png"} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:type" content="image/png" />
         {canonical && <meta property="og:url" content={canonical} />}
         
         {/* Twitter Card */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={pageTitle} />
-        <meta name="twitter:description" content={description || "Luvrix - Your destination for anime, manga, technology news and creative stories."} />
-        {image && <meta name="twitter:image" content={image} />}
+        <meta name="twitter:description" content={description || "Luvrix - Read blogs, manga & stories from creators worldwide. Write, share, and discover amazing content."} />
+        <meta name="twitter:image" content={image || "https://res.cloudinary.com/dsga2d0bv/image/upload/w_1200,h_630,c_pad,b_rgb:6366f1/Luvrix/Luvrix_favicon_yqovij.png"} />
         
         {/* Article Meta (for blog posts) */}
         {type === "article" && author && <meta property="article:author" content={author} />}

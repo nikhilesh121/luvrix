@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 
-const FALLBACK_IMAGE = '/og-default.svg';
+const FALLBACK_IMAGE = 'https://res.cloudinary.com/dsga2d0bv/image/upload/w_1200,h_630,c_pad,b_rgb:6366f1/Luvrix/Luvrix_favicon_yqovij.png';
 
 export default function OptimizedImage({ 
   src, 

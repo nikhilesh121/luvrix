@@ -59,7 +59,7 @@ export default function About() {
   ];
 
   return (
-    <Layout title="About Us" description="Learn more about Luvrix - your destination for blogs, manga, and stories">
+    <Layout title="About Us" description="Learn about Luvrix - the free platform for reading blogs, manga & stories. Join thousands of creators and readers sharing content worldwide.">
       <Head>
         <meta name="robots" content="index, follow" />
         <link rel="canonical" href={`${SITE_URL}/about`} />
