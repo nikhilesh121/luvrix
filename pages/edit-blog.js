@@ -6,7 +6,7 @@ import UserGuard from "../components/UserGuard";
 import SeoForm from "../components/SeoForm";
 import ContentValidator from "../components/ContentValidator";
 import { getBlog, updateBlog, getUser, getSettings, createLog } from "../lib/api-client";
-
+import { processContent, cleanContentForDisplay } from "../components/BlogEditor";
 import { calculateSeoScore, MIN_SEO_SCORE } from "../utils/seoScore";
 import { checkForSpam } from "../utils/spamFilter";
 import { canAutoApprove } from "../utils/contentValidator";
@@ -97,7 +97,7 @@ function EditBlogContent({ user }) {
       setOriginalBlog(blogData);
       setBlog({
         title: blogData.title || "",
-        content: blogData.content || "",
+        content: cleanContentForDisplay(blogData.content || ""),
         category: blogData.category || "",
         thumbnail: blogData.thumbnail || "",
       });
@@ -166,9 +166,13 @@ function EditBlogContent({ user }) {
       // Admin can set status directly, users go through approval
       const newStatus = isAdmin ? (originalBlog?.status || "approved") : (shouldAutoApprove ? "approved" : "pending");
       
+      const { content_html, content_text } = processContent(blog.content);
+
       await updateBlog(id, {
         ...blog,
         ...seoData,
+        content: content_html,
+        content_text,
         seoScore: seoResult.score,
         contentScore: validationResult?.score || 0,
         authorName: isAdmin ? originalBlog?.authorName : (user.displayName || originalBlog?.authorName || null),

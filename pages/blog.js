@@ -4,6 +4,7 @@ import Link from "next/link";
 import Head from "next/head";
 import Layout from "../components/Layout";
 import { getBlog, getUser, getSettings, incrementBlogViews, getAllBlogs, likeBlog, unlikeBlog, isBlogLiked, isFollowing, followUser, unfollowUser } from "../lib/api-client";
+import { cleanContentForDisplay } from "../components/BlogEditor";
 import { useAuth } from "../context/AuthContext";
 import { useSocket } from "../context/SocketContext";
 import { BlogArticleSchema, BreadcrumbSchema } from "../components/SEOHead";
@@ -611,7 +612,7 @@ export default function BlogPage({ initialBlog, initialAuthor, initialSettings }
             prose-blockquote:border-l-4 prose-blockquote:border-primary prose-blockquote:bg-primary/5 prose-blockquote:rounded-r-xl prose-blockquote:py-4 prose-blockquote:italic
             prose-code:bg-gray-100 prose-code:px-2 prose-code:py-1 prose-code:rounded prose-code:text-primary prose-code:break-words
             prose-pre:bg-gray-900 prose-pre:rounded-xl prose-pre:overflow-x-auto"
-          dangerouslySetInnerHTML={{ __html: blog.content }}
+          dangerouslySetInnerHTML={{ __html: cleanContentForDisplay(blog.content) }}
         />
 
         {/* Engagement Bar */}

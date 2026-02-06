@@ -4,6 +4,7 @@ import Link from "next/link";
 import Head from "next/head";
 import Layout from "../components/Layout";
 import { getBlog, getUser } from "../lib/api-client";
+import { cleanContentForDisplay } from "../components/BlogEditor";
 import { useAuth } from "../context/AuthContext";
 import { motion } from "framer-motion";
 import { 
@@ -155,7 +156,7 @@ export default function PreviewBlog() {
 
           <div
             className="blog-content prose prose-lg max-w-none prose-headings:font-bold prose-headings:text-gray-900 prose-p:text-gray-700 prose-p:leading-relaxed prose-a:text-primary prose-img:rounded-xl prose-blockquote:border-l-4 prose-blockquote:border-primary prose-code:bg-gray-100 prose-code:px-2 prose-code:py-1 prose-code:rounded prose-pre:bg-gray-900 prose-pre:rounded-xl"
-            dangerouslySetInnerHTML={{ __html: blog.content }}
+            dangerouslySetInnerHTML={{ __html: cleanContentForDisplay(blog.content) }}
           />
 
           <div className="mt-12 p-6 bg-slate-100 rounded-xl">

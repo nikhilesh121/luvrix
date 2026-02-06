@@ -43,14 +43,43 @@ export function isHtmlContent(text) {
   return HTML_REGEX.test(text);
 }
 
+export function unescapeHtmlEntities(str) {
+  if (!str) return "";
+  return str
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&amp;/g, "&")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'");
+}
+
+const ESCAPED_TAG = /&lt;\/?[a-z][a-z0-9]*[^&]*&gt;/i;
+
+export function hasEscapedHtml(text) {
+  return ESCAPED_TAG.test(text);
+}
+
+export function cleanContentForDisplay(content) {
+  if (!content) return "";
+  if (hasEscapedHtml(content)) {
+    const unescaped = unescapeHtmlEntities(content);
+    return sanitizeHtml(unescaped);
+  }
+  return content;
+}
+
 export function processContent(raw) {
   if (!raw) return { content_html: "", content_text: "" };
-  if (isHtmlContent(raw)) {
-    const content_html = sanitizeHtml(raw);
+  let html = raw;
+  if (hasEscapedHtml(html)) {
+    html = unescapeHtmlEntities(html);
+  }
+  if (isHtmlContent(html)) {
+    const content_html = sanitizeHtml(html);
     const content_text = htmlToPlainText(content_html);
     return { content_html, content_text };
   }
-  return { content_html: raw, content_text: raw.replace(/<[^>]*>/g, "").trim() };
+  return { content_html: html, content_text: html.replace(/<[^>]*>/g, "").trim() };
 }
 
 function cleanWordPaste(html) {

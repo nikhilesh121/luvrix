@@ -4,6 +4,7 @@ import Link from "next/link";
 import AdminGuard from "../../components/AdminGuard";
 import AdminSidebar from "../../components/AdminSidebar";
 import { getBlog, getUser, approveBlog, rejectBlog, createLog } from "../../lib/api-client";
+import { cleanContentForDisplay } from "../../components/BlogEditor";
 import { auth } from "../../lib/local-auth";
 import { motion } from "framer-motion";
 import { 
@@ -215,7 +216,7 @@ function PreviewBlogContent() {
 
                   <h1 className="text-3xl font-bold text-gray-800 mb-6">{blog.title}</h1>
 
-                  <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: blog.content }} />
+                  <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: cleanContentForDisplay(blog.content) }} />
                 </div>
               </div>
             </div>
