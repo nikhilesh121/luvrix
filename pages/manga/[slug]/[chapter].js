@@ -289,9 +289,8 @@ function ChapterContent({ mangaTitle, chapterNumber, genre, author, status, tota
     {
       icon: "📖",
       title: `Chapter ${chapterNumber} Overview`,
-      gradient: "from-violet-500/20 to-purple-600/20",
-      border: "border-violet-500/30",
-      accent: "text-violet-300",
+      iconBg: "bg-violet-100",
+      bar: "bg-violet-500",
       content: (
         <>
           <p>Welcome to the comprehensive guide for <strong>{mangaTitle} Chapter {chapterNumber}</strong>. This chapter continues the gripping narrative that fans have come to love, delivering intense plot developments and meaningful character interactions. {shortDesc}</p>
@@ -302,9 +301,8 @@ function ChapterContent({ mangaTitle, chapterNumber, genre, author, status, tota
     {
       icon: "⚔️",
       title: "Detailed Plot Summary",
-      gradient: "from-blue-500/20 to-cyan-600/20",
-      border: "border-blue-500/30",
-      accent: "text-blue-300",
+      iconBg: "bg-blue-100",
+      bar: "bg-blue-500",
       content: (
         <>
           <p>Chapter {chapterNumber} of {mangaTitle} opens with a powerful sequence that immediately draws the reader into the current story arc. The pacing masterfully balances exposition with action, ensuring that each panel serves a clear narrative purpose. Tension builds steadily as relationships between key characters are tested by new challenges and revelations.</p>
@@ -316,9 +314,8 @@ function ChapterContent({ mangaTitle, chapterNumber, genre, author, status, tota
     {
       icon: "🎭",
       title: "Character Development & Analysis",
-      gradient: "from-rose-500/20 to-pink-600/20",
-      border: "border-rose-500/30",
-      accent: "text-rose-300",
+      iconBg: "bg-rose-100",
+      bar: "bg-rose-500",
       content: (
         <>
           <p>One of the greatest strengths of {mangaTitle} is its rich character development, and Chapter {chapterNumber} is no exception. The protagonists face moral dilemmas that force them to confront their deepest beliefs and motivations. This internal conflict adds layers of complexity to characters who are already well-established within the series.</p>
@@ -330,9 +327,8 @@ function ChapterContent({ mangaTitle, chapterNumber, genre, author, status, tota
     {
       icon: "🎨",
       title: "Art Style & Visual Storytelling",
-      gradient: "from-amber-500/20 to-orange-600/20",
-      border: "border-amber-500/30",
-      accent: "text-amber-300",
+      iconBg: "bg-amber-100",
+      bar: "bg-amber-500",
       content: (
         <>
           <p>The visual presentation in Chapter {chapterNumber} maintains the high standard that {mangaTitle} is known for. Action sequences are choreographed with dynamic panel layouts that guide the reader's eye naturally through each scene. The use of contrast between detailed close-ups and sweeping wide shots creates a cinematic reading experience.</p>
@@ -343,9 +339,8 @@ function ChapterContent({ mangaTitle, chapterNumber, genre, author, status, tota
     {
       icon: "🔮",
       title: "Series Context & What to Expect Next",
-      gradient: "from-emerald-500/20 to-teal-600/20",
-      border: "border-emerald-500/30",
-      accent: "text-emerald-300",
+      iconBg: "bg-emerald-100",
+      bar: "bg-emerald-500",
       content: (
         <>
           <p>{mangaTitle} currently has {totalChapters || "multiple"} chapters available{status ? ` and is ${status.toLowerCase()}` : ""}{genre ? `. As a ${genre} series, it` : ". It"} continues to attract new readers while maintaining its dedicated fanbase. Chapter {chapterNumber} plays a crucial role in the larger narrative, bridging earlier story arcs with upcoming developments.</p>
@@ -357,61 +352,56 @@ function ChapterContent({ mangaTitle, chapterNumber, genre, author, status, tota
   ];
 
   return (
-    <article className="relative overflow-hidden">
-      {/* Animated background */}
-      <div className="absolute inset-0 bg-gradient-to-b from-indigo-950 via-slate-900 to-gray-950" />
-      <div className="absolute inset-0 opacity-30">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-purple-600 rounded-full blur-[120px] animate-pulse" />
-        <div className="absolute top-96 right-10 w-96 h-96 bg-blue-600 rounded-full blur-[150px] animate-pulse" style={{ animationDelay: "2s" }} />
-        <div className="absolute bottom-40 left-1/3 w-80 h-80 bg-rose-600 rounded-full blur-[130px] animate-pulse" style={{ animationDelay: "4s" }} />
-      </div>
+    <article className="relative overflow-hidden bg-white">
+      {/* Top accent bar */}
+      <div className="h-1.5 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-500" />
 
-      <div className="relative z-10 px-4 py-16 md:py-24">
+      <div className="px-4 py-12 md:py-20">
         {/* Hero title */}
-        <div className="max-w-4xl mx-auto text-center mb-16">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-          >
-            <span className="inline-block px-4 py-1.5 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full text-purple-300 text-sm font-medium mb-6">
-              {genre || "Manga"} • Chapter {chapterNumber}{totalChapters ? ` of ${totalChapters}` : ""}
+        <div className="max-w-3xl mx-auto text-center mb-14">
+          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+            <span className="inline-flex items-center gap-2 px-4 py-1.5 bg-gradient-to-r from-blue-50 to-purple-50 border border-purple-200 rounded-full text-purple-700 text-sm font-semibold mb-6">
+              <span className="w-2 h-2 bg-purple-500 rounded-full animate-pulse" />
+              {genre || "Manga"} — Chapter {chapterNumber}{totalChapters ? ` of ${totalChapters}` : ""}
             </span>
           </motion.div>
           <motion.h1
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-4xl md:text-5xl lg:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-purple-200 to-blue-200 mb-6 leading-tight"
+            transition={{ duration: 0.6, delay: 0.15 }}
+            className="text-3xl md:text-5xl lg:text-6xl font-black text-gray-900 mb-4 leading-tight"
           >
             {mangaTitle}
           </motion.h1>
           <motion.p
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-            className="text-xl md:text-2xl text-purple-200/80 font-light"
+            transition={{ duration: 0.6, delay: 0.3 }}
+            className="text-lg md:text-xl text-gray-500 font-medium"
           >
             Chapter {chapterNumber} — Full Summary &amp; Analysis
           </motion.p>
           <motion.div
             initial={{ scaleX: 0 }}
             animate={{ scaleX: 1 }}
-            transition={{ duration: 1, delay: 0.6 }}
-            className="h-px w-48 mx-auto mt-8 bg-gradient-to-r from-transparent via-purple-400 to-transparent"
+            transition={{ duration: 0.8, delay: 0.5 }}
+            className="h-1 w-20 mx-auto mt-6 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"
           />
         </div>
 
         {/* Content sections */}
-        <div className="max-w-3xl mx-auto space-y-8">
+        <div className="max-w-3xl mx-auto space-y-6">
           {sections.map((sec, i) => (
-            <AnimatedSection key={i} delay={i * 0.1}>
-              <div className={`relative rounded-2xl border ${sec.border} bg-gradient-to-br ${sec.gradient} backdrop-blur-sm p-6 md:p-8 transition-all duration-300 hover:scale-[1.01] hover:shadow-2xl hover:shadow-purple-500/10`}>
-                <div className="flex items-center gap-3 mb-5">
-                  <span className="text-2xl">{sec.icon}</span>
-                  <h2 className={`text-xl md:text-2xl font-bold ${sec.accent} m-0`}>{sec.title}</h2>
+            <AnimatedSection key={i} delay={i * 0.08}>
+              <div className={`relative rounded-xl border border-gray-200 bg-white p-6 md:p-8 shadow-sm hover:shadow-md transition-shadow duration-300`}>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-lg ${sec.iconBg}`}>
+                    {sec.icon}
+                  </div>
+                  <h2 className="text-xl md:text-2xl font-bold text-gray-900 m-0">{sec.title}</h2>
                 </div>
-                <div className="prose prose-invert prose-base md:prose-lg max-w-none prose-p:text-gray-300 prose-p:leading-relaxed prose-strong:text-white">
+                <div className={`w-12 h-1 rounded-full mb-5 ${sec.bar}`} />
+                <div className="prose prose-base md:prose-lg max-w-none prose-p:text-gray-600 prose-p:leading-relaxed prose-strong:text-gray-900">
                   {sec.content}
                 </div>
               </div>
@@ -420,16 +410,12 @@ function ChapterContent({ mangaTitle, chapterNumber, genre, author, status, tota
         </div>
 
         {/* Tags */}
-        <AnimatedSection delay={0.3} className="max-w-3xl mx-auto mt-12">
-          <div className="flex flex-wrap justify-center gap-3">
+        <AnimatedSection delay={0.3} className="max-w-3xl mx-auto mt-10">
+          <div className="flex flex-wrap justify-center gap-2">
             {[mangaTitle, `Chapter ${chapterNumber}`, genre, "Read Online", "Manga", status].filter(Boolean).map(tag => (
-              <motion.span
-                key={tag}
-                whileHover={{ scale: 1.08, y: -2 }}
-                className="px-4 py-2 bg-white/5 backdrop-blur-sm border border-white/10 text-purple-200 rounded-full text-sm font-medium hover:bg-white/10 transition-colors cursor-default"
-              >
+              <span key={tag} className="px-3 py-1.5 bg-gray-100 text-gray-600 rounded-full text-sm font-medium hover:bg-gray-200 transition-colors">
                 {tag}
-              </motion.span>
+              </span>
             ))}
           </div>
         </AnimatedSection>

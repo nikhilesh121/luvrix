@@ -5,7 +5,7 @@ import Head from "next/head";
 import Layout from "../components/Layout";
 import { getBlog, getUser, getSettings, incrementBlogViews, getAllBlogs, likeBlog, unlikeBlog, isBlogLiked, isFollowing, followUser, unfollowUser } from "../lib/api-client";
 import { cleanContentForDisplay } from "../components/BlogEditor";
-import { MagazineHero, MinimalHero, MagazineContent, MinimalContent } from "../components/BlogTemplates";
+import { MagazineHero, MinimalHero, CinematicHero, NewsletterHero, BoldHero, MagazineContent, MinimalContent, CinematicContent, NewsletterContent, BoldContent } from "../components/BlogTemplates";
 import { useAuth } from "../context/AuthContext";
 import { useSocket } from "../context/SocketContext";
 import { BlogArticleSchema, BreadcrumbSchema } from "../components/SEOHead";
@@ -460,6 +460,12 @@ export default function BlogPage({ initialBlog, initialAuthor, initialSettings }
         <MagazineHero blog={blog} author={author} readingTime={`${readingTime} min read`} viewCount={viewCount} />
       ) : blog.template === "minimal" ? (
         <MinimalHero blog={blog} author={author} readingTime={`${readingTime} min read`} viewCount={viewCount} />
+      ) : blog.template === "cinematic" ? (
+        <CinematicHero blog={blog} author={author} readingTime={`${readingTime} min read`} viewCount={viewCount} />
+      ) : blog.template === "newsletter" ? (
+        <NewsletterHero blog={blog} author={author} readingTime={`${readingTime} min read`} viewCount={viewCount} />
+      ) : blog.template === "bold" ? (
+        <BoldHero blog={blog} author={author} readingTime={`${readingTime} min read`} viewCount={viewCount} />
       ) : (
         <div className="relative">
           {blog.thumbnail ? (
@@ -541,6 +547,27 @@ export default function BlogPage({ initialBlog, initialAuthor, initialSettings }
             dangerouslySetInnerHTML={{ __html: cleanContentForDisplay(blog.content) }}
           />
         </MinimalContent>
+      ) : blog.template === "cinematic" ? (
+        <CinematicContent>
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
+            className="blog-content prose prose-lg max-w-none prose-headings:font-bold prose-headings:text-gray-900 prose-p:text-gray-700 prose-p:leading-loose prose-a:text-primary prose-img:rounded-xl prose-img:shadow-xl prose-blockquote:border-l-4 prose-blockquote:border-gray-800 prose-blockquote:bg-gray-50 prose-blockquote:rounded-r-xl prose-code:bg-gray-100 prose-code:rounded prose-pre:bg-gray-950 prose-pre:rounded-xl"
+            dangerouslySetInnerHTML={{ __html: cleanContentForDisplay(blog.content) }}
+          />
+        </CinematicContent>
+      ) : blog.template === "newsletter" ? (
+        <NewsletterContent>
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
+            className="blog-content prose prose-base md:prose-lg max-w-none prose-headings:font-extrabold prose-headings:text-gray-900 prose-p:text-gray-600 prose-p:leading-relaxed prose-a:text-blue-600 prose-img:rounded-xl prose-blockquote:border-l-4 prose-blockquote:border-blue-500 prose-blockquote:bg-blue-50 prose-blockquote:rounded-r-xl prose-code:bg-blue-50 prose-code:text-blue-700 prose-code:rounded prose-pre:bg-gray-900 prose-pre:rounded-xl"
+            dangerouslySetInnerHTML={{ __html: cleanContentForDisplay(blog.content) }}
+          />
+        </NewsletterContent>
+      ) : blog.template === "bold" ? (
+        <BoldContent>
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
+            className="blog-content prose prose-lg max-w-none prose-headings:font-black prose-headings:text-gray-900 prose-p:text-gray-700 prose-p:leading-loose prose-a:text-purple-600 prose-img:rounded-2xl prose-img:shadow-lg prose-blockquote:border-l-4 prose-blockquote:border-purple-500 prose-blockquote:bg-purple-50 prose-blockquote:rounded-r-xl prose-code:bg-purple-50 prose-code:text-purple-700 prose-code:rounded prose-pre:bg-gray-900 prose-pre:rounded-xl"
+            dangerouslySetInnerHTML={{ __html: cleanContentForDisplay(blog.content) }}
+          />
+        </BoldContent>
       ) : (
         <article className="max-w-4xl mx-auto px-3 sm:px-4 py-6 md:py-12">
           {settings?.adsEnabled && (
