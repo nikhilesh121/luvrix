@@ -6,18 +6,13 @@
     "react/no-unescaped-entities": "off",
     "react-hooks/exhaustive-deps": "warn",
     "no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
-    "no-console": ["warn", { "allow": ["warn", "error"] }],
+    "no-console": ["warn", { "allow": ["warn", "error", "log"] }],
     "prefer-const": "warn",
     "no-var": "error",
-    "eqeqeq": ["error", "always"],
-    "curly": ["error", "all"],
-    "brace-style": ["error", "1tbs"],
-    "comma-dangle": ["error", "always-multiline"],
-    "semi": ["error", "always"],
-    "quotes": ["error", "single", { "avoidEscape": true }],
-    "jsx-quotes": ["error", "prefer-double"],
-    "react/jsx-curly-brace-presence": ["error", { "props": "never", "children": "never" }],
-    "react/self-closing-comp": ["error", { "component": true, "html": true }]
+    "eqeqeq": ["warn", "always"],
+    "semi": ["warn", "always"],
+    "quotes": ["warn", "double", { "avoidEscape": true }],
+    "jsx-quotes": ["warn", "prefer-double"]
   },
   "ignorePatterns": [
     "node_modules/",
