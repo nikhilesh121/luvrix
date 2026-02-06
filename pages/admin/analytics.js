@@ -8,7 +8,8 @@ import { useSocket } from "../../context/SocketContext";
 import { 
   FiSave, FiBarChart2, FiToggleLeft, FiToggleRight, FiUsers, FiEye, 
   FiTrendingUp, FiActivity, FiGlobe, FiClock, FiZap, FiRefreshCw,
-  FiBookOpen, FiFileText, FiHeart, FiMessageCircle, FiAlertCircle, FiRadio
+  FiBookOpen, FiFileText, FiHeart, FiMessageCircle, FiAlertCircle, FiRadio,
+  FiCalendar
 } from "react-icons/fi";
 
 export default function AdminAnalytics() {
@@ -36,6 +37,8 @@ function AnalyticsContent() {
   });
   const [refreshing, setRefreshing] = useState(false);
   const [idError, setIdError] = useState("");
+  const [dateRange, setDateRange] = useState("7d");
+  const [pageviewData, setPageviewData] = useState({ dailyViews: [], topPages: [], totalViews: 0, uniqueVisitors: 0 });
   const [liveStats, setLiveStats] = useState({
     liveUsers: 0,
     avgWatchTime: 0,
@@ -48,7 +51,25 @@ function AnalyticsContent() {
     fetchSettings();
     fetchStats();
     fetchLiveStats();
+    fetchPageviews(dateRange);
   }, []);
+
+  // Refetch when date range changes
+  useEffect(() => {
+    fetchPageviews(dateRange);
+  }, [dateRange]);
+
+  const fetchPageviews = async (range) => {
+    try {
+      const res = await fetch(`/api/analytics/pageviews?range=${range}`);
+      if (res.ok) {
+        const data = await res.json();
+        setPageviewData(data);
+      }
+    } catch (error) {
+      console.error('Error fetching pageview analytics:', error);
+    }
+  };
 
   // Subscribe to real-time analytics updates
   useEffect(() => {
@@ -319,6 +340,122 @@ function AnalyticsContent() {
                   <StatCard icon={FiBookOpen} label="Total Manga" value={stats.totalManga} color="from-orange-500 to-red-500" />
                   <StatCard icon={FiHeart} label="Total Favorites" value={stats.totalFavorites} color="from-pink-500 to-rose-500" />
                 </div>
+
+                {/* Page Views Chart */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden mb-8"
+                >
+                  <div className="p-5 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <h3 className="font-bold text-gray-800 flex items-center gap-2">
+                      <FiBarChart2 className="text-blue-500" />
+                      Page Views
+                    </h3>
+                    <div className="flex items-center gap-2">
+                      {[
+                        { id: "1d", label: "Today" },
+                        { id: "7d", label: "7 Days" },
+                        { id: "30d", label: "30 Days" },
+                      ].map((r) => (
+                        <button
+                          key={r.id}
+                          onClick={() => setDateRange(r.id)}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${
+                            dateRange === r.id
+                              ? "bg-blue-500 text-white shadow"
+                              : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                          }`}
+                        >
+                          {r.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="p-5">
+                    {/* Summary row */}
+                    <div className="grid grid-cols-2 gap-4 mb-6">
+                      <div className="p-4 bg-blue-50 rounded-xl">
+                        <p className="text-xs text-blue-600 font-medium">Total Views</p>
+                        <p className="text-2xl font-black text-blue-800">{(pageviewData.totalViews || 0).toLocaleString()}</p>
+                      </div>
+                      <div className="p-4 bg-purple-50 rounded-xl">
+                        <p className="text-xs text-purple-600 font-medium">Unique Visitors</p>
+                        <p className="text-2xl font-black text-purple-800">{(pageviewData.uniqueVisitors || 0).toLocaleString()}</p>
+                      </div>
+                    </div>
+
+                    {/* Bar Chart */}
+                    {pageviewData.dailyViews.length > 0 ? (
+                      <div className="space-y-2">
+                        <div className="flex items-end gap-1 h-48">
+                          {(() => {
+                            const maxViews = Math.max(...pageviewData.dailyViews.map(d => d.views), 1);
+                            return pageviewData.dailyViews.map((day, i) => {
+                              const height = Math.max((day.views / maxViews) * 100, 2);
+                              const dateStr = new Date(day.date + 'T00:00:00').toLocaleDateString('en', { month: 'short', day: 'numeric' });
+                              return (
+                                <div key={i} className="flex-1 flex flex-col items-center justify-end gap-1 group relative">
+                                  <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap z-10">
+                                    {day.views} views / {day.uniqueVisitors} unique
+                                  </div>
+                                  <div
+                                    className="w-full bg-gradient-to-t from-blue-500 to-blue-400 rounded-t-md transition-all duration-300 hover:from-blue-600 hover:to-blue-500 min-w-[8px]"
+                                    style={{ height: `${height}%` }}
+                                  />
+                                  <span className="text-[10px] text-gray-400 truncate w-full text-center">{dateStr}</span>
+                                </div>
+                              );
+                            });
+                          })()}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-center py-8 text-gray-400">
+                        <FiBarChart2 className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                        <p>No pageview data yet. Views will appear as visitors browse the site.</p>
+                      </div>
+                    )}
+                  </div>
+                </motion.div>
+
+                {/* Most Viewed Pages (from pageview analytics) */}
+                {pageviewData.topPages.length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden mb-8"
+                  >
+                    <div className="p-5 border-b border-gray-100 bg-gradient-to-r from-cyan-50 to-white">
+                      <h3 className="font-bold text-gray-800 flex items-center gap-2">
+                        <FiTrendingUp className="text-cyan-500" />
+                        Most Viewed Pages ({dateRange === '1d' ? 'Today' : dateRange === '7d' ? 'Last 7 Days' : 'Last 30 Days'})
+                      </h3>
+                    </div>
+                    <div className="divide-y divide-gray-50">
+                      {pageviewData.topPages.map((page, i) => (
+                        <div key={page.path} className="flex items-center gap-4 p-4 hover:bg-gray-50 transition">
+                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold ${
+                            i === 0 ? "bg-yellow-100 text-yellow-600" :
+                            i === 1 ? "bg-gray-100 text-gray-600" :
+                            i === 2 ? "bg-orange-100 text-orange-600" :
+                            "bg-gray-50 text-gray-400"
+                          }`}>
+                            {i + 1}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-gray-800 truncate">{page.path}</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-bold text-gray-800">{page.views.toLocaleString()}</p>
+                            <p className="text-xs text-gray-400">views</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
 
                 {/* Page Breakdown */}
                 {Object.keys(liveStats.pageBreakdown || {}).length > 0 && (

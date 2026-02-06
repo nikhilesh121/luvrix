@@ -2,14 +2,19 @@ import Head from "next/head";
 import Script from "next/script";
 import Header from "./Header";
 import Footer from "./Footer";
+import AdRenderer from "./AdRenderer";
 import { useEffect, useState } from "react";
 import { getSettings } from "../lib/api-client";
 import { initGA, trackPageView } from "../lib/analytics";
 import { useRouter } from "next/router";
+import useWatchTime from "../hooks/useWatchTime";
 
 export default function Layout({ children, title, description, keywords, image, canonical, type = "website", author, publishedTime, modifiedTime, noindex = false }) {
   const [settings, setSettings] = useState(null);
   const router = useRouter();
+
+  // Track active watch time (visibility-aware)
+  useWatchTime();
 
   // Fetch settings and initialize GA
   useEffect(() => {
@@ -28,6 +33,14 @@ export default function Layout({ children, title, description, keywords, image, 
     const analyticsId = (settings?.analyticsEnabled && settings?.analyticsId) ? settings.analyticsId : process.env.NEXT_PUBLIC_GA_ID;
     if (analyticsId) {
       trackPageView(router.asPath, title || 'Luvrix');
+    }
+    // Log page view to our own analytics
+    if (typeof window !== 'undefined' && router.asPath) {
+      fetch('/api/analytics/pageviews', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ path: router.asPath, referrer: document.referrer }),
+      }).catch(() => {});
     }
   }, [router.asPath, settings, title]);
 
@@ -93,11 +106,27 @@ export default function Layout({ children, title, description, keywords, image, 
         {/* Theme Color */}
         <meta name="theme-color" content={settings?.themeColor || "#9333ea"} />
         
+        {/* AdSense Meta Verification */}
+        {settings?.adsEnabled && settings?.adsenseMeta && (
+          <meta name="google-adsense-account" content={settings.adsensePublisherId || ''} />
+        )}
+        
         {/* Preconnect for performance */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://www.googletagmanager.com" />
         <link rel="dns-prefetch" href="https://www.google-analytics.com" />
+        {settings?.adsEnabled && <link rel="preconnect" href="https://pagead2.googlesyndication.com" />}
       </Head>
+
+      {/* AdSense Global Script */}
+      {settings?.adsEnabled && settings?.adsensePublisherId && (
+        <Script
+          id="adsense-script"
+          src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${settings.adsensePublisherId}`}
+          strategy="afterInteractive"
+          crossOrigin="anonymous"
+        />
+      )}
 
       {/* Google Analytics - Using Next.js Script for optimal loading */}
       {analyticsId && analyticsId.startsWith('G-') && (
@@ -134,14 +163,40 @@ export default function Layout({ children, title, description, keywords, image, 
       `}</style>
 
       <div className="min-h-screen flex flex-col">
+        {/* Ad: Header Top */}
+        <AdRenderer position="header_top" settings={settings} />
+        
         <Header />
-        <main className="flex-1">{children}</main>
+        
+        {/* Ad: Below Header */}
+        <AdRenderer position="header_below" settings={settings} />
+        
+        <main className="flex-1">
+          {/* Ad: Content Top */}
+          <AdRenderer position="content_top" settings={settings} className="max-w-7xl mx-auto px-4" />
+          
+          {children}
+          
+          {/* Ad: Content Bottom */}
+          <AdRenderer position="content_bottom" settings={settings} className="max-w-7xl mx-auto px-4" />
+        </main>
+        
+        {/* Ad: Above Footer */}
+        <AdRenderer position="footer_above" settings={settings} />
+        
         <Footer />
+        
+        {/* Ad: Footer Inside */}
+        <AdRenderer position="footer_inside" settings={settings} />
       </div>
 
-      {/* Ads Code */}
-      {settings?.adsEnabled && settings?.adsCode && (
-        <div dangerouslySetInnerHTML={{ __html: settings.adsCode }} />
+      {/* Ad: Sticky Bottom */}
+      {settings?.adsEnabled && (
+        <div className="fixed bottom-0 left-0 right-0 z-40 flex justify-center pointer-events-none">
+          <div className="pointer-events-auto">
+            <AdRenderer position="sticky_bottom" settings={settings} />
+          </div>
+        </div>
       )}
     </>
   );

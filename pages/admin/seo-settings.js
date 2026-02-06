@@ -79,20 +79,43 @@ function SeoSettingsContent() {
     }
   };
 
+  const [writeStatus, setWriteStatus] = useState(null);
+
   const handleSave = async () => {
     setSaving(true);
+    setWriteStatus(null);
     try {
+      // 1. Save to database
       await updateSettings({ robotsTxt, adsTxt, globalSEO });
+
+      // 2. Write files to disk (live sync)
+      try {
+        const token = await auth.currentUser?.getIdToken();
+        const writeRes = await fetch('/api/admin/write-system-files', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ robotsTxt, adsTxt }),
+        });
+        const writeData = await writeRes.json();
+        if (writeRes.ok && writeData.success) {
+          setWriteStatus({ type: 'success', message: 'robots.txt & ads.txt updated live on server' });
+        } else {
+          setWriteStatus({ type: 'warning', message: `Saved to DB but file write had issues: ${writeData.errors?.join(', ') || 'Unknown error'}` });
+        }
+      } catch (writeErr) {
+        setWriteStatus({ type: 'warning', message: 'Saved to DB but could not write files to disk: ' + writeErr.message });
+      }
+
       await createLog({
         adminId: auth.currentUser?.uid,
         action: "Updated SEO Settings",
         targetId: "seo-settings",
       });
       setSaved(true);
-      setTimeout(() => setSaved(false), 3000);
+      setTimeout(() => setSaved(false), 5000);
     } catch (error) {
       console.error("Error saving SEO settings:", error);
-      alert("Failed to save settings");
+      alert("Failed to save settings: " + error.message);
     } finally {
       setSaving(false);
     }
@@ -283,7 +306,7 @@ function SeoSettingsContent() {
                 </div>
                 
                 <p className="text-sm text-gray-500 mb-4">
-                  Controls how search engine crawlers access your site. After saving, download and upload to your server&apos;s public folder.
+                  Controls how search engine crawlers access your site. Changes are written directly to the server on save.
                 </p>
 
                 <textarea
@@ -347,27 +370,35 @@ function SeoSettingsContent() {
                 </div>
               </div>
 
-              {/* Instructions */}
-              <div className="bg-white rounded-xl shadow p-6">
-                <h2 className="text-lg font-semibold text-gray-800 mb-4">Deployment Instructions</h2>
-                
-                <div className="space-y-4">
-                  <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                    <h3 className="font-medium text-yellow-800 mb-2">How to Update Files:</h3>
-                    <ol className="text-sm text-yellow-700 space-y-2 list-decimal list-inside">
-                      <li>Edit the content above and click &quot;Save Settings&quot;</li>
-                      <li>Click &quot;Download&quot; to get the updated file</li>
-                      <li>Upload the file to your server&apos;s <code className="bg-yellow-100 px-1 rounded">public_html/</code> folder</li>
-                      <li>Verify at <code className="bg-yellow-100 px-1 rounded">https://luvrix.com/robots.txt</code></li>
-                    </ol>
+              {/* Live Sync Status */}
+              {writeStatus && (
+                <div className={`p-4 rounded-xl border ${
+                  writeStatus.type === 'success' 
+                    ? 'bg-green-50 border-green-200' 
+                    : 'bg-yellow-50 border-yellow-200'
+                }`}>
+                  <p className={`text-sm font-medium ${
+                    writeStatus.type === 'success' ? 'text-green-700' : 'text-yellow-700'
+                  }`}>
+                    {writeStatus.type === 'success' ? '✓' : '⚠'} {writeStatus.message}
+                  </p>
+                  <div className="mt-2 flex gap-3 text-xs">
+                    <a href="https://luvrix.com/robots.txt" target="_blank" rel="noreferrer" className="text-blue-600 underline">Verify robots.txt</a>
+                    <a href="https://luvrix.com/ads.txt" target="_blank" rel="noreferrer" className="text-blue-600 underline">Verify ads.txt</a>
                   </div>
+                </div>
+              )}
 
-                  <div className="p-4 bg-gray-50 rounded-lg">
-                    <h3 className="font-medium text-gray-800 mb-2">File Locations on Server:</h3>
-                    <ul className="text-sm text-gray-600 space-y-1">
-                      <li>• robots.txt → <code className="bg-gray-200 px-1 rounded">/public_html/robots.txt</code></li>
-                      <li>• ads.txt → <code className="bg-gray-200 px-1 rounded">/public_html/ads.txt</code></li>
-                    </ul>
+              {/* Info */}
+              <div className="bg-white rounded-xl shadow p-6">
+                <h2 className="text-lg font-semibold text-gray-800 mb-4">Live File Sync</h2>
+                <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                  <p className="text-sm text-green-700">
+                    <strong>Auto-sync enabled:</strong> When you save, robots.txt and ads.txt are written directly to the server. No manual upload needed.
+                  </p>
+                  <div className="mt-2 text-xs text-green-600 space-y-1">
+                    <p>• robots.txt → <code className="bg-green-100 px-1 rounded">/public/robots.txt</code></p>
+                    <p>• ads.txt → <code className="bg-green-100 px-1 rounded">/public/ads.txt</code></p>
                   </div>
                 </div>
               </div>

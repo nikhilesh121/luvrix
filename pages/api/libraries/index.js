@@ -13,8 +13,15 @@ async function handler(req, res) {
     }
     
     if (req.method === 'POST') {
-      const library = await createLibrary(req.body);
-      return res.status(201).json(library);
+      const { userId, name, description, isPublic } = req.body;
+      if (!userId) {
+        return res.status(400).json({ error: 'userId is required' });
+      }
+      if (!name || !name.trim()) {
+        return res.status(400).json({ error: 'Library name is required' });
+      }
+      const library = await createLibrary(userId, { name: name.trim(), description, isPublic });
+      return res.status(201).json({ id: library, success: true });
     }
     
     return res.status(405).json({ error: 'Method not allowed' });

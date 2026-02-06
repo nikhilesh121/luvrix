@@ -7,7 +7,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   FiSave, FiMonitor, FiToggleLeft, FiToggleRight, FiLayout, FiGrid,
   FiSquare, FiSidebar, FiMaximize, FiBox, FiImage, FiType, FiVideo,
-  FiCode, FiPlus, FiTrash2, FiEdit2, FiEye, FiCheck, FiX, FiChevronDown
+  FiCode, FiPlus, FiTrash2, FiEdit2, FiEye, FiCheck, FiX, FiChevronDown,
+  FiFileText, FiSmartphone, FiTablet, FiAlertCircle
 } from "react-icons/fi";
 
 const AD_POSITIONS = [
@@ -42,15 +43,38 @@ export default function AdminAds() {
   );
 }
 
+const DEFAULT_ADS_TXT = `google.com, pub-9162211780712502, DIRECT, f08c47fec0942fa0
+`;
+
+const PAGE_TARGETS = [
+  { id: "all", name: "All Pages" },
+  { id: "home", name: "Homepage" },
+  { id: "blog", name: "Blog Posts" },
+  { id: "manga", name: "Manga Pages" },
+  { id: "chapter", name: "Chapter Reader" },
+  { id: "categories", name: "Categories" },
+  { id: "user", name: "User Profiles" },
+];
+
+const DEVICE_TARGETS = [
+  { id: "all", name: "All Devices" },
+  { id: "desktop", name: "Desktop Only" },
+  { id: "mobile", name: "Mobile Only" },
+];
+
 function AdsContent() {
   const [settings, setSettings] = useState({
     adsEnabled: false,
     adsCode: "",
     adPlacements: [],
+    adsensePublisherId: "",
+    adsenseMeta: "",
+    adsTxt: DEFAULT_ADS_TXT,
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [saveError, setSaveError] = useState("");
   const [activeTab, setActiveTab] = useState("placements");
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingAd, setEditingAd] = useState(null);
@@ -61,6 +85,8 @@ function AdsContent() {
     enabled: true,
     name: "",
     size: "",
+    devices: "all",
+    pages: ["all"],
   });
 
   useEffect(() => {
@@ -74,6 +100,9 @@ function AdsContent() {
         adsEnabled: data.adsEnabled || false,
         adsCode: data.adsCode || "",
         adPlacements: data.adPlacements || [],
+        adsensePublisherId: data.adsensePublisherId || "",
+        adsenseMeta: data.adsenseMeta || "",
+        adsTxt: data.adsTxt || DEFAULT_ADS_TXT,
       });
     } catch (error) {
       console.error("Error fetching settings:", error);
@@ -84,8 +113,20 @@ function AdsContent() {
 
   const handleSave = async () => {
     setSaving(true);
+    setSaveError("");
     try {
       await updateSettings(settings);
+
+      // Also write ads.txt to disk
+      try {
+        const token = await auth.currentUser?.getIdToken();
+        await fetch('/api/admin/write-system-files', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ adsTxt: settings.adsTxt }),
+        });
+      } catch (e) { console.error('ads.txt write error:', e); }
+
       await createLog({
         adminId: auth.currentUser?.uid,
         action: "Updated Ads Settings",
@@ -95,7 +136,7 @@ function AdsContent() {
       setTimeout(() => setSaved(false), 3000);
     } catch (error) {
       console.error("Error saving settings:", error);
-      alert("Failed to save settings");
+      setSaveError("Failed to save settings: " + error.message);
     } finally {
       setSaving(false);
     }
@@ -115,7 +156,7 @@ function AdsContent() {
       ...settings,
       adPlacements: [...settings.adPlacements, ad],
     });
-    setNewAd({ position: "", type: "banner", code: "", enabled: true, name: "", size: "" });
+    setNewAd({ position: "", type: "banner", code: "", enabled: true, name: "", size: "", devices: "all", pages: ["all"] });
     setShowAddModal(false);
   };
 
@@ -153,6 +194,8 @@ function AdsContent() {
 
   const tabs = [
     { id: "placements", label: "Ad Placements", icon: FiLayout },
+    { id: "adsense", label: "AdSense Config", icon: FiCode },
+    { id: "adstxt", label: "ads.txt", icon: FiFileText },
     { id: "global", label: "Global Settings", icon: FiMonitor },
   ];
 
@@ -362,6 +405,110 @@ function AdsContent() {
                 </motion.div>
               )}
 
+              {activeTab === "adsense" && (
+                <motion.div key="adsense" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="max-w-2xl">
+                  <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 space-y-6">
+                    <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl">
+                      <h3 className="font-bold text-blue-800 mb-1">Google AdSense Configuration</h3>
+                      <p className="text-sm text-blue-600">Configure your AdSense account. These values are injected into all public pages automatically.</p>
+                    </div>
+
+                    {/* Publisher ID */}
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">AdSense Publisher ID</label>
+                      <input
+                        type="text"
+                        value={settings.adsensePublisherId}
+                        onChange={(e) => setSettings({ ...settings, adsensePublisherId: e.target.value.trim() })}
+                        className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-primary focus:outline-none font-mono"
+                        placeholder="ca-pub-9162211780712502"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">Your AdSense publisher ID (starts with ca-pub-)</p>
+                    </div>
+
+                    {/* Global AdSense Script */}
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Global AdSense Script (injected in &lt;head&gt;)</label>
+                      <textarea
+                        value={settings.adsCode}
+                        onChange={(e) => setSettings({ ...settings, adsCode: e.target.value })}
+                        className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-primary focus:outline-none font-mono text-sm"
+                        rows={5}
+                        placeholder={`<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>`}
+                      />
+                    </div>
+
+                    {/* AdSense Meta Verification */}
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">AdSense Meta Verification Tag</label>
+                      <textarea
+                        value={settings.adsenseMeta}
+                        onChange={(e) => setSettings({ ...settings, adsenseMeta: e.target.value })}
+                        className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-primary focus:outline-none font-mono text-sm"
+                        rows={3}
+                        placeholder={`<meta name="google-adsense-account" content="ca-pub-9162211780712502">`}
+                      />
+                      <p className="text-xs text-gray-500 mt-1">Site verification meta tag from AdSense</p>
+                    </div>
+
+                    {/* Quick Setup */}
+                    {!settings.adsensePublisherId && (
+                      <button
+                        onClick={() => setSettings({
+                          ...settings,
+                          adsensePublisherId: "ca-pub-9162211780712502",
+                          adsCode: `<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9162211780712502" crossorigin="anonymous"></script>`,
+                          adsenseMeta: `<meta name="google-adsense-account" content="ca-pub-9162211780712502">`,
+                        })}
+                        className="w-full py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-xl font-semibold text-sm"
+                      >
+                        Auto-fill with default Publisher ID (ca-pub-9162211780712502)
+                      </button>
+                    )}
+                  </div>
+                </motion.div>
+              )}
+
+              {activeTab === "adstxt" && (
+                <motion.div key="adstxt" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="max-w-2xl">
+                  <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 space-y-6">
+                    <div className="p-4 bg-green-50 border border-green-200 rounded-xl">
+                      <h3 className="font-bold text-green-800 mb-1">ads.txt Editor</h3>
+                      <p className="text-sm text-green-600">Authorized digital sellers file. Changes are written directly to /ads.txt on save.</p>
+                    </div>
+
+                    <textarea
+                      value={settings.adsTxt}
+                      onChange={(e) => setSettings({ ...settings, adsTxt: e.target.value })}
+                      className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-primary focus:outline-none font-mono text-sm"
+                      rows={8}
+                      placeholder="google.com, pub-XXXXXXXXXXXXXXXX, DIRECT, f08c47fec0942fa0"
+                    />
+
+                    <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg">
+                      <p className="text-xs text-gray-600"><strong>Format:</strong> domain, publisher-id, relationship, certification-id</p>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => setSettings({ ...settings, adsTxt: DEFAULT_ADS_TXT })}
+                        className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium text-gray-700 transition"
+                      >
+                        Reset to Default
+                      </button>
+                      <a
+                        href="https://luvrix.com/ads.txt"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="px-4 py-2 bg-blue-50 hover:bg-blue-100 rounded-lg text-sm font-medium text-blue-700 transition"
+                      >
+                        Verify Live ads.txt
+                      </a>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
               {activeTab === "global" && (
                 <motion.div key="global" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="max-w-2xl">
                   <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 space-y-6">
@@ -535,6 +682,67 @@ function AdsContent() {
                       className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-primary focus:outline-none"
                       placeholder="e.g., 728x90, 300x250, Responsive"
                     />
+                  </div>
+
+                  {/* Device Targeting */}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Device Targeting</label>
+                    <div className="grid grid-cols-3 gap-2">
+                      {DEVICE_TARGETS.map((d) => {
+                        const isSelected = (editingAd ? editingAd.devices : newAd.devices) === d.id;
+                        return (
+                          <button
+                            key={d.id}
+                            type="button"
+                            onClick={() => editingAd
+                              ? setEditingAd({ ...editingAd, devices: d.id })
+                              : setNewAd({ ...newAd, devices: d.id })
+                            }
+                            className={`p-2.5 rounded-xl border-2 transition-all text-center text-xs font-medium ${
+                              isSelected ? "border-primary bg-primary/5 text-primary" : "border-gray-200 text-gray-600"
+                            }`}
+                          >
+                            {d.name}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Page Targeting */}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Page Targeting</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {PAGE_TARGETS.map((p) => {
+                        const currentPages = editingAd ? (editingAd.pages || ["all"]) : (newAd.pages || ["all"]);
+                        const isSelected = currentPages.includes(p.id);
+                        return (
+                          <button
+                            key={p.id}
+                            type="button"
+                            onClick={() => {
+                              let newPages;
+                              if (p.id === "all") {
+                                newPages = ["all"];
+                              } else {
+                                newPages = isSelected
+                                  ? currentPages.filter(x => x !== p.id)
+                                  : [...currentPages.filter(x => x !== "all"), p.id];
+                                if (newPages.length === 0) newPages = ["all"];
+                              }
+                              editingAd
+                                ? setEditingAd({ ...editingAd, pages: newPages })
+                                : setNewAd({ ...newAd, pages: newPages });
+                            }}
+                            className={`p-2 rounded-lg border-2 transition-all text-xs font-medium ${
+                              isSelected ? "border-green-400 bg-green-50 text-green-700" : "border-gray-200 text-gray-500"
+                            }`}
+                          >
+                            {isSelected ? "✓ " : ""}{p.name}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
 
                   {/* Ad Code */}
