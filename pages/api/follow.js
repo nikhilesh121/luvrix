@@ -1,5 +1,7 @@
 import { followUser, unfollowUser, isFollowing } from '../../lib/db';
+import { getDb } from '../../lib/mongodb';
 import { withCSRFProtection } from '../../lib/csrf';
+import { notifyNewFollower } from '../../lib/notifications';
 
 async function handler(req, res) {
   try {
@@ -12,6 +14,18 @@ async function handler(req, res) {
     if (req.method === 'POST') {
       const { followerId, followingId } = req.body;
       await followUser(followerId, followingId);
+
+      // Send notification to the followed user
+      if (followerId !== followingId) {
+        const db = await getDb();
+        const follower = await db.collection('users').findOne({ _id: followerId });
+        notifyNewFollower({
+          followedId: followingId,
+          followerId,
+          followerName: follower?.name || 'Someone',
+        }).catch(console.error);
+      }
+
       return res.status(200).json({ success: true });
     }
     

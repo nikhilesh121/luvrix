@@ -1,5 +1,7 @@
 import { likeBlog, getBlog } from '../../../../lib/db';
+import { getDb } from '../../../../lib/mongodb';
 import { withCSRFProtection } from '../../../../lib/csrf';
+import { notifyBlogLiked } from '../../../../lib/notifications';
 
 async function handler(req, res) {
   const { id } = req.query;
@@ -8,8 +10,21 @@ async function handler(req, res) {
     if (req.method === 'POST') {
       const { userId } = req.body;
       await likeBlog(id, userId);
-      // Return updated like count for real-time updates
       const blog = await getBlog(id);
+
+      // Send notification to blog author
+      if (blog && blog.authorId && blog.authorId !== userId) {
+        const db = await getDb();
+        const liker = await db.collection('users').findOne({ _id: userId });
+        notifyBlogLiked({
+          blogId: id,
+          blogTitle: blog.title,
+          blogAuthorId: blog.authorId,
+          likerId: userId,
+          likerName: liker?.name || 'Someone',
+        }).catch(console.error);
+      }
+
       return res.status(200).json({ 
         success: true, 
         likes: blog?.likes?.length || 0,

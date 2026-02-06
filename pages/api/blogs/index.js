@@ -1,6 +1,7 @@
 import { getAllBlogs, getUserBlogs, createBlog } from '../../../lib/db';
 import { withCSRFProtection } from '../../../lib/csrf';
 import { withRateLimit } from '../../../lib/rateLimit';
+import { notifyBlogPublished } from '../../../lib/notifications';
 
 async function handler(req, res) {
   res.setHeader('Content-Type', 'application/json');
@@ -22,7 +23,21 @@ async function handler(req, res) {
     }
     
     if (req.method === 'POST') {
-      const blogId = await createBlog(req.body);
+      const blogData = req.body;
+      const blogId = await createBlog(blogData);
+
+      // If blog is auto-approved, notify followers and subscribers
+      if (blogData.status === 'approved') {
+        notifyBlogPublished({
+          blogId,
+          blogTitle: blogData.title,
+          blogCategory: blogData.category,
+          authorId: blogData.authorId,
+          authorName: blogData.authorName || 'Author',
+          thumbnail: blogData.thumbnail,
+        }).catch(console.error);
+      }
+
       return res.status(201).json({ success: true, id: blogId });
     }
     
