@@ -4186,5 +4186,217 @@ Ran a one-time script to recalculate all users' counts from the actual `follows`
 
 ---
 
-*Document Version: 2.0*  
+---
+
+# Meeting 14 – Full System Audit & Multi-Phase Implementation
+
+**Date:** February 6, 2026  
+**Type:** System Audit + Major Feature Implementation (9 Phases)  
+**Status:** ✅ ALL PHASES COMPLETE
+
+---
+
+## Phase 1: System Audit — 6 Critical Mismatches Found
+
+| # | Issue | Severity |
+|---|-------|----------|
+| 1 | robots.txt/ads.txt: Admin saves to DB but never writes to disk — manual download required | Critical |
+| 2 | Ads system disconnected: Admin has full ad placement UI but Layout only dumps raw HTML at page bottom | Critical |
+| 3 | Library API bug: `createLibrary(req.body)` passes 1 arg but function expects `(userId, data)` → crash | Critical |
+| 4 | Analytics: No time-series graphs, no date filters, no daily/weekly/monthly charts | High |
+| 5 | Watch time: Socket structure exists but no frontend visibility tracking | High |
+| 6 | Settings API: No auth on PUT | High |
+
+---
+
+## Phase 3: robots.txt & ads.txt Live Sync ✅
+
+**Problem:** Admin SEO settings page saved robots.txt/ads.txt content to the database, but the actual static files in `/public/` were never updated. Admin had to manually download and upload files.
+
+**Solution:**
+- Created `/api/admin/write-system-files.js` — admin-only endpoint that writes robots.txt and ads.txt directly to `/public/` on disk
+- Includes automatic backup (`.bak` files) before overwrite
+- Admin-authenticated via Firebase token + role check
+- Updated `admin/seo-settings.js` save flow to call this API after DB save
+- Replaced manual "download and upload" instructions with live sync status + verify links
+- Success/failure feedback shown after save
+
+**Files Created:**
+- `pages/api/admin/write-system-files.js`
+
+**Files Modified:**
+- `pages/admin/seo-settings.js` (save flow, instructions section, writeStatus state)
+
+---
+
+## Phase 4: Library Module Fix ✅
+
+**Problem:** `/api/libraries/index.js` called `createLibrary(req.body)` with a single argument, but `lib/db.js` expects `createLibrary(userId, data)` with two arguments. This caused `userId` to receive the full body object and `data` to be `undefined`, crashing on `data.name`.
+
+**Solution:**
+- Destructured `{ userId, name, description, isPublic }` from `req.body`
+- Added validation: returns 400 if `userId` or `name` missing
+- Passes arguments correctly: `createLibrary(userId, { name, description, isPublic })`
+
+**Files Modified:**
+- `pages/api/libraries/index.js` (lines 15-24)
+
+---
+
+## Phase 5: Ads Management System (Admin-Controlled) ✅
+
+### A. AdSense Configuration
+**Problem:** No fields for AdSense Publisher ID, global script, or meta verification tag. Layout.js only injected raw HTML at page bottom.
+
+**Solution:**
+- Added 3 new fields to admin ads page: Publisher ID, Global AdSense Script, Meta Verification Tag
+- Added "AdSense Config" tab in admin ads page
+- Auto-fill button for default publisher ID (`ca-pub-9162211780712502`)
+- Layout.js now injects:
+  - `<meta name="google-adsense-account">` in `<head>`
+  - AdSense script via Next.js `<Script>` with `afterInteractive` strategy
+  - Preconnect to `pagead2.googlesyndication.com`
+
+### B. ads.txt Editor
+- Added "ads.txt" tab in admin ads page with textarea editor
+- Pre-filled with `google.com, pub-9162211780712502, DIRECT, f08c47fec0942fa0`
+- Reset to default button + live verify link
+- On save, ads.txt is written to disk via write-system-files API
+
+### C. Ad Units with Targeting
+**Problem:** Ad placements existed in admin UI but were never rendered on the frontend. No device or page targeting.
+
+**Solution:**
+- Created `components/AdRenderer.js` — renders admin-controlled ad placements at correct positions
+- Added Device Targeting: All Devices / Desktop Only / Mobile Only
+- Added Page Targeting: All Pages / Homepage / Blog Posts / Manga Pages / Chapter Reader / Categories / User Profiles
+- Safe rendering: scripts executed without duplicating global AdSense, `adsbygoogle.push()` called per `<ins>` element
+
+### D. Positional Ad Injection
+Layout.js now renders ads at **8 positions**:
+- `header_top` — Above navigation bar
+- `header_below` — Below header, above content
+- `content_top` — Above main content
+- `content_middle` — Between content (available via `AdSlotInline` export)
+- `content_bottom` — Below main content
+- `footer_above` — Just before footer
+- `footer_inside` — Within footer area
+- `sticky_bottom` — Fixed at bottom of screen
+
+### E. Safe Rendering
+- Error boundary: try-catch around all ad code injection
+- Duplicate prevention: checks if AdSense script already loaded before adding
+- Layout shift prevention: `min-height` on banner ad containers
+- `overflow: hidden` on all ad slots
+
+**Files Created:**
+- `components/AdRenderer.js`
+
+**Files Modified:**
+- `pages/admin/ads.js` (AdSense Config tab, ads.txt tab, device/page targeting in modal, new state fields)
+- `components/Layout.js` (AdSense script/meta injection, 8 positional ad slots, removed old raw HTML injection)
+
+---
+
+## Phase 6: Analytics Dashboard ✅
+
+**Problem:** Analytics page only showed total counts and live users. No time-series data, no charts, no date range filters.
+
+**Solution:**
+- Created `/api/analytics/pageviews.js`:
+  - **POST**: Logs page view with path, IP, timestamp, referrer
+  - **GET**: Returns daily views aggregation, top pages, total views, unique visitors
+  - Supports date ranges: `1d` (today), `7d`, `30d`
+  - MongoDB aggregation pipeline with `$dateToString` grouping
+- Added to analytics dashboard:
+  - **Bar chart** showing daily page views with hover tooltips (views + unique visitors)
+  - **Date range filter** buttons: Today / 7 Days / 30 Days
+  - **Summary cards**: Total Views + Unique Visitors for selected range
+  - **Most Viewed Pages** list with ranking
+- Layout.js now logs every route change to `/api/analytics/pageviews`
+
+**Files Created:**
+- `pages/api/analytics/pageviews.js`
+
+**Files Modified:**
+- `pages/admin/analytics.js` (pageviewData state, fetchPageviews function, bar chart, date filters, top pages list)
+- `components/Layout.js` (pageview POST on route change)
+
+---
+
+## Phase 7: Watch Time & Active Page Tracking ✅
+
+**Problem:** Analytics showed "Avg Watch Time" but no actual tracking existed. No visibility-aware time tracking on the frontend.
+
+**Solution:**
+- Created `hooks/useWatchTime.js`:
+  - Uses **Visibility API** (`document.hidden`) — only counts time when tab is visible
+  - Pauses on tab switch / minimize, resumes when tab becomes visible again
+  - Sends **heartbeat every 15 seconds** with accumulated watch time
+  - Uses `navigator.sendBeacon` on page unload for reliability
+  - Flushes and resets on route change (tracks per-page)
+  - One active page per session
+- Created `/api/analytics/watchtime.js`:
+  - Receives path + seconds from frontend
+  - Caps at 30 minutes to prevent bad data
+  - Upserts by session key (IP + path) within 30-minute window
+- Integrated `useWatchTime()` hook into Layout.js
+
+**Files Created:**
+- `hooks/useWatchTime.js`
+- `pages/api/analytics/watchtime.js`
+
+**Files Modified:**
+- `components/Layout.js` (imported + activated useWatchTime hook)
+
+---
+
+## Phase 8: QA & Verification ✅
+
+### Build Verification
+- `npm run build` — ✅ Success (zero errors)
+- `pm2 restart luvrix` — ✅ Online, stable at 67MB
+
+### API Endpoint Verification
+| Endpoint | Method | Status |
+|----------|--------|--------|
+| `/robots.txt` | GET | ✅ Returns correct content |
+| `/ads.txt` | GET | ✅ Returns `google.com, pub-9162211780712502...` |
+| `/api/analytics/pageviews/` | POST | ✅ `{"ok":true}` |
+| `/api/analytics/pageviews/?range=7d` | GET | ✅ Returns dailyViews, topPages, totals |
+| `/api/analytics/watchtime/` | POST | ✅ `{"ok":true}` |
+
+---
+
+## Git Commit
+
+| Commit | Description |
+|--------|-------------|
+| `1717c88` | Phase 3-8: Admin ads system, robots.txt live sync, analytics dashboard, watch time tracking |
+
+---
+
+## Summary of All Changes (Meeting 14)
+
+### Files Created (5)
+| File | Purpose |
+|------|---------|
+| `components/AdRenderer.js` | Safe positional ad rendering with device/page targeting |
+| `hooks/useWatchTime.js` | Visibility-aware watch time tracking hook |
+| `pages/api/admin/write-system-files.js` | Writes robots.txt/ads.txt to disk from admin |
+| `pages/api/analytics/pageviews.js` | Page view logging + aggregation API |
+| `pages/api/analytics/watchtime.js` | Watch time logging API |
+
+### Files Modified (5)
+| File | Changes |
+|------|---------|
+| `components/Layout.js` | AdRenderer, AdSense script/meta, pageview logging, useWatchTime hook, 8 ad positions |
+| `pages/admin/ads.js` | AdSense Config tab, ads.txt tab, device/page targeting, Publisher ID + meta fields |
+| `pages/admin/analytics.js` | Bar chart, date range filters, pageview data fetching, top pages list |
+| `pages/admin/seo-settings.js` | Live sync to disk on save, removed manual upload instructions |
+| `pages/api/libraries/index.js` | Fixed createLibrary arg mismatch, added validation |
+
+---
+
+*Document Version: 3.0*  
 *Last Modified: February 6, 2026*
