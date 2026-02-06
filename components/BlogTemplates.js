@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { FiCalendar, FiClock, FiEye, FiUser, FiArrowLeft, FiTag } from "react-icons/fi";
+import { FiCalendar, FiClock, FiEye, FiUser, FiArrowLeft, FiTag, FiPlay, FiRadio } from "react-icons/fi";
+import { useState, useEffect } from "react";
 
 export const BLOG_TEMPLATES = [
   { id: "default", name: "Classic", description: "Full-width hero with overlay text", preview: "bg-gradient-to-br from-slate-800 to-slate-900" },
@@ -9,6 +10,7 @@ export const BLOG_TEMPLATES = [
   { id: "cinematic", name: "Cinematic", description: "Full-bleed dark hero header", preview: "bg-gradient-to-br from-gray-900 to-black" },
   { id: "newsletter", name: "Newsletter", description: "Centered boxed layout", preview: "bg-gradient-to-br from-blue-100 to-indigo-100" },
   { id: "bold", name: "Bold", description: "Large gradient title accent", preview: "bg-gradient-to-br from-purple-700 to-pink-600" },
+  { id: "video", name: "Video", description: "YouTube, live streams & video embeds", preview: "bg-gradient-to-br from-red-600 to-orange-500" },
 ];
 
 export function TemplateSelector({ value, onChange }) {
@@ -296,6 +298,180 @@ export function BoldContent({ children }) {
   return (
     <article className="max-w-3xl mx-auto px-4 py-10 md:py-16">
       {children}
+    </article>
+  );
+}
+
+// ============================================
+// VIDEO TEMPLATE
+// ============================================
+
+function parseVideoUrl(url) {
+  if (!url) return null;
+  // YouTube
+  const ytMatch = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|live\/)|youtu\.be\/)([\w-]{11})/);
+  if (ytMatch) return { type: 'youtube', id: ytMatch[1], embedUrl: `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=0&rel=0` };
+  // YouTube Live
+  const ytLiveMatch = url.match(/youtube\.com\/live\/([\w-]{11})/);
+  if (ytLiveMatch) return { type: 'youtube_live', id: ytLiveMatch[1], embedUrl: `https://www.youtube.com/embed/${ytLiveMatch[1]}?autoplay=1&rel=0` };
+  // Vimeo
+  const vimeoMatch = url.match(/vimeo\.com\/(\d+)/);
+  if (vimeoMatch) return { type: 'vimeo', id: vimeoMatch[1], embedUrl: `https://player.vimeo.com/video/${vimeoMatch[1]}` };
+  // Dailymotion
+  const dmMatch = url.match(/dailymotion\.com\/video\/([\w]+)/);
+  if (dmMatch) return { type: 'dailymotion', id: dmMatch[1], embedUrl: `https://www.dailymotion.com/embed/video/${dmMatch[1]}` };
+  // Twitch
+  const twitchMatch = url.match(/twitch\.tv\/(\w+)/);
+  if (twitchMatch) return { type: 'twitch', id: twitchMatch[1], embedUrl: `https://player.twitch.tv/?channel=${twitchMatch[1]}&parent=${typeof window !== 'undefined' ? window.location.hostname : 'luvrix.com'}` };
+  // Direct video URL
+  if (url.match(/\.(mp4|webm|ogg|m3u8)$/i)) return { type: 'direct', url };
+  // Generic embed (iframe-compatible URL)
+  return { type: 'embed', embedUrl: url };
+}
+
+function VideoPlayer({ videoUrl, isLive }) {
+  const video = parseVideoUrl(videoUrl);
+  if (!video) return (
+    <div className="aspect-video bg-gray-900 rounded-2xl flex items-center justify-center">
+      <p className="text-gray-500">No video URL provided</p>
+    </div>
+  );
+
+  if (video.type === 'direct') {
+    return (
+      <div className="relative aspect-video bg-black rounded-2xl overflow-hidden shadow-2xl ring-1 ring-white/10">
+        <video src={video.url} controls className="w-full h-full" playsInline />
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative aspect-video bg-black rounded-2xl overflow-hidden shadow-2xl ring-1 ring-white/10">
+      <iframe
+        src={video.embedUrl}
+        className="absolute inset-0 w-full h-full"
+        frameBorder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        allowFullScreen
+        title="Video player"
+      />
+    </div>
+  );
+}
+
+function LiveBadge() {
+  const [pulse, setPulse] = useState(true);
+  useEffect(() => {
+    const interval = setInterval(() => setPulse(p => !p), 1000);
+    return () => clearInterval(interval);
+  }, []);
+  return (
+    <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-red-600 text-white rounded-full text-xs font-bold uppercase tracking-wider">
+      <span className={`w-2 h-2 rounded-full bg-white ${pulse ? 'opacity-100' : 'opacity-40'} transition-opacity`} />
+      LIVE
+    </span>
+  );
+}
+
+export function VideoHero({ blog, author, readingTime, viewCount }) {
+  const isLive = blog.isLive || blog.videoUrl?.includes('/live/') || blog.videoUrl?.includes('twitch.tv');
+
+  return (
+    <div className="relative bg-gray-950">
+      {/* Animated background */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-40 -right-40 w-[500px] h-[500px] bg-red-600/10 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute -bottom-40 -left-40 w-[400px] h-[400px] bg-orange-500/10 rounded-full blur-3xl" style={{ animationDelay: '1s' }} />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-purple-600/5 rounded-full blur-3xl" />
+      </div>
+
+      <div className="relative z-10 max-w-5xl mx-auto px-4 pt-6 pb-10 md:pt-10 md:pb-16">
+        {/* Navigation */}
+        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+          <Link href="/" className="inline-flex items-center gap-2 text-gray-400 hover:text-white mb-6 transition text-sm">
+            <FiArrowLeft className="w-4 h-4" /> Back to Home
+          </Link>
+        </motion.div>
+
+        {/* Video Player */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          className="mb-8"
+        >
+          <VideoPlayer videoUrl={blog.videoUrl} isLive={isLive} />
+        </motion.div>
+
+        {/* Meta info */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+        >
+          <div className="flex flex-wrap items-center gap-3 mb-4">
+            {isLive && <LiveBadge />}
+            {blog.category && (
+              <span className="inline-block px-3 py-1 bg-white/10 backdrop-blur-sm text-white/90 rounded-full text-xs font-semibold uppercase tracking-wider">
+                {blog.category}
+              </span>
+            )}
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-red-500/10 text-red-400 rounded-full text-xs font-semibold">
+              <FiPlay className="w-3 h-3" /> Video
+            </span>
+          </div>
+          <h1 className="text-2xl md:text-4xl lg:text-5xl font-black text-white mb-5 leading-tight break-words">
+            {blog.title}
+          </h1>
+          <div className="flex flex-wrap items-center gap-4 text-gray-400 text-sm">
+            {author && (
+              <Link href={`/user/${blog.authorId}`} className="flex items-center gap-2 hover:text-white transition-colors">
+                <div className="w-8 h-8 rounded-full bg-white/10 overflow-hidden ring-2 ring-red-500/30">
+                  {author.photoURL ? (
+                    <img src={author.photoURL} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-white font-bold text-xs">
+                      {(author.name || "?")[0]}
+                    </div>
+                  )}
+                </div>
+                <span className="font-medium">{author.name || author.displayName || "Author"}</span>
+              </Link>
+            )}
+            {blog.createdAt && (
+              <span className="flex items-center gap-1">
+                <FiCalendar className="w-3.5 h-3.5" />
+                {new Date(blog.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+              </span>
+            )}
+            {viewCount > 0 && (
+              <span className="flex items-center gap-1">
+                <FiEye className="w-3.5 h-3.5" />{viewCount.toLocaleString()} views
+              </span>
+            )}
+          </div>
+          {/* Gradient divider */}
+          <motion.div
+            initial={{ scaleX: 0 }}
+            animate={{ scaleX: 1 }}
+            transition={{ duration: 0.8, delay: 0.6 }}
+            className="h-0.5 w-full bg-gradient-to-r from-red-500 via-orange-500 to-transparent rounded-full mt-8 origin-left"
+          />
+        </motion.div>
+      </div>
+    </div>
+  );
+}
+
+export function VideoContent({ children }) {
+  return (
+    <article className="max-w-4xl mx-auto px-4 py-8 md:py-14">
+      <div className="relative">
+        <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-red-500 via-orange-500 to-transparent rounded-full hidden md:block" />
+        <div className="md:pl-8">
+          {children}
+        </div>
+      </div>
     </article>
   );
 }

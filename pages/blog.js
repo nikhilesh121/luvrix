@@ -5,7 +5,7 @@ import Head from "next/head";
 import Layout from "../components/Layout";
 import { getBlog, getUser, getSettings, incrementBlogViews, getAllBlogs, likeBlog, unlikeBlog, isBlogLiked, isFollowing, followUser, unfollowUser } from "../lib/api-client";
 import { cleanContentForDisplay } from "../components/BlogEditor";
-import { MagazineHero, MinimalHero, CinematicHero, NewsletterHero, BoldHero, MagazineContent, MinimalContent, CinematicContent, NewsletterContent, BoldContent } from "../components/BlogTemplates";
+import { MagazineHero, MinimalHero, CinematicHero, NewsletterHero, BoldHero, VideoHero, MagazineContent, MinimalContent, CinematicContent, NewsletterContent, BoldContent, VideoContent } from "../components/BlogTemplates";
 import { useAuth } from "../context/AuthContext";
 import { useSocket } from "../context/SocketContext";
 import { BlogArticleSchema, BreadcrumbSchema } from "../components/SEOHead";
@@ -466,6 +466,8 @@ export default function BlogPage({ initialBlog, initialAuthor, initialSettings }
         <NewsletterHero blog={blog} author={author} readingTime={`${readingTime} min read`} viewCount={viewCount} />
       ) : blog.template === "bold" ? (
         <BoldHero blog={blog} author={author} readingTime={`${readingTime} min read`} viewCount={viewCount} />
+      ) : blog.template === "video" ? (
+        <VideoHero blog={blog} author={author} readingTime={`${readingTime} min read`} viewCount={viewCount} />
       ) : (
         <div className="relative">
           {blog.thumbnail ? (
@@ -568,6 +570,13 @@ export default function BlogPage({ initialBlog, initialAuthor, initialSettings }
             dangerouslySetInnerHTML={{ __html: cleanContentForDisplay(blog.content) }}
           />
         </BoldContent>
+      ) : blog.template === "video" ? (
+        <VideoContent>
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
+            className="blog-content prose prose-lg max-w-none prose-headings:font-bold prose-headings:text-gray-900 prose-p:text-gray-700 prose-p:leading-relaxed prose-a:text-red-600 prose-img:rounded-xl prose-img:shadow-lg prose-blockquote:border-l-4 prose-blockquote:border-red-500 prose-blockquote:bg-red-50 prose-blockquote:rounded-r-xl prose-code:bg-gray-100 prose-code:rounded prose-pre:bg-gray-900 prose-pre:rounded-xl"
+            dangerouslySetInnerHTML={{ __html: cleanContentForDisplay(blog.content) }}
+          />
+        </VideoContent>
       ) : (
         <article className="max-w-4xl mx-auto px-3 sm:px-4 py-6 md:py-12">
           {settings?.adsEnabled && (

@@ -11,8 +11,8 @@ import { TemplateSelector } from "../components/BlogTemplates";
 import { calculateSeoScore, MIN_SEO_SCORE } from "../utils/seoScore";
 import { checkForSpam } from "../utils/spamFilter";
 import { canAutoApprove } from "../utils/contentValidator";
-import { motion } from "framer-motion";
-import { FiArrowLeft, FiSave, FiAlertCircle, FiCheck, FiImage, FiEdit3 } from "react-icons/fi";
+import { motion, AnimatePresence } from "framer-motion";
+import { FiArrowLeft, FiSave, FiAlertCircle, FiCheck, FiImage, FiEdit3, FiVideo, FiPlay, FiRadio } from "react-icons/fi";
 import Link from "next/link";
 
 const BlogEditor = dynamic(() => import("../components/BlogEditor"), { ssr: false });
@@ -48,6 +48,8 @@ function EditBlogContent({ user }) {
     category: "",
     thumbnail: "",
     template: "default",
+    videoUrl: "",
+    isLive: false,
   });
 
   const [seoData, setSeoData] = useState({
@@ -103,6 +105,8 @@ function EditBlogContent({ user }) {
         category: blogData.category || "",
         thumbnail: blogData.thumbnail || "",
         template: blogData.template || "default",
+        videoUrl: blogData.videoUrl || "",
+        isLive: blogData.isLive || false,
       });
       setSeoData({
         seoTitle: blogData.seoTitle || "",
@@ -176,6 +180,8 @@ function EditBlogContent({ user }) {
         ...seoData,
         content: content_html,
         content_text,
+        videoUrl: blog.template === "video" ? blog.videoUrl : undefined,
+        isLive: blog.template === "video" ? blog.isLive : undefined,
         seoScore: seoResult.score,
         contentScore: validationResult?.score || 0,
         authorName: isAdmin ? originalBlog?.authorName : (user.displayName || originalBlog?.authorName || null),
@@ -320,6 +326,56 @@ function EditBlogContent({ user }) {
                 <div className="bg-white rounded-xl border p-4">
                   <TemplateSelector value={blog.template} onChange={(t) => setBlog({ ...blog, template: t })} />
                 </div>
+
+              {/* Video URL - Only shown when Video template is selected */}
+              <AnimatePresence>
+                {blog.template === "video" && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="bg-white rounded-xl border border-red-200 p-4">
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="w-8 h-8 bg-gradient-to-r from-red-500 to-orange-500 rounded-lg flex items-center justify-center">
+                          <FiVideo className="w-4 h-4 text-white" />
+                        </div>
+                        <div>
+                          <label className="text-sm font-semibold text-slate-700">Video URL</label>
+                          <p className="text-xs text-slate-400">YouTube, Vimeo, Twitch, Dailymotion, or direct link</p>
+                        </div>
+                      </div>
+                      <input
+                        type="url"
+                        value={blog.videoUrl || ""}
+                        onChange={(e) => setBlog({ ...blog, videoUrl: e.target.value })}
+                        placeholder="https://www.youtube.com/watch?v=... or live stream URL"
+                        className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-red-500/20 focus:border-red-500 mb-3"
+                      />
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={blog.isLive || false}
+                          onChange={(e) => setBlog({ ...blog, isLive: e.target.checked })}
+                          className="w-4 h-4 rounded border-slate-300 text-red-500 focus:ring-red-500/50"
+                        />
+                        <span className="text-sm text-slate-600 flex items-center gap-1.5">
+                          <FiRadio className="w-3.5 h-3.5 text-red-500" /> Mark as Live Stream
+                        </span>
+                      </label>
+                      {blog.videoUrl && (
+                        <div className="mt-3 p-2.5 bg-green-50 rounded-lg border border-green-200">
+                          <p className="text-xs text-green-700 truncate flex items-center gap-1.5">
+                            <FiPlay className="w-3 h-3 flex-shrink-0" /> {blog.videoUrl}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               {/* Content */}
                 <div className="bg-white rounded-xl border p-4">
