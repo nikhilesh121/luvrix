@@ -18,7 +18,9 @@ export default async function handler(req, res) {
     const noCache = req.query.nocache === '1';
     res.setHeader('Cache-Control', noCache ? 'no-cache, no-store' : 'public, s-maxage=60, stale-while-revalidate=300');
 
-    const manga = await getAllManga();
+    const allManga = await getAllManga();
+    // Exclude draft/private manga from sitemap
+    const manga = allManga.filter(m => !m.status || m.status === 'published' || m.status === 'approved');
 
     const urls = manga.map(m => {
       const lastmod = m.updatedAt || m.createdAt || new Date();

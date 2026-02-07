@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
-import { getDb } from '../../../lib/mongodb';
-import { verifyToken } from '../../../lib/auth';
+import { withAdmin } from '../../../lib/auth';
+import { logAdminAction, AUDIT_CATEGORIES } from '../../../lib/auditLog';
 
 const PUBLIC_DIR = path.join(process.cwd(), 'public');
 
@@ -35,29 +35,12 @@ function safeWriteAndVerify(filePath, content) {
   return true;
 }
 
-export default async function handler(req, res) {
+async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
   try {
-    // Verify admin access
-    const token = req.headers.authorization?.replace('Bearer ', '');
-    if (!token) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
-
-    const decoded = verifyToken(token);
-    if (!decoded) {
-      return res.status(401).json({ error: 'Invalid token' });
-    }
-
-    const db = await getDb();
-    const user = await db.collection('users').findOne({ _id: decoded.uid });
-    if (!user || user.role !== 'ADMIN') {
-      return res.status(403).json({ error: 'Admin access required' });
-    }
-
     const { robotsTxt, adsTxt } = req.body;
     const results = { robots: null, ads: null };
     const errors = [];
@@ -101,6 +84,11 @@ export default async function handler(req, res) {
       });
     }
 
+    // Audit log the action
+    await logAdminAction(req, 'system_config_update', AUDIT_CATEGORIES.SYSTEM_CONFIG, {
+      filesWritten: results,
+    });
+
     return res.status(200).json({
       success: true,
       message: 'System files updated successfully',
@@ -111,3 +99,5 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Failed to write system files' });
   }
 }
+
+export default withAdmin(handler);

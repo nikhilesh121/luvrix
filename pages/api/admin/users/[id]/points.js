@@ -1,7 +1,8 @@
 import { getDb } from '../../../../../lib/mongodb';
-import { verifyToken } from '../../../../../lib/auth';
+import { withAdmin } from '../../../../../lib/auth';
 import { withCSRFProtection } from '../../../../../lib/csrf';
 import { withRateLimit } from '../../../../../lib/rateLimit';
+import { logAdminAction, AUDIT_CATEGORIES } from '../../../../../lib/auditLog';
 
 async function handler(req, res) {
   // Set proper headers
@@ -12,24 +13,7 @@ async function handler(req, res) {
   }
 
   try {
-    // Verify admin token
-    const token = req.headers.authorization?.replace('Bearer ', '');
-    if (!token) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
-
-    const decoded = verifyToken(token);
-    if (!decoded) {
-      return res.status(401).json({ error: 'Invalid token' });
-    }
-
     const db = await getDb();
-    
-    // Check if user is admin
-    const adminUser = await db.collection('users').findOne({ _id: decoded.uid });
-    if (!adminUser || adminUser.role !== 'ADMIN') {
-      return res.status(403).json({ error: 'Admin access required' });
-    }
 
     const { id } = req.query;
     const { points } = req.body;
@@ -60,15 +44,12 @@ async function handler(req, res) {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    // Log the action
-    await db.collection('logs').insertOne({
-      action: 'admin_add_user_points',
-      adminId: decoded.uid,
+    // Audit log the action
+    await logAdminAction(req, 'user_update', AUDIT_CATEGORIES.USER_MANAGEMENT, {
       targetUserId: id,
       previousPoints: currentPoints,
       addedPoints: points,
       newTotal: newTotal,
-      createdAt: new Date()
     });
 
     return res.status(200).json({ 
@@ -83,5 +64,5 @@ async function handler(req, res) {
   }
 }
 
-// Apply admin rate limiting then CSRF protection
-export default withRateLimit(withCSRFProtection(handler), 'admin');
+// Apply admin auth, rate limiting, then CSRF protection
+export default withAdmin(withRateLimit(withCSRFProtection(handler), 'admin'));

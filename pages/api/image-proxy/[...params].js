@@ -1,7 +1,9 @@
 // Image proxy API for optimizing external image URLs
 // Usage: /api/image-proxy/optimize/https://external-image.com/image.jpg?w=800&q=75
 
-export default async function handler(req, res) {
+import { withRateLimit } from '../../../lib/rateLimit';
+
+async function handler(req, res) {
   const { params } = req.query;
   const [action, ...urlParts] = params;
   
@@ -62,3 +64,5 @@ export default async function handler(req, res) {
     `);
   }
 }
+
+export default withRateLimit(handler, 'content');

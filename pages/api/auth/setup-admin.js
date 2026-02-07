@@ -1,7 +1,8 @@
 import { registerUser } from '../../../lib/auth';
 import { getAllUsers, updateUser, getUserByEmail } from '../../../lib/db';
+import { withRateLimit } from '../../../lib/rateLimit';
 
-export default async function handler(req, res) {
+async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -61,3 +62,5 @@ export default async function handler(req, res) {
     return res.status(500).json({ success: false, error: 'Internal server error' });
   }
 }
+
+export default withRateLimit(handler, 'auth');

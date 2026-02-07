@@ -1,6 +1,9 @@
 import { getDb } from '../../../lib/mongodb';
+import { withRateLimit } from '../../../lib/rateLimit';
 
-export default async function handler(req, res) {
+const BOT_UA = /bot|crawl|spider|slurp|bingbot|googlebot|yandex|baidu|duckduck|semrush|ahref|lighthouse|pagespeed|headless|phantom|selenium/i;
+
+async function handler(req, res) {
   const db = await getDb();
 
   try {
@@ -8,6 +11,12 @@ export default async function handler(req, res) {
     if (req.method === 'POST') {
       const { path, referrer, userAgent } = req.body;
       if (!path) return res.status(400).json({ error: 'path required' });
+
+      // Exclude bots from pageview tracking
+      const ua = req.headers['user-agent'] || '';
+      if (BOT_UA.test(ua)) {
+        return res.status(200).json({ ok: true, skipped: 'bot' });
+      }
 
       await db.collection('pageviews').insertOne({
         path,
@@ -78,13 +87,44 @@ export default async function handler(req, res) {
         { $count: 'total' },
       ]).toArray();
 
+      // Bounce rate: sessions (by IP) with only 1 pageview
+      const bounceData = await db.collection('pageviews').aggregate([
+        { $match: { timestamp: { $gte: startDate } } },
+        { $group: { _id: '$ip', pageCount: { $sum: 1 } } },
+        { $group: {
+          _id: null,
+          totalSessions: { $sum: 1 },
+          bounceSessions: { $sum: { $cond: [{ $eq: ['$pageCount', 1] }, 1, 0] } },
+        }},
+      ]).toArray();
+
+      const totalSessions = bounceData[0]?.totalSessions || 0;
+      const bounceSessions = bounceData[0]?.bounceSessions || 0;
+      const bounceRate = totalSessions > 0 ? Math.round((bounceSessions / totalSessions) * 100) : 0;
+
+      // Average session duration from watchtime collection
+      const sessionDuration = await db.collection('watchtime').aggregate([
+        { $match: { createdAt: { $gte: startDate } } },
+        { $group: { _id: '$ip', totalSeconds: { $sum: '$seconds' } } },
+        { $group: { _id: null, avgSeconds: { $avg: '$totalSeconds' } } },
+      ]).toArray();
+
+      const avgSessionDuration = Math.round(sessionDuration[0]?.avgSeconds || 0);
+
+      // Pagination for topPages
+      const page = parseInt(req.query.page) || 1;
+      const limit = parseInt(req.query.limit) || 10;
+
       return res.status(200).json({
         dailyViews,
         topPages,
         totalViews,
         uniqueVisitors: uniqueVisitors[0]?.total || 0,
+        bounceRate,
+        avgSessionDuration,
         range,
         startDate: startDate.toISOString(),
+        pagination: { page, limit },
       });
     }
 
@@ -94,3 +134,5 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Internal server error' });
   }
 }
+
+export default withRateLimit(handler, 'content');

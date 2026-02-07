@@ -9,6 +9,7 @@ import { ThemeProvider } from "../context/ThemeContext";
 import { trackPageView, initGA } from "../lib/analytics";
 import { getSettings } from "../lib/api-client";
 import dynamic from 'next/dynamic';
+import ErrorBoundary from '../components/ErrorBoundary';
 
 const CookieConsent = dynamic(() => import('../components/CookieConsent'), { ssr: false });
 
@@ -102,15 +103,17 @@ function MyApp({ Component, pageProps }) {
   }, [router]);
 
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        <SocketProvider>
-          <BlogCacheProvider>
-            <AppContent Component={Component} pageProps={pageProps} loading={loading} />
-          </BlogCacheProvider>
-        </SocketProvider>
-      </AuthProvider>
-    </ThemeProvider>
+    <ErrorBoundary>
+      <ThemeProvider>
+        <AuthProvider>
+          <SocketProvider>
+            <BlogCacheProvider>
+              <AppContent Component={Component} pageProps={pageProps} loading={loading} />
+            </BlogCacheProvider>
+          </SocketProvider>
+        </AuthProvider>
+      </ThemeProvider>
+    </ErrorBoundary>
   );
 }
 

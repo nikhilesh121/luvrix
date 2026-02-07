@@ -3,6 +3,7 @@ import { getDb } from '../../lib/mongodb';
 import { withCSRFProtection } from '../../lib/csrf';
 import { withRateLimit } from '../../lib/rateLimit';
 import { sanitizeText } from '../../lib/sanitize';
+import { addJob } from '../../lib/jobQueue';
 
 async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -124,22 +125,40 @@ async function handler(req, res) {
         `;
     }
 
-    // Send email
-    await transporter.sendMail({
-      from: smtpFrom,
-      to: contactEmail,
-      replyTo: sanitizedData.email,
-      subject,
-      html: htmlContent,
-    });
+    // Try queue-based sending first, fall back to sync
+    try {
+      await addJob('email:send', {
+        from: smtpFrom,
+        to: contactEmail,
+        replyTo: sanitizedData.email,
+        subject,
+        html: htmlContent,
+        submitterEmail: sanitizedData.email,
+      }, { priority: 2 });
 
-    // Update submission status
-    await db.collection('contact_submissions').updateOne(
-      { email: sanitizedData.email, createdAt: { $gte: new Date(Date.now() - 60000) } },
-      { $set: { status: 'sent' } }
-    );
+      await db.collection('contact_submissions').updateOne(
+        { email: sanitizedData.email, createdAt: { $gte: new Date(Date.now() - 60000) } },
+        { $set: { status: 'queued' } }
+      );
 
-    return res.status(200).json({ success: true, emailSent: true });
+      return res.status(200).json({ success: true, emailSent: true, queued: true });
+    } catch (queueErr) {
+      // Fallback: send synchronously if queue fails
+      await transporter.sendMail({
+        from: smtpFrom,
+        to: contactEmail,
+        replyTo: sanitizedData.email,
+        subject,
+        html: htmlContent,
+      });
+
+      await db.collection('contact_submissions').updateOne(
+        { email: sanitizedData.email, createdAt: { $gte: new Date(Date.now() - 60000) } },
+        { $set: { status: 'sent' } }
+      );
+
+      return res.status(200).json({ success: true, emailSent: true, queued: false });
+    }
   } catch (error) {
     console.error('Send email error:', error);
     return res.status(500).json({ error: 'Failed to send email' });

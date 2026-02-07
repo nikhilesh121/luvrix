@@ -2,6 +2,7 @@ import { getDb } from '../../../../../lib/mongodb';
 import { verifyToken, hashPassword } from '../../../../../lib/auth';
 import { sendPasswordResetEmail } from '../../../../../utils/email';
 import { withRateLimit } from '../../../../../lib/rateLimit';
+import { logAdminAction, AUDIT_CATEGORIES } from '../../../../../lib/auditLog';
 
 function generateTempPassword() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
@@ -73,14 +74,12 @@ async function handler(req, res) {
       emailSent = result.success;
     }
 
-    // Log the action
-    await db.collection('logs').insertOne({
-      action: 'admin_reset_password',
-      adminId: decoded.uid,
+    // Audit log the action
+    req.user = { uid: decoded.uid, email: adminUser.email, role: adminUser.role };
+    await logAdminAction(req, 'admin_reset_password', AUDIT_CATEGORIES.USER_MANAGEMENT, {
       targetUserId: id,
       targetEmail: targetUser.email,
       emailSent,
-      createdAt: new Date(),
     });
 
     return res.status(200).json({

@@ -31,6 +31,14 @@ export default function CookieConsent() {
     }
   };
 
+  const recordConsent = (accepted, analytics, marketing) => {
+    fetch('/api/consent', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ accepted, analytics, marketing }),
+    }).catch(() => {});
+  };
+
   const acceptCookies = () => {
     localStorage.setItem('cookieConsent', JSON.stringify({
       accepted: true,
@@ -38,6 +46,7 @@ export default function CookieConsent() {
       analytics: true,
       marketing: true,
     }));
+    recordConsent(true, true, true);
     setShowBanner(false);
   };
 
@@ -48,6 +57,7 @@ export default function CookieConsent() {
       analytics: false,
       marketing: false,
     }));
+    recordConsent(false, false, false);
     setShowBanner(false);
   };
 

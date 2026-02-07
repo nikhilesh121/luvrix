@@ -79,12 +79,35 @@ export default function AdRenderer({ position, settings, className = '' }) {
   );
 }
 
+const BELOW_FOLD_POSITIONS = ['content_bottom', 'footer_above', 'footer_inside', 'sticky_bottom'];
+
 function SafeAdSlot({ ad }) {
   const slotRef = useRef(null);
   const injectedRef = useRef(false);
+  const [isVisible, setIsVisible] = useState(false);
+  const isLazy = BELOW_FOLD_POSITIONS.includes(ad.position);
+
+  // Lazy-load: only inject ad code when slot enters viewport
+  useEffect(() => {
+    if (!isLazy || !slotRef.current) {
+      setIsVisible(true);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '200px' }
+    );
+    observer.observe(slotRef.current);
+    return () => observer.disconnect();
+  }, [isLazy]);
 
   useEffect(() => {
-    if (!slotRef.current || !ad.code || injectedRef.current) return;
+    if (!slotRef.current || !ad.code || injectedRef.current || !isVisible) return;
     injectedRef.current = true;
 
     try {
@@ -124,10 +147,12 @@ function SafeAdSlot({ ad }) {
         slotRef.current.appendChild(newScript);
       });
 
-      // Push adsbygoogle if ins element exists
+      // Push adsbygoogle if ins element exists — guard against duplicate pushes
       const insElements = slotRef.current.querySelectorAll('ins.adsbygoogle');
       if (insElements.length > 0 && typeof window !== 'undefined') {
-        insElements.forEach(() => {
+        insElements.forEach((ins) => {
+          if (ins.dataset.adsbygooglePushed) return;
+          ins.dataset.adsbygooglePushed = 'true';
           try {
             (window.adsbygoogle = window.adsbygoogle || []).push({});
           } catch (e) {
@@ -138,7 +163,7 @@ function SafeAdSlot({ ad }) {
     } catch (err) {
       console.error('Ad rendering error:', err);
     }
-  }, [ad.code]);
+  }, [ad.code, isVisible]);
 
   return (
     <div

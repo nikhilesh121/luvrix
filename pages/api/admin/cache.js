@@ -1,6 +1,8 @@
 import { getDb } from '../../../lib/mongodb';
+import { withAdmin } from '../../../lib/auth';
 import { withCSRFProtection } from '../../../lib/csrf';
 import { withRateLimit } from '../../../lib/rateLimit';
+import { logAdminAction, AUDIT_CATEGORIES } from '../../../lib/auditLog';
 import fs from 'fs';
 import path from 'path';
 
@@ -50,13 +52,10 @@ async function handler(req, res) {
       }
     }
 
-    // Log the cache clear action
-    const db = await getDb();
-    await db.collection('logs').insertOne({
-      type: 'cache_clear',
+    // Audit log the cache clear action
+    await logAdminAction(req, 'cache_clear', AUDIT_CATEGORIES.SYSTEM_CONFIG, {
       action,
       results,
-      timestamp: new Date(),
     });
 
     return res.status(200).json({ 
@@ -70,5 +69,5 @@ async function handler(req, res) {
   }
 }
 
-// Apply rate limiting (admin) then CSRF protection
-export default withRateLimit(withCSRFProtection(handler), 'admin');
+// Apply admin auth, rate limiting, then CSRF protection
+export default withAdmin(withRateLimit(withCSRFProtection(handler), 'admin'));

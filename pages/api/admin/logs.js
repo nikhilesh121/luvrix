@@ -1,4 +1,5 @@
 import { getLogs, createLog } from '../../../lib/db';
+import { withAdmin } from '../../../lib/auth';
 import { withRateLimit } from '../../../lib/rateLimit';
 
 async function handler(req, res) {
@@ -20,4 +21,4 @@ async function handler(req, res) {
   }
 }
 
-export default withRateLimit(handler, 'admin');
+export default withAdmin(withRateLimit(handler, 'admin'));

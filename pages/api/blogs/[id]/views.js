@@ -1,6 +1,7 @@
 import { incrementBlogViews, getBlog } from '../../../../lib/db';
+import { withRateLimit } from '../../../../lib/rateLimit';
 
-export default async function handler(req, res) {
+async function handler(req, res) {
   const { id } = req.query;
   
   try {
@@ -17,3 +18,5 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Internal server error' });
   }
 }
+
+export default withRateLimit(handler, 'content');

@@ -1138,6 +1138,64 @@ function ProfileContent({ user, initialUserData }) {
                     </Link>
                   </div>
                 </div>
+
+                {/* Data & Privacy (GDPR) */}
+                <div className="bg-white/5 backdrop-blur-xl rounded-2xl p-6 border border-white/10">
+                  <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                    <FiSettings className="w-5 h-5 text-blue-400" />
+                    Data & Privacy
+                  </h2>
+                  <p className="text-gray-400 text-sm mb-4">Manage your personal data under GDPR.</p>
+                  <div className="space-y-3">
+                    <button
+                      onClick={async () => {
+                        try {
+                          const token = localStorage.getItem('token');
+                          const res = await fetch('/api/user/export-data', {
+                            headers: { Authorization: `Bearer ${token}` },
+                          });
+                          if (!res.ok) throw new Error('Export failed');
+                          const data = await res.json();
+                          const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                          const url = URL.createObjectURL(blob);
+                          const a = document.createElement('a');
+                          a.href = url;
+                          a.download = `luvrix-data-export-${new Date().toISOString().split('T')[0]}.json`;
+                          a.click();
+                          URL.revokeObjectURL(url);
+                        } catch (err) {
+                          alert('Failed to export data. Please try again.');
+                        }
+                      }}
+                      className="flex items-center gap-3 w-full p-3 bg-blue-500/10 text-blue-400 rounded-xl hover:bg-blue-500/20 transition-all border border-blue-500/20"
+                    >
+                      <FiExternalLink className="w-5 h-5" />
+                      <span className="font-semibold">Export My Data</span>
+                    </button>
+                    <button
+                      onClick={async () => {
+                        if (!confirm('Are you sure you want to permanently delete your account? This action cannot be undone.')) return;
+                        if (!confirm('This will delete ALL your data including blogs, comments, and profile. Type OK to confirm.')) return;
+                        try {
+                          const token = localStorage.getItem('token');
+                          const res = await fetch('/api/user/delete-account', {
+                            method: 'DELETE',
+                            headers: { Authorization: `Bearer ${token}` },
+                          });
+                          if (!res.ok) throw new Error('Delete failed');
+                          localStorage.clear();
+                          router.push('/');
+                        } catch (err) {
+                          alert('Failed to delete account. Please try again.');
+                        }
+                      }}
+                      className="flex items-center gap-3 w-full p-3 bg-red-500/10 text-red-400 rounded-xl hover:bg-red-500/20 transition-all border border-red-500/20"
+                    >
+                      <FiTrash2 className="w-5 h-5" />
+                      <span className="font-semibold">Delete My Account</span>
+                    </button>
+                  </div>
+                </div>
               </div>
             </motion.div>
           )}

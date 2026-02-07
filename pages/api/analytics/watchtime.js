@@ -1,11 +1,20 @@
 import { getDb } from '../../../lib/mongodb';
+import { withRateLimit } from '../../../lib/rateLimit';
 
-export default async function handler(req, res) {
+const BOT_UA = /bot|crawl|spider|slurp|bingbot|googlebot|yandex|baidu|duckduck|semrush|ahref|lighthouse|pagespeed|headless|phantom|selenium/i;
+
+async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
   try {
+    // Exclude bots from watch time tracking
+    const ua = req.headers['user-agent'] || '';
+    if (BOT_UA.test(ua)) {
+      return res.status(200).json({ ok: true, skipped: 'bot' });
+    }
+
     const { path, seconds } = req.body;
     if (!path || !seconds || seconds < 1) {
       return res.status(400).json({ error: 'path and seconds required' });
@@ -45,3 +54,5 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Internal server error' });
   }
 }
+
+export default withRateLimit(handler, 'content');
