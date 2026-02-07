@@ -24,9 +24,7 @@ export default function Document() {
         <meta name="theme-color" content="#9333ea" />
         <link rel="manifest" href="/manifest.json" />
         {/* Favicon */}
-        <link rel="icon" type="image/png" href="https://res.cloudinary.com/dsga2d0bv/image/upload/v1770089324/Luvrix/Luvrix_favicon_yqovij.png" />
         <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-        <link rel="apple-touch-icon" href="https://res.cloudinary.com/dsga2d0bv/image/upload/v1770089324/Luvrix/Luvrix_favicon_yqovij.png" />
       </Head>
       <body>
         <script

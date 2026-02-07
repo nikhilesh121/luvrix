@@ -55,6 +55,7 @@ export default function Layout({ children, title, description, keywords, image, 
   const siteName = settings?.siteName || "Luvrix";
   const pageTitle = title ? `${title} | ${siteName}` : siteName;
   const analyticsId = (settings?.analyticsEnabled && settings?.analyticsId) ? settings.analyticsId : process.env.NEXT_PUBLIC_GA_ID;
+  const faviconUrl = settings?.faviconUrl || "https://res.cloudinary.com/dsga2d0bv/image/upload/v1770089324/Luvrix/Luvrix_favicon_yqovij.png";
 
   return (
     <>
@@ -65,8 +66,8 @@ export default function Layout({ children, title, description, keywords, image, 
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
         
         {/* Favicon */}
-        <link rel="icon" type="image/png" href="https://res.cloudinary.com/dsga2d0bv/image/upload/v1770089324/Luvrix/Luvrix_favicon_yqovij.png" />
-        <link rel="apple-touch-icon" href="https://res.cloudinary.com/dsga2d0bv/image/upload/v1770089324/Luvrix/Luvrix_favicon_yqovij.png" />
+        <link rel="icon" type="image/png" href={faviconUrl} />
+        <link rel="apple-touch-icon" href={faviconUrl} />
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#6366f1" />
         

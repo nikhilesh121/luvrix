@@ -86,6 +86,8 @@
 | OG Image size | 1200×630 pixels |
 | OG Image URL | Absolute URL starting with `https://` |
 | Default OG image | Cloudinary PNG (not SVG) |
+| Favicon format | PNG, ICO, or WebP (NO SVG) |
+| Favicon URL | Must be absolute `https://` when configured in Theme settings |
 | `alt` text | Descriptive, keyword-rich, ≤125 chars |
 | Lazy loading | `loading="lazy"` on all below-fold images |
 | Hero/LCP images | `loading="eager"` + `fetchpriority="high"` |

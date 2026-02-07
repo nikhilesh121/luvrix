@@ -4660,6 +4660,20 @@ pm2 restart luvrix
 - `components/Layout.js` — Auto Ads script injection with route exclusion
 - `pages/admin/ads.js` — Auto Ads toggle + excluded routes input in AdSense Config tab
 
+## Theme Customizer — Favicon Support (Site-wide)
+
+### Change
+- Theme customizer already supports `faviconUrl`.
+- Wired `settings.faviconUrl` into `<Head>` favicon tags in `components/Layout.js` so favicon can be updated from admin without code changes.
+
+### Notes
+- `_document.js` now keeps only `/favicon.ico` as a legacy fallback to avoid conflicts.
+- Primary favicon should be an absolute PNG/WebP URL.
+
+### Files Modified
+- `components/Layout.js` — uses `settings.faviconUrl` for `rel="icon"` + `apple-touch-icon`
+- `pages/_document.js` — removed hardcoded favicon PNG/apple-touch-icon
+
 ---
 
 *Document Version: 5.0*  
