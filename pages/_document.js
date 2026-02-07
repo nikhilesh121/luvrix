@@ -24,7 +24,7 @@ export default function Document() {
         <meta name="theme-color" content="#9333ea" />
         <link rel="manifest" href="/manifest.json" />
         {/* Favicon */}
-        <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="icon" type="image/x-icon" href="/favicon1.svg" />
       </Head>
       <body>
         <script
