@@ -422,9 +422,14 @@ export default function MangaDetail({ initialManga, initialSettings }) {
                 </div>
 
                 {/* Description */}
-                <p className="text-white/70 text-lg leading-relaxed mb-8 max-w-2xl">
-                  {manga.description || "No description available."}
-                </p>
+                <div className="mb-8 max-w-2xl">
+                  <h3 className="text-white/90 text-sm font-semibold uppercase tracking-wider mb-2">Synopsis</h3>
+                  <div className="max-h-[200px] overflow-y-auto pr-2 custom-scrollbar">
+                    <p className="text-white/70 text-base leading-relaxed whitespace-pre-line">
+                      {manga.description || "No description available."}
+                    </p>
+                  </div>
+                </div>
 
                 {/* Stats Cards */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">

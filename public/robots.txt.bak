@@ -54,6 +54,20 @@ Disallow: /*/page/
 # Crawl delay for polite crawling
 Crawl-delay: 1
 
+# Google Image Bot — allow all public images
+User-agent: Googlebot-Image
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+
+# AdsBot — must crawl landing pages for AdSense policy
+User-agent: AdsBot-Google
+Allow: /
+
+# AdsBot Mobile
+User-agent: AdsBot-Google-Mobile
+Allow: /
+
 # Sitemaps
 Sitemap: https://luvrix.com/sitemap.xml
 Sitemap: https://luvrix.com/sitemap-pages.xml
