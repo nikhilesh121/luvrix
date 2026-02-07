@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import Link from "next/link";
 import Head from "next/head";
 import Layout from "../components/Layout";
-import { getBlog, getUser, getSettings, incrementBlogViews, getAllBlogs, likeBlog, unlikeBlog, isBlogLiked, isFollowing, followUser, unfollowUser } from "../lib/api-client";
+import { getBlog, getBlogBySlug, getUser, getSettings, incrementBlogViews, getAllBlogs, likeBlog, unlikeBlog, isBlogLiked, isFollowing, followUser, unfollowUser } from "../lib/api-client";
 import { cleanContentForDisplay } from "../components/BlogEditor";
 import { MagazineHero, MinimalHero, CinematicHero, NewsletterHero, BoldHero, VideoHero, MagazineContent, MinimalContent, CinematicContent, NewsletterContent, BoldContent, VideoContent } from "../components/BlogTemplates";
 import { useAuth } from "../context/AuthContext";
@@ -39,7 +39,8 @@ const serializeData = (obj) => {
 
 export default function BlogPage({ initialBlog, initialAuthor, initialSettings }) {
   const router = useRouter();
-  const { id } = router.query;
+  const { id, slug } = router.query;
+  const blogId = id || initialBlog?.id;
   const isReady = router.isReady;
   const { user } = useAuth();
   const { joinRoom, leaveRoom, subscribe, emitBlogView, emitBlogLike, emitFollow } = useSocket();
@@ -196,17 +197,17 @@ export default function BlogPage({ initialBlog, initialAuthor, initialSettings }
       setError(null);
 
       // If we have SSR data AND the id matches, use it
-      if (initialBlog && initialBlog.id === id) {
+      if (initialBlog && initialBlog.id === blogId) {
         setBlog(initialBlog);
         setAuthor(initialAuthor);
         setSettings(initialSettings);
         setLoading(false);
         // Just increment views and fetch related
         try {
-          const result = await incrementBlogViews(id);
+          const result = await incrementBlogViews(blogId);
           if (result?.views) {
             setViewCount(result.views);
-            emitBlogView(id, result.views);
+            emitBlogView(blogId, result.views);
           }
         } catch (e) {
           console.log("Could not increment views");
@@ -214,7 +215,7 @@ export default function BlogPage({ initialBlog, initialAuthor, initialSettings }
         // Fetch related blogs
         try {
           const allBlogs = await getAllBlogs("approved", true, 10);
-          setRelatedBlogs(allBlogs.filter(b => b.id !== id).slice(0, 3));
+          setRelatedBlogs(allBlogs.filter(b => b.id !== blogId).slice(0, 3));
         } catch (e) {
           console.log("Could not fetch related blogs");
         }
@@ -222,13 +223,13 @@ export default function BlogPage({ initialBlog, initialAuthor, initialSettings }
       }
 
       // Client-side fetch when navigating between blogs
-      if (!id) {
+      if (!blogId) {
         setLoading(false);
         return;
       }
 
       try {
-        const blogData = await getBlog(id);
+        const blogData = slug ? await getBlogBySlug(slug) : await getBlog(blogId);
         
         if (!blogData || blogData.status !== "approved") {
           setError("Blog not found or not approved");
@@ -275,7 +276,7 @@ export default function BlogPage({ initialBlog, initialAuthor, initialSettings }
     }
 
     fetchBlog();
-  }, [id, isReady]);
+  }, [blogId, slug, isReady]);
 
   const formatDate = (timestamp) => {
     if (!timestamp) return "";
