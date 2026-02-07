@@ -250,4 +250,81 @@ Homepage (1.0)
 
 ---
 
+## 10. Build Stability & Low-Memory VPS Rules
+
+| # | Rule |
+|---|------|
+| 1 | Build MUST succeed with `NODE_OPTIONS="--max-old-space-size=1024"` |
+| 2 | Server requires 2GB swap (`/swapfile`) — verify with `swapon --show` |
+| 3 | PM2 manages the process: `pm2 start npm --name "luvrix" -- start` |
+| 4 | Apache reverse proxy on port 443 → localhost:3000 |
+| 5 | After build, verify `.next/BUILD_ID` and `.next/prerender-manifest.json` exist |
+| 6 | Never introduce memory-heavy build steps (large static generation, etc.) |
+| 7 | If a feature blocks build, gracefully disable it — never delete logic |
+
+### Build Command
+```bash
+NODE_OPTIONS="--max-old-space-size=1024" npm run build
+pm2 restart luvrix
+```
+
+---
+
+## 11. Auto Ads + Manual Ads Coexistence
+
+### Admin Settings Required
+| Setting | Type | Default | Description |
+|---------|------|---------|-------------|
+| `adsEnabled` | boolean | false | Global ads kill switch |
+| `adsensePublisherId` | string | — | `ca-pub-XXXXX` |
+| `enableAutoAds` | boolean | false | Enable Google Auto Ads overlay |
+| `autoAdsExcludedRoutes` | string[] | `["/admin","/login","/register","/error"]` | Routes where auto ads are suppressed |
+
+### Auto Ads Implementation Rules
+1. AdSense script loaded ONCE via `next/script` with `strategy="afterInteractive"`
+2. Auto Ads enabled by adding `data-ad-client` + `enable_page_level_ads: true` — controlled by admin toggle
+3. Auto Ads excluded from auth/admin/error pages via route check
+4. Cookie consent MUST be respected — no ads before consent
+5. Auto Ads and manual `AdRenderer` slots coexist — no conflicts
+6. NEVER call `adsbygoogle.push()` more than once per slot
+
+---
+
+## 12. SEO Implementation Status
+
+### ✅ Completed
+- [x] Unique `<title>` per page (≤60 chars)
+- [x] Unique `meta description` per page (140–160 chars)
+- [x] Canonical URLs on all indexable pages
+- [x] `noindex,nofollow` on admin/auth/draft/transactional pages
+- [x] `noindex,follow` on user profiles
+- [x] OG images use Cloudinary PNG (never SVG), absolute URLs, 1200×630
+- [x] Twitter Card matches OG image
+- [x] Organization schema (global via `_document.js`)
+- [x] WebSite + SearchAction schema (homepage)
+- [x] BlogPosting + BreadcrumbList schema (blog posts)
+- [x] Book + BreadcrumbList schema (manga detail)
+- [x] Chapter + BreadcrumbList schema (chapter pages)
+- [x] CollectionPage + ItemList schema (categories, manga listing)
+- [x] ProfilePage schema (user profiles)
+- [x] Internal links use slug URLs (no `?id=` params)
+- [x] `robots.txt` allows Googlebot, Googlebot-Image, AdsBot-Google
+- [x] Sitemaps exclude drafts, admin, auth pages
+- [x] `font-display: swap` on Google Fonts
+- [x] AdSense loaded `afterInteractive` (no render blocking)
+- [x] Preconnect to Cloudinary, Google Fonts, Google Ads
+- [x] GSC verification meta support (`settings.gscVerificationCode`)
+- [x] Duplicate AdSense script removed from `_document.js`
+- [x] Broken `getDb`/`toObjectId` imports fixed in `comments/like.js`
+- [x] 2GB swap created for build stability
+
+### ⏳ Pending (External / Manual)
+- [ ] Submit sitemap to Google Search Console (requires Google account)
+- [ ] Set GSC verification code in admin settings
+- [ ] Create social media accounts (Twitter, Instagram)
+- [ ] Facebook Pixel integration (requires ad platform)
+- [ ] Content moderation API for user-uploaded images (requires AI API)
+
+---
+
 *This document is the canonical source of truth. All SEO changes must reference and comply with this playbook.*

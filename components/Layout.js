@@ -133,6 +133,19 @@ export default function Layout({ children, title, description, keywords, image, 
         />
       )}
 
+      {/* Auto Ads — admin-controlled, route-excluded, CLS-safe */}
+      {settings?.adsEnabled && settings?.enableAutoAds && settings?.adsensePublisherId && (() => {
+        const raw = settings?.autoAdsExcludedRoutes || '/admin,/login,/register,/error,/create-blog,/edit-blog,/preview-blog,/dashboard';
+        const excludedRoutes = typeof raw === 'string' ? raw.split(',').map(r => r.trim()).filter(Boolean) : raw;
+        const isExcluded = excludedRoutes.some(r => router.asPath.startsWith(r));
+        if (isExcluded) return null;
+        return (
+          <Script id="adsense-auto-ads" strategy="afterInteractive">
+            {`(window.adsbygoogle = window.adsbygoogle || []).push({ google_ad_client: "${settings.adsensePublisherId}", enable_page_level_ads: true });`}
+          </Script>
+        );
+      })()}
+
       {/* Google Analytics - Using Next.js Script for optimal loading */}
       {analyticsId && analyticsId.startsWith('G-') && (
         <>

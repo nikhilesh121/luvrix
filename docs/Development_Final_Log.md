@@ -4619,5 +4619,48 @@ Comprehensive SEO and AdSense optimization across the entire platform. Created S
 
 ---
 
-*Document Version: 4.0*  
+## Build Stability Fix — February 7, 2026
+
+### Root Cause
+Server (3.9GB VPS) had **no swap file**, causing OOM kills during `npm run build`. The build would generate static pages but get killed before writing `.next/prerender-manifest.json`, causing PM2 to crash-loop.
+
+### Fixes Applied
+1. **Created 2GB swap file** (`/swapfile`) — persistent via `/etc/fstab`
+2. **Fixed broken imports** in `pages/api/comments/[id]/like.js` — removed `getDb`/`toObjectId` (not exported from `lib/db`)
+3. **Updated `likeComment`** in `lib/db.js` to return updated doc via `findOneAndUpdate`
+4. **Verified build** with `NODE_OPTIONS="--max-old-space-size=1024"` — succeeds consistently
+
+### Build Command (Standard)
+```bash
+NODE_OPTIONS="--max-old-space-size=1024" npm run build
+pm2 restart luvrix
+```
+
+### Post-Build Verification
+- `.next/BUILD_ID` exists
+- `.next/prerender-manifest.json` exists
+- `curl -sI http://localhost:3000/` returns HTTP 200
+
+## Auto Ads Implementation — February 7, 2026
+
+### Admin Settings Added
+| Setting | Type | Default |
+|---------|------|---------|
+| `enableAutoAds` | boolean | false |
+| `autoAdsExcludedRoutes` | string | `/admin,/login,/register,/error,...` |
+
+### Implementation
+- Auto Ads inject `enable_page_level_ads: true` via `next/script` (`afterInteractive`)
+- Route-based exclusion: admin, auth, error, create/edit/preview-blog, dashboard
+- Coexists with manual `AdRenderer` placements
+- Admin toggle in **Admin > Ads > AdSense Config** tab
+- Disabled by default — requires admin to enable
+
+### Files Modified
+- `components/Layout.js` — Auto Ads script injection with route exclusion
+- `pages/admin/ads.js` — Auto Ads toggle + excluded routes input in AdSense Config tab
+
+---
+
+*Document Version: 5.0*  
 *Last Modified: February 7, 2026*

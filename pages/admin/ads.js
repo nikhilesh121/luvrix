@@ -70,6 +70,8 @@ function AdsContent() {
     adsensePublisherId: "",
     adsenseMeta: "",
     adsTxt: DEFAULT_ADS_TXT,
+    enableAutoAds: false,
+    autoAdsExcludedRoutes: "/admin,/login,/register,/error,/create-blog,/edit-blog,/preview-blog,/dashboard",
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -103,6 +105,8 @@ function AdsContent() {
         adsensePublisherId: data.adsensePublisherId || "",
         adsenseMeta: data.adsenseMeta || "",
         adsTxt: data.adsTxt || DEFAULT_ADS_TXT,
+        enableAutoAds: data.enableAutoAds || false,
+        autoAdsExcludedRoutes: data.autoAdsExcludedRoutes || "/admin,/login,/register,/error,/create-blog,/edit-blog,/preview-blog,/dashboard",
       });
     } catch (error) {
       console.error("Error fetching settings:", error);
@@ -449,6 +453,35 @@ function AdsContent() {
                         placeholder={`<meta name="google-adsense-account" content="ca-pub-9162211780712502">`}
                       />
                       <p className="text-xs text-gray-500 mt-1">Site verification meta tag from AdSense</p>
+                    </div>
+
+                    {/* Auto Ads Toggle */}
+                    <div className="border-t border-gray-200 pt-6">
+                      <div className="flex items-center justify-between mb-3">
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-700">Google Auto Ads</label>
+                          <p className="text-xs text-gray-500 mt-0.5">Let Google automatically place ads on your pages. Works alongside manual placements.</p>
+                        </div>
+                        <button
+                          onClick={() => setSettings({ ...settings, enableAutoAds: !settings.enableAutoAds })}
+                          className={`p-1 rounded-full transition ${settings.enableAutoAds ? "text-green-600" : "text-gray-400"}`}
+                        >
+                          {settings.enableAutoAds ? <FiToggleRight size={28} /> : <FiToggleLeft size={28} />}
+                        </button>
+                      </div>
+                      {settings.enableAutoAds && (
+                        <div className="mt-3">
+                          <label className="block text-sm font-semibold text-gray-700 mb-2">Excluded Routes (comma-separated)</label>
+                          <input
+                            type="text"
+                            value={settings.autoAdsExcludedRoutes}
+                            onChange={(e) => setSettings({ ...settings, autoAdsExcludedRoutes: e.target.value })}
+                            className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-primary focus:outline-none font-mono text-sm"
+                            placeholder="/admin,/login,/register,/error"
+                          />
+                          <p className="text-xs text-gray-500 mt-1">Routes where Auto Ads will NOT appear (e.g. /admin,/login,/register)</p>
+                        </div>
+                      )}
                     </div>
 
                     {/* Quick Setup */}

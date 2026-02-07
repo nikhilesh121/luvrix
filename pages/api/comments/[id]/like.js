@@ -1,4 +1,4 @@
-import { likeComment, getDb, toObjectId } from '../../../../lib/db';
+import { likeComment } from '../../../../lib/db';
 import { withCSRFProtection } from '../../../../lib/csrf';
 
 async function handler(req, res) {
@@ -6,11 +6,8 @@ async function handler(req, res) {
   
   try {
     if (req.method === 'POST') {
-      await likeComment(id);
-      // Return updated like count for real-time updates
-      const db = await getDb();
-      const comment = await db.collection('comments').findOne({ _id: toObjectId(id) });
-      return res.status(200).json({ success: true, likes: comment?.likes || 0 });
+      const result = await likeComment(id);
+      return res.status(200).json({ success: true, likes: result?.likes || 0 });
     }
     
     return res.status(405).json({ error: 'Method not allowed' });
