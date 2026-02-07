@@ -8,6 +8,7 @@ import { useAuth } from "../../../context/AuthContext";
 import { useSocket } from "../../../context/SocketContext";
 import { generateChapterList } from "../../../utils/mangaRedirectGenerator";
 import { MangaSchema, BreadcrumbSchema } from "../../../components/SEOHead";
+import AdRenderer from "../../../components/AdRenderer";
 import CommentSection from "../../../components/CommentSection";
 import { trackMangaView, trackEngagement } from "../../../lib/analytics";
 import { motion } from "framer-motion";
@@ -507,12 +508,7 @@ export default function MangaDetail({ initialManga, initialSettings }) {
         {/* Chapters Section */}
         <div className="max-w-7xl mx-auto px-4 py-12">
 
-        {settings?.adsEnabled && (
-          <div className="mb-8 p-4 bg-gray-100 rounded-lg text-center">
-            <p className="text-xs text-gray-400 mb-2">Advertisement</p>
-            <div id="manga-top-ad" className="min-h-[100px]"></div>
-          </div>
-        )}
+        <AdRenderer position="content_middle" settings={settings} className="mb-8" />
 
         <motion.div
           initial={{ opacity: 0 }}
@@ -570,12 +566,7 @@ export default function MangaDetail({ initialManga, initialSettings }) {
           )}
         </motion.div>
 
-        {settings?.adsEnabled && (
-          <div className="mt-8 p-4 bg-gray-100 rounded-lg text-center">
-            <p className="text-xs text-gray-400 mb-2">Advertisement</p>
-            <div id="manga-bottom-ad" className="min-h-[100px]"></div>
-          </div>
-        )}
+        <AdRenderer position="content_bottom" settings={settings} className="mt-8" />
 
         {/* Comments Section */}
         {manga && <CommentSection targetId={manga.id} targetType="manga" />}

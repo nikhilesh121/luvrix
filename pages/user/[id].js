@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import Link from "next/link";
 import Head from "next/head";
 import Layout from "../../components/Layout";
+import { ProfilePageSchema } from "../../components/SEOHead";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   getUser, getUserByUniqueId, getUserBlogs, getUserStats, getUserLibraries, getBlog,
@@ -175,6 +176,7 @@ export default function UserProfile() {
         <meta property="og:image" content={profileUser.photoURL || "https://res.cloudinary.com/dsga2d0bv/image/upload/w_1200,h_630,c_pad,b_rgb:6366f1/Luvrix/Luvrix_favicon_yqovij.png"} />
       </Head>
 
+      <ProfilePageSchema user={profileUser} url={`/user/${router.query.id}`} />
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
         {/* Hero Header */}
         <div className="relative overflow-hidden">

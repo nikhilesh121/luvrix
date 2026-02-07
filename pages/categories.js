@@ -1,9 +1,11 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import Layout from "../components/Layout";
 import BlogCard from "../components/BlogCard";
-import { getAllBlogs } from "../lib/api-client";
+import { getAllBlogs, getSettings } from "../lib/api-client";
+import AdRenderer from "../components/AdRenderer";
+import { CollectionPageSchema, BreadcrumbSchema } from "../components/SEOHead";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   FiSearch, FiFilter, FiGrid, FiList, FiTrendingUp, 
@@ -129,13 +131,18 @@ export default function Categories() {
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState("grid");
   const [showCategoryPicker, setShowCategoryPicker] = useState(false);
+  const [settings, setSettings] = useState(null);
 
   useEffect(() => {
     async function fetchBlogs() {
       try {
-        const blogsData = await getAllBlogs("approved");
+        const [blogsData, settingsData] = await Promise.all([
+          getAllBlogs("approved"),
+          getSettings()
+        ]);
         setBlogs(blogsData);
         setFilteredBlogs(blogsData);
+        setSettings(settingsData);
       } catch (error) {
         console.error("Error fetching blogs:", error);
       } finally {
@@ -195,6 +202,17 @@ export default function Categories() {
       description={config.description}
       canonical="https://luvrix.com/categories"
     >
+      <CollectionPageSchema
+        title={selectedCategory === "All" ? "All Categories" : selectedCategory}
+        description={config.description}
+        url="/categories"
+        items={filteredBlogs.slice(0, 20).map(b => ({ title: b.title, url: b.slug ? `/blog/${b.slug}` : `/blog?id=${b.id}`, image: b.thumbnail }))}
+      />
+      <BreadcrumbSchema items={[
+        { name: "Home", url: "/" },
+        { name: "Categories", url: "/categories" },
+        ...(selectedCategory !== "All" ? [{ name: selectedCategory, url: `/categories?category=${selectedCategory}` }] : []),
+      ]} />
       <div className="min-h-screen bg-[#fafafa]">
         {/* Hero Section */}
         <div className={`relative overflow-hidden bg-gradient-to-br ${config.bgGradient}`}>
@@ -409,16 +427,22 @@ export default function Categories() {
             >
               <AnimatePresence mode="popLayout">
                 {filteredBlogs.map((blog, index) => (
-                  <motion.div
-                    key={blog.id}
-                    layout
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.9 }}
-                    transition={{ delay: index * 0.05 }}
-                  >
-                    <BlogCard blog={blog} index={index} viewMode={viewMode} />
-                  </motion.div>
+                  <React.Fragment key={blog.id}>
+                    <motion.div
+                      layout
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.9 }}
+                      transition={{ delay: index * 0.05 }}
+                    >
+                      <BlogCard blog={blog} index={index} viewMode={viewMode} />
+                    </motion.div>
+                    {(index + 1) % 6 === 0 && (
+                      <div className="col-span-full">
+                        <AdRenderer position="between_posts" settings={settings} className="my-2" />
+                      </div>
+                    )}
+                  </React.Fragment>
                 ))}
               </AnimatePresence>
             </motion.div>

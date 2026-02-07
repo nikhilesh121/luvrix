@@ -111,6 +111,11 @@ export default function Layout({ children, title, description, keywords, image, 
           <meta name="google-adsense-account" content={settings.adsensePublisherId || ''} />
         )}
         
+        {/* Google Search Console Verification */}
+        {settings?.gscVerificationCode && (
+          <meta name="google-site-verification" content={settings.gscVerificationCode} />
+        )}
+        
         {/* Preconnect for performance */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://www.googletagmanager.com" />

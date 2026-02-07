@@ -11,6 +11,8 @@ import { useSocket } from "../context/SocketContext";
 import { BlogArticleSchema, BreadcrumbSchema } from "../components/SEOHead";
 import CommentSection from "../components/CommentSection";
 import SocialShare from "../components/SocialShare";
+import BlogContentWithAds from "../components/BlogContentWithAds";
+import AdRenderer from "../components/AdRenderer";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   FiCalendar, FiUser, FiTag, FiArrowLeft, FiEye, FiShare2, 
@@ -532,76 +534,88 @@ export default function BlogPage({ initialBlog, initialAuthor, initialSettings }
       {/* Main Content - Template Aware */}
       {blog.template === "magazine" ? (
         <MagazineContent>
-          {settings?.adsEnabled && (
-            <div className="mb-10 p-6 bg-gradient-to-r from-gray-50 to-gray-100 rounded-2xl text-center border border-gray-200">
-              <p className="text-xs text-gray-400 mb-2">Advertisement</p>
-              <div id="blog-top-ad" className="min-h-[100px]"></div>
-            </div>
-          )}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
-            className="blog-content prose prose-base md:prose-lg max-w-none prose-headings:font-bold prose-headings:text-gray-900 prose-p:text-gray-700 prose-p:leading-loose prose-a:text-primary prose-img:rounded-xl prose-img:shadow-lg prose-blockquote:border-l-4 prose-blockquote:border-amber-400 prose-blockquote:bg-amber-50 prose-blockquote:rounded-r-xl prose-code:bg-gray-100 prose-code:rounded prose-pre:bg-gray-900 prose-pre:rounded-xl"
-            dangerouslySetInnerHTML={{ __html: cleanContentForDisplay(blog.content) }}
-          />
+          <AdRenderer position="content_middle" settings={settings} className="mb-10" />
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+            <BlogContentWithAds
+              html={cleanContentForDisplay(blog.content)}
+              settings={settings}
+              className="blog-content prose prose-base md:prose-lg max-w-none prose-headings:font-bold prose-headings:text-gray-900 prose-p:text-gray-700 prose-p:leading-loose prose-a:text-primary prose-img:rounded-xl prose-img:shadow-lg prose-blockquote:border-l-4 prose-blockquote:border-amber-400 prose-blockquote:bg-amber-50 prose-blockquote:rounded-r-xl prose-code:bg-gray-100 prose-code:rounded prose-pre:bg-gray-900 prose-pre:rounded-xl"
+            />
+          </motion.div>
         </MagazineContent>
       ) : blog.template === "minimal" ? (
         <MinimalContent>
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
-            className="blog-content prose prose-lg max-w-none prose-headings:font-serif prose-headings:text-gray-900 prose-p:text-gray-600 prose-p:leading-loose prose-p:text-lg prose-a:text-primary prose-img:rounded-lg prose-blockquote:border-l-2 prose-blockquote:border-gray-300 prose-blockquote:italic prose-code:bg-gray-50 prose-code:rounded prose-pre:bg-gray-900 prose-pre:rounded-lg"
-            dangerouslySetInnerHTML={{ __html: cleanContentForDisplay(blog.content) }}
-          />
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+            <BlogContentWithAds
+              html={cleanContentForDisplay(blog.content)}
+              settings={settings}
+              className="blog-content prose prose-lg max-w-none prose-headings:font-serif prose-headings:text-gray-900 prose-p:text-gray-600 prose-p:leading-loose prose-p:text-lg prose-a:text-primary prose-img:rounded-lg prose-blockquote:border-l-2 prose-blockquote:border-gray-300 prose-blockquote:italic prose-code:bg-gray-50 prose-code:rounded prose-pre:bg-gray-900 prose-pre:rounded-lg"
+            />
+          </motion.div>
         </MinimalContent>
       ) : blog.template === "cinematic" ? (
         <CinematicContent>
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
-            className="blog-content prose prose-lg max-w-none prose-headings:font-bold prose-headings:text-gray-900 prose-p:text-gray-700 prose-p:leading-loose prose-a:text-primary prose-img:rounded-xl prose-img:shadow-xl prose-blockquote:border-l-4 prose-blockquote:border-gray-800 prose-blockquote:bg-gray-50 prose-blockquote:rounded-r-xl prose-code:bg-gray-100 prose-code:rounded prose-pre:bg-gray-950 prose-pre:rounded-xl"
-            dangerouslySetInnerHTML={{ __html: cleanContentForDisplay(blog.content) }}
-          />
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+            <BlogContentWithAds
+              html={cleanContentForDisplay(blog.content)}
+              settings={settings}
+              className="blog-content prose prose-lg max-w-none prose-headings:font-bold prose-headings:text-gray-900 prose-p:text-gray-700 prose-p:leading-loose prose-a:text-primary prose-img:rounded-xl prose-img:shadow-xl prose-blockquote:border-l-4 prose-blockquote:border-gray-800 prose-blockquote:bg-gray-50 prose-blockquote:rounded-r-xl prose-code:bg-gray-100 prose-code:rounded prose-pre:bg-gray-950 prose-pre:rounded-xl"
+            />
+          </motion.div>
         </CinematicContent>
       ) : blog.template === "newsletter" ? (
         <NewsletterContent>
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
-            className="blog-content prose prose-base md:prose-lg max-w-none prose-headings:font-extrabold prose-headings:text-gray-900 prose-p:text-gray-600 prose-p:leading-relaxed prose-a:text-blue-600 prose-img:rounded-xl prose-blockquote:border-l-4 prose-blockquote:border-blue-500 prose-blockquote:bg-blue-50 prose-blockquote:rounded-r-xl prose-code:bg-blue-50 prose-code:text-blue-700 prose-code:rounded prose-pre:bg-gray-900 prose-pre:rounded-xl"
-            dangerouslySetInnerHTML={{ __html: cleanContentForDisplay(blog.content) }}
-          />
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+            <BlogContentWithAds
+              html={cleanContentForDisplay(blog.content)}
+              settings={settings}
+              className="blog-content prose prose-base md:prose-lg max-w-none prose-headings:font-extrabold prose-headings:text-gray-900 prose-p:text-gray-600 prose-p:leading-relaxed prose-a:text-blue-600 prose-img:rounded-xl prose-blockquote:border-l-4 prose-blockquote:border-blue-500 prose-blockquote:bg-blue-50 prose-blockquote:rounded-r-xl prose-code:bg-blue-50 prose-code:text-blue-700 prose-code:rounded prose-pre:bg-gray-900 prose-pre:rounded-xl"
+            />
+          </motion.div>
         </NewsletterContent>
       ) : blog.template === "bold" ? (
         <BoldContent>
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
-            className="blog-content prose prose-lg max-w-none prose-headings:font-black prose-headings:text-gray-900 prose-p:text-gray-700 prose-p:leading-loose prose-a:text-purple-600 prose-img:rounded-2xl prose-img:shadow-lg prose-blockquote:border-l-4 prose-blockquote:border-purple-500 prose-blockquote:bg-purple-50 prose-blockquote:rounded-r-xl prose-code:bg-purple-50 prose-code:text-purple-700 prose-code:rounded prose-pre:bg-gray-900 prose-pre:rounded-xl"
-            dangerouslySetInnerHTML={{ __html: cleanContentForDisplay(blog.content) }}
-          />
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+            <BlogContentWithAds
+              html={cleanContentForDisplay(blog.content)}
+              settings={settings}
+              className="blog-content prose prose-lg max-w-none prose-headings:font-black prose-headings:text-gray-900 prose-p:text-gray-700 prose-p:leading-loose prose-a:text-purple-600 prose-img:rounded-2xl prose-img:shadow-lg prose-blockquote:border-l-4 prose-blockquote:border-purple-500 prose-blockquote:bg-purple-50 prose-blockquote:rounded-r-xl prose-code:bg-purple-50 prose-code:text-purple-700 prose-code:rounded prose-pre:bg-gray-900 prose-pre:rounded-xl"
+            />
+          </motion.div>
         </BoldContent>
       ) : blog.template === "video" ? (
         <VideoContent>
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
-            className="blog-content prose prose-lg max-w-none prose-headings:font-bold prose-headings:text-gray-900 prose-p:text-gray-700 prose-p:leading-relaxed prose-a:text-red-600 prose-img:rounded-xl prose-img:shadow-lg prose-blockquote:border-l-4 prose-blockquote:border-red-500 prose-blockquote:bg-red-50 prose-blockquote:rounded-r-xl prose-code:bg-gray-100 prose-code:rounded prose-pre:bg-gray-900 prose-pre:rounded-xl"
-            dangerouslySetInnerHTML={{ __html: cleanContentForDisplay(blog.content) }}
-          />
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+            <BlogContentWithAds
+              html={cleanContentForDisplay(blog.content)}
+              settings={settings}
+              className="blog-content prose prose-lg max-w-none prose-headings:font-bold prose-headings:text-gray-900 prose-p:text-gray-700 prose-p:leading-relaxed prose-a:text-red-600 prose-img:rounded-xl prose-img:shadow-lg prose-blockquote:border-l-4 prose-blockquote:border-red-500 prose-blockquote:bg-red-50 prose-blockquote:rounded-r-xl prose-code:bg-gray-100 prose-code:rounded prose-pre:bg-gray-900 prose-pre:rounded-xl"
+            />
+          </motion.div>
         </VideoContent>
       ) : (
         <article className="max-w-4xl mx-auto px-3 sm:px-4 py-6 md:py-12">
-          {settings?.adsEnabled && (
-            <div className="mb-10 p-6 bg-gradient-to-r from-gray-50 to-gray-100 rounded-2xl text-center border border-gray-200">
-              <p className="text-xs text-gray-400 mb-2">Advertisement</p>
-              <div id="blog-top-ad" className="min-h-[100px]"></div>
-            </div>
-          )}
+          <AdRenderer position="content_middle" settings={settings} className="mb-10" />
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="blog-content prose prose-base md:prose-lg max-w-none
-              prose-headings:font-bold prose-headings:text-gray-900 prose-headings:break-words
-              prose-h2:text-2xl md:prose-h2:text-3xl prose-h2:mt-8 md:prose-h2:mt-12 prose-h2:mb-4 md:prose-h2:mb-6
-              prose-h3:text-xl md:prose-h3:text-2xl prose-h3:mt-6 md:prose-h3:mt-10 prose-h3:mb-3 md:prose-h3:mb-4
-              prose-p:text-gray-700 prose-p:leading-relaxed md:prose-p:leading-loose prose-p:text-base md:prose-p:text-lg
-              prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-a:break-words
-              prose-img:rounded-xl prose-img:shadow-lg prose-img:w-full
-              prose-blockquote:border-l-4 prose-blockquote:border-primary prose-blockquote:bg-primary/5 prose-blockquote:rounded-r-xl prose-blockquote:py-4 prose-blockquote:italic
-              prose-code:bg-gray-100 prose-code:px-2 prose-code:py-1 prose-code:rounded prose-code:text-primary prose-code:break-words
-              prose-pre:bg-gray-900 prose-pre:rounded-xl prose-pre:overflow-x-auto"
-            dangerouslySetInnerHTML={{ __html: cleanContentForDisplay(blog.content) }}
-          />
+          >
+            <BlogContentWithAds
+              html={cleanContentForDisplay(blog.content)}
+              settings={settings}
+              className="blog-content prose prose-base md:prose-lg max-w-none
+                prose-headings:font-bold prose-headings:text-gray-900 prose-headings:break-words
+                prose-h2:text-2xl md:prose-h2:text-3xl prose-h2:mt-8 md:prose-h2:mt-12 prose-h2:mb-4 md:prose-h2:mb-6
+                prose-h3:text-xl md:prose-h3:text-2xl prose-h3:mt-6 md:prose-h3:mt-10 prose-h3:mb-3 md:prose-h3:mb-4
+                prose-p:text-gray-700 prose-p:leading-relaxed md:prose-p:leading-loose prose-p:text-base md:prose-p:text-lg
+                prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-a:break-words
+                prose-img:rounded-xl prose-img:shadow-lg prose-img:w-full
+                prose-blockquote:border-l-4 prose-blockquote:border-primary prose-blockquote:bg-primary/5 prose-blockquote:rounded-r-xl prose-blockquote:py-4 prose-blockquote:italic
+                prose-code:bg-gray-100 prose-code:px-2 prose-code:py-1 prose-code:rounded prose-code:text-primary prose-code:break-words
+                prose-pre:bg-gray-900 prose-pre:rounded-xl prose-pre:overflow-x-auto"
+            />
+          </motion.div>
         </article>
       )}
 
@@ -784,7 +798,7 @@ export default function BlogPage({ initialBlog, initialAuthor, initialSettings }
                   className="group"
                 >
                   <Link
-                    href={`/blog?id=${related.id}`}
+                    href={related.slug ? `/blog/${related.slug}` : `/blog?id=${related.id}`}
                     className="block bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-shadow border border-gray-100"
                   >
                     <div className="aspect-video bg-gray-100 overflow-hidden">

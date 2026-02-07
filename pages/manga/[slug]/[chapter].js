@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/router";
 import Head from "next/head";
 import Link from "next/link";
@@ -7,6 +7,7 @@ import { getMangaBySlug, getSettings } from "../../../lib/api-client";
 import { generateChapterUrl } from "../../../utils/mangaRedirectGenerator";
 import MangaRedirectBox from "../../../components/MangaRedirectBox";
 import { BreadcrumbSchema, ChapterSchema } from "../../../components/SEOHead";
+import AdRenderer from "../../../components/AdRenderer";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://luvrix.com";
 
@@ -260,6 +261,7 @@ export default function ChapterPage({ initialManga, initialSettings, initialChap
         status={manga?.status}
         totalChapters={manga?.totalChapters}
         description={manga?.description}
+        settings={settings}
       />
     </>
   );
@@ -281,7 +283,7 @@ function AnimatedSection({ children, delay = 0, className = "" }) {
   );
 }
 
-function ChapterContent({ mangaTitle, chapterNumber, genre, author, status, totalChapters, description }) {
+function ChapterContent({ mangaTitle, chapterNumber, genre, author, status, totalChapters, description, settings }) {
   const plainDesc = (description || "").replace(/<[^>]*>/g, "").trim();
   const shortDesc = plainDesc.slice(0, 200) || `${mangaTitle} is a captivating ${genre || "manga"} series that has garnered a dedicated following among readers worldwide.`;
 
@@ -389,23 +391,27 @@ function ChapterContent({ mangaTitle, chapterNumber, genre, author, status, tota
           />
         </div>
 
-        {/* Content sections */}
+        {/* Content sections with ads */}
         <div className="max-w-3xl mx-auto space-y-6">
           {sections.map((sec, i) => (
-            <AnimatedSection key={i} delay={i * 0.08}>
-              <div className={`relative rounded-xl border border-gray-200 bg-white p-6 md:p-8 shadow-sm hover:shadow-md transition-shadow duration-300`}>
-                <div className="flex items-center gap-3 mb-4">
-                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-lg ${sec.iconBg}`}>
-                    {sec.icon}
+            <React.Fragment key={i}>
+              <AnimatedSection delay={i * 0.08}>
+                <div className={`relative rounded-xl border border-gray-200 bg-white p-6 md:p-8 shadow-sm hover:shadow-md transition-shadow duration-300`}>
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-lg ${sec.iconBg}`}>
+                      {sec.icon}
+                    </div>
+                    <h2 className="text-xl md:text-2xl font-bold text-gray-900 m-0">{sec.title}</h2>
                   </div>
-                  <h2 className="text-xl md:text-2xl font-bold text-gray-900 m-0">{sec.title}</h2>
+                  <div className={`w-12 h-1 rounded-full mb-5 ${sec.bar}`} />
+                  <div className="prose prose-base md:prose-lg max-w-none prose-p:text-gray-600 prose-p:leading-relaxed prose-strong:text-gray-900">
+                    {sec.content}
+                  </div>
                 </div>
-                <div className={`w-12 h-1 rounded-full mb-5 ${sec.bar}`} />
-                <div className="prose prose-base md:prose-lg max-w-none prose-p:text-gray-600 prose-p:leading-relaxed prose-strong:text-gray-900">
-                  {sec.content}
-                </div>
-              </div>
-            </AnimatedSection>
+              </AnimatedSection>
+              {i === 1 && <AdRenderer position="content_middle" settings={settings} className="my-4" />}
+              {i === 3 && <AdRenderer position="content_middle" settings={settings} className="my-4" />}
+            </React.Fragment>
           ))}
         </div>
 

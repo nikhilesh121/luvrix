@@ -4473,3 +4473,151 @@ Layout.js now renders ads at **8 positions**:
 
 *Document Version: 3.0*  
 *Last Modified: February 6, 2026*
+
+---
+
+# Meeting 4 – Full SEO & AdSense Optimization Sprint
+
+**Date:** February 7, 2026  
+**Attendees:** Engineering + Marketing  
+**Meeting Type:** SEO & Monetization Sprint
+
+---
+
+## Executive Summary
+
+Comprehensive SEO and AdSense optimization across the entire platform. Created SEO Master Playbook as canonical source of truth. Implemented ads on every page type with in-content placement for blog reading pages.
+
+---
+
+## Phase 0 — SEO Source of Truth
+
+**Created:** `docs/SEO_MASTER_PLAYBOOK.md`  
+- Global SEO rules (10 non-negotiable rules)
+- Page-type SEO requirements for all page types
+- Image SEO rules (no SVG og:image, absolute URLs only)
+- Structured data rules per page type
+- AdSense + SEO coexistence rules (12 rules)
+- Core Web Vitals targets
+- Regression & release checklists
+
+## Phase 1 — Auto Ads (SEO-Safe)
+
+**Changes:**
+- Removed duplicate hardcoded AdSense script from `_document.js` (Layout.js handles it admin-controlled with `afterInteractive` strategy)
+- Added `Googlebot-Image`, `AdsBot-Google`, `AdsBot-Google-Mobile` sections to `robots.txt`
+- Created `BlogContentWithAds` component — splits blog HTML at paragraph boundaries, injects `AdRenderer` every 4 paragraphs
+- Added `between_posts` ads in homepage blog grid (every 4th card)
+- Added `between_posts` ads in categories page (every 6th card)
+- Added `content_middle` ads between manga chapter content sections
+- Replaced static ad divs on manga detail page with proper `AdRenderer` components
+- Added ads to manga listing page between filter and grid
+
+**Files Created:**
+- `components/BlogContentWithAds.js`
+
+**Files Modified:**
+- `pages/_document.js` — removed duplicate AdSense script, fixed favicon to PNG
+- `pages/blog.js` — all 7 templates use BlogContentWithAds for in-content ads
+- `pages/index.js` — between_posts ads in blog grid
+- `pages/categories.js` — between_posts ads + settings fetch for AdRenderer
+- `pages/manga/index.js` — ads + settings state + CollectionPage schema
+- `pages/manga/[slug]/index.js` — AdRenderer replaces static ad divs
+- `pages/manga/[slug]/[chapter].js` — ads between content sections
+- `public/robots.txt` — AdsBot-Google, Googlebot-Image sections
+
+## Phase 2 — Core Technical SEO
+
+**Verified/Fixed:**
+- All public pages have unique `<title>` and `meta description`
+- All public pages have canonical URLs (self-referencing)
+- `noindex,nofollow` on: login, register, create-blog, edit-blog, favorites, profile, payment-success, payment-failed
+- `noindex,follow` on user profiles
+- Sitemaps exclude drafts, admin, auth pages
+- All internal links converted from `?id=` to slug-based URLs
+
+**Files Modified:**
+- `components/BlogCard.js` — slug-based URLs instead of `?id=`
+- `pages/blog.js` — related blog links use slug URLs
+- `pages/index.js` — featured blog link uses slug URL
+
+## Phase 3 — Image SEO
+
+**Verified:**
+- All og:image URLs use Cloudinary PNG (never SVG)
+- Default OG image: `https://res.cloudinary.com/dsga2d0bv/image/upload/w_1200,h_630,c_pad,b_rgb:6366f1/Luvrix/Luvrix_favicon_yqovij.png`
+- All og:image URLs are absolute
+- `og:image:width` (1200) and `og:image:height` (630) set
+- `og:image:type` set to `image/png`
+- Lazy loading on below-fold images, eager on hero images
+
+**Files Modified:**
+- `pages/_document.js` — favicon changed from SVG to Cloudinary PNG, added preconnect for Cloudinary CDN
+
+## Phase 4 — Structured Data
+
+**Added/Verified:**
+- `Organization` schema in `_document.js` (global, all pages)
+- `WebSite` + `SearchAction` schema on homepage
+- `BlogPosting` + `BreadcrumbList` on blog posts
+- `Book` + `BreadcrumbList` on manga detail pages
+- `Chapter` + `BreadcrumbList` on chapter pages
+- `CollectionPage` + `ItemList` on categories page (NEW)
+- `CollectionPage` + `ItemList` on manga listing page (NEW)
+- `ProfilePage` on user profiles (NEW)
+
+**Files Modified:**
+- `components/SEOHead.js` — added `CollectionPageSchema`, `ProfilePageSchema`
+- `pages/categories.js` — renders CollectionPageSchema + BreadcrumbSchema
+- `pages/manga/index.js` — renders CollectionPageSchema + BreadcrumbSchema
+- `pages/user/[id].js` — renders ProfilePageSchema
+
+## Phase 5 — Core Web Vitals
+
+**Verified in place:**
+- `compress: true`, `swcMinify: true`, `generateEtags: true`
+- `productionBrowserSourceMaps: false`
+- `font-display: swap` on Google Fonts
+- AdSense loaded with `strategy="afterInteractive"`
+- Preconnect to Cloudinary, Google Fonts, Google Ads, Google Analytics
+- Images lazy-loaded below fold
+- Ad containers have min-height for CLS prevention
+
+## Phase 6 — Indexing Priority
+
+**Internal linking hierarchy enforced:**
+- Homepage → Categories, Manga, Blog posts (via nav + cards)
+- Blog posts → Related posts (slug URLs), categories
+- Manga detail → Chapters (linked grid)
+- Chapters → Parent manga, adjacent chapters
+- Breadcrumbs on all content pages (blog, manga, chapter, categories)
+
+## Phase 7 — Analytics + Search Console
+
+**Implemented:**
+- Google Search Console verification meta tag support via `settings.gscVerificationCode`
+- GA4 pageview tracking (already in place)
+- Sitemaps ready for GSC submission
+
+**Files Modified:**
+- `components/Layout.js` — added `google-site-verification` meta support
+
+## Pages Intentionally noindexed
+
+| Page | Reason |
+|------|--------|
+| `/login` | Auth page |
+| `/register` | Auth page |
+| `/create-blog` | User action page |
+| `/edit-blog` | User action page |
+| `/favorites` | Private user data |
+| `/profile` | Private settings |
+| `/payment-success` | Transactional |
+| `/payment-failed` | Transactional |
+| `/user/[id]` | Thin content (noindex, follow) |
+| `/admin/*` | Admin pages |
+
+---
+
+*Document Version: 4.0*  
+*Last Modified: February 7, 2026*

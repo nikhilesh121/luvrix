@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Layout from "../../components/Layout";
+import { CollectionPageSchema, BreadcrumbSchema } from "../../components/SEOHead";
+import AdRenderer from "../../components/AdRenderer";
 import { getAllManga, getSettings } from "../../lib/api-client";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
@@ -18,6 +20,7 @@ export default function MangaList() {
   const [hoveredCard, setHoveredCard] = useState(null);
   const [mangaDisabled, setMangaDisabled] = useState(false);
   const [layout, setLayout] = useState({ viewType: "grid", columns: 5, cardSize: "medium" });
+  const [settings, setSettings] = useState(null);
 
   const formatNumber = (num) => {
     if (!num) return '0';
@@ -29,12 +32,13 @@ export default function MangaList() {
   useEffect(() => {
     async function fetchManga() {
       try {
-        const settings = await getSettings();
-        const mangaVisibility = settings?.mangaVisibility || { web: true, mobileWeb: true };
+        const fetchedSettings = await getSettings();
+        setSettings(fetchedSettings);
+        const mangaVisibility = fetchedSettings?.mangaVisibility || { web: true, mobileWeb: true };
         
         // Get layout settings
-        if (settings?.mangaLayout) {
-          setLayout(settings.mangaLayout);
+        if (fetchedSettings?.mangaLayout) {
+          setLayout(fetchedSettings.mangaLayout);
         }
         
         // Check if web visibility is enabled (this covers both desktop and mobile web)
@@ -117,7 +121,17 @@ export default function MangaList() {
   }
 
   return (
-    <Layout title="Manga" description="Browse all manga series">
+    <Layout title="Manga" description="Browse and read the best manga series online for free on Luvrix. Discover popular manga across all genres with high-quality chapters updated regularly." canonical="https://luvrix.com/manga">
+      <CollectionPageSchema
+        title="Browse Manga"
+        description="Browse and read the best manga series online for free on Luvrix."
+        url="/manga"
+        items={filteredManga.slice(0, 20).map(m => ({ title: m.title, url: `/manga/${m.slug || m.id}`, image: m.coverUrl }))}
+      />
+      <BreadcrumbSchema items={[
+        { name: "Home", url: "/" },
+        { name: "Manga", url: "/manga" },
+      ]} />
       <div className="min-h-screen bg-[#0a0a0f]">
         {/* Hero Section */}
         <div className="relative overflow-hidden">
@@ -307,6 +321,8 @@ export default function MangaList() {
               <span className="text-white font-semibold">{filteredManga.length}</span> manga found
             </p>
           </motion.div>
+
+          <AdRenderer position="between_posts" settings={settings} className="mb-6" />
 
           {/* Manga Display */}
           {loading ? (

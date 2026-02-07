@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, memo, useCallback } from "react";
+import React, { useState, useEffect, useMemo, memo, useCallback } from "react";
 import Link from "next/link";
 import Head from "next/head";
 import dynamic from "next/dynamic";
@@ -8,6 +8,7 @@ import { useBlogCache } from "../context/BlogCacheContext";
 import { useSocket } from "../context/SocketContext";
 import { BlogGridSkeleton } from "../components/ui/Skeleton";
 import { WebsiteSchema } from "../components/SEOHead";
+import AdRenderer from "../components/AdRenderer";
 import { motion, AnimatePresence } from "framer-motion";
 
 // Dynamic imports for better code splitting
@@ -501,7 +502,7 @@ export default function Home() {
                     </p>
                     <div className="flex items-center gap-4">
                       <Link
-                        href={`/blog?id=${featuredBlog.id}`}
+                        href={featuredBlog.slug ? `/blog/${featuredBlog.slug}` : `/blog?id=${featuredBlog.id}`}
                         className="group/btn inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:opacity-90 transition"
                       >
                         Read Article 
@@ -586,9 +587,16 @@ export default function Home() {
               {latestBlogs.length > 0 && (
                 <BlogCard blog={latestBlogs[0]} index={0} variant="featured" />
               )}
-              {/* Remaining articles */}
+              {/* Remaining articles with between_posts ads */}
               {latestBlogs.slice(1).map((blog, index) => (
-                <BlogCard key={blog.id} blog={blog} index={index + 1} />
+                <React.Fragment key={blog.id}>
+                  <BlogCard blog={blog} index={index + 1} />
+                  {(index + 1) % 4 === 0 && (
+                    <div className="col-span-full">
+                      <AdRenderer position="between_posts" settings={settings} className="my-2" />
+                    </div>
+                  )}
+                </React.Fragment>
               ))}
             </div>
           ) : (

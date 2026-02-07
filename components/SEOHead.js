@@ -259,6 +259,77 @@ export function BreadcrumbSchema({ items }) {
   );
 }
 
+// CollectionPage Schema for Categories & Manga Listing
+export function CollectionPageSchema({ title, description, url, items = [] }) {
+  const schema = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: title,
+    description: description,
+    url: `${SITE_URL}${url}`,
+    publisher: {
+      "@type": "Organization",
+      name: SITE_NAME,
+    },
+    ...(items.length > 0 && {
+      mainEntity: {
+        "@type": "ItemList",
+        numberOfItems: items.length,
+        itemListElement: items.slice(0, 30).map((item, index) => ({
+          "@type": "ListItem",
+          position: index + 1,
+          name: item.title,
+          url: `${SITE_URL}${item.url}`,
+          ...(item.image && {
+            image: {
+              "@type": "ImageObject",
+              url: getAbsoluteImageUrl(item.image),
+            },
+          }),
+        })),
+      },
+    }),
+  };
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+    />
+  );
+}
+
+// ProfilePage Schema for User Profiles
+export function ProfilePageSchema({ user, url }) {
+  const schema = {
+    "@context": "https://schema.org",
+    "@type": "ProfilePage",
+    mainEntity: {
+      "@type": "Person",
+      name: user?.name || "Luvrix User",
+      url: `${SITE_URL}${url}`,
+      ...(user?.photoURL && {
+        image: {
+          "@type": "ImageObject",
+          url: getAbsoluteImageUrl(user.photoURL),
+        },
+      }),
+      ...(user?.bio && { description: user.bio }),
+    },
+    publisher: {
+      "@type": "Organization",
+      name: SITE_NAME,
+    },
+  };
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+    />
+  );
+}
+
 // Website Schema for Homepage
 export function WebsiteSchema() {
   const schema = {
