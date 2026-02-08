@@ -22,10 +22,6 @@ export default async function handler(req, res) {
     <lastmod>${new Date().toISOString()}</lastmod>
   </sitemap>
   <sitemap>
-    <loc>${SITE_URL}/sitemap-chapters.xml</loc>
-    <lastmod>${new Date().toISOString()}</lastmod>
-  </sitemap>
-  <sitemap>
     <loc>${SITE_URL}/sitemap-categories.xml</loc>
     <lastmod>${new Date().toISOString()}</lastmod>
   </sitemap>

@@ -31,16 +31,30 @@ const formatSlugToTitle = (slug) => {
   return slug.split("-").map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(" ");
 };
 
+// Helper to extract alternative names from manga data
+const getAltNames = (data) => {
+  if (data?.alternativeNames) return data.alternativeNames;
+  if (data?.description) {
+    const match = data.description.match(/(?:also known as|alternative names?|other names?)[:\s]+([^.\n]+)/i);
+    if (match) return match[1].trim();
+  }
+  return '';
+};
+
 // Helper to apply SEO template with chapter-specific placeholders
 const applyChapterTemplate = (template, data, chapNum) => {
   if (!template) return null;
-  return template
+  const altNames = getAltNames(data);
+  let result = template
     .replace(/{title}/g, data?.title || '')
+    .replace(/{altNames}/g, altNames)
     .replace(/{chapter}/g, chapNum || '')
     .replace(/{chapters}/g, data?.totalChapters || '')
     .replace(/{status}/g, data?.status || 'Ongoing')
     .replace(/{author}/g, data?.author || '')
     .replace(/{genre}/g, data?.genre || '');
+  result = result.replace(/Also known as\s*\.\s*/gi, '').replace(/\s{2,}/g, ' ').trim();
+  return result;
 };
 
 export default function ChapterPage({ initialManga, initialSettings, initialChapterNumber }) {
@@ -162,8 +176,8 @@ export default function ChapterPage({ initialManga, initialSettings, initialChap
         <Head>
           <title>{seoTitle}</title>
           <meta name="description" content={seoDescription} />
-          <meta name="robots" content="index, follow" />
-          <link rel="canonical" href={fullUrl} />
+          <meta name="robots" content="noindex, follow" />
+          <link rel="canonical" href={`${SITE_URL}/manga/${slug}`} />
           <meta property="og:title" content={seoTitle} />
           <meta property="og:type" content="article" />
           <meta property="og:url" content={fullUrl} />
@@ -207,9 +221,9 @@ export default function ChapterPage({ initialManga, initialSettings, initialChap
         <meta name="description" content={seoDescription} />
         <meta name="keywords" content={seoKeywords} />
         
-        {/* Robots */}
-        <meta name="robots" content="index, follow, max-image-preview:large" />
-        <link rel="canonical" href={fullUrl} />
+        {/* Robots — noindex: chapter pages are not indexable (external redirect architecture) */}
+        <meta name="robots" content="noindex, follow" />
+        <link rel="canonical" href={`${SITE_URL}/manga/${slug}`} />
         
         {/* Open Graph */}
         <meta property="og:type" content="article" />
@@ -229,16 +243,7 @@ export default function ChapterPage({ initialManga, initialSettings, initialChap
         <meta name="twitter:image" content={ogImage} />
       </Head>
       
-      {/* Chapter Schema for Search Engines */}
-      {manga && <ChapterSchema manga={manga} chapterNumber={chapterNumber} url={pageUrl} />}
-      
-      {/* Breadcrumb Schema */}
-      <BreadcrumbSchema items={[
-        { name: "Home", url: "/" },
-        { name: "Manga", url: "/manga" },
-        { name: manga?.title, url: `/manga/${slug}` },
-        { name: `Chapter ${chapterNumber}`, url: pageUrl },
-      ]} />
+      {/* No structured data — page is noindex, chapters link directly to external source */}
 
       {settings?.adsEnabled && settings?.adsCode && (
         <div dangerouslySetInnerHTML={{ __html: settings.adsCode }} />

@@ -31,6 +31,7 @@ function MangaContent() {
     title: "",
     slug: "",
     description: "",
+    alternativeNames: "",
     totalChapters: "",
     redirectBaseUrl: "",
     chapterFormat: "chapter-{n}",
@@ -43,9 +44,6 @@ function MangaContent() {
     author: "",
     genre: "",
     status: "Ongoing",
-    // Chapter SEO Fields
-    chapterSeoTitle: "",
-    chapterSeoDescription: "",
     // Platform Visibility
     showOnWeb: true,
     showOnAndroid: true,
@@ -115,6 +113,7 @@ function MangaContent() {
         title: item.title || "",
         slug: item.slug || "",
         description: item.description || "",
+        alternativeNames: item.alternativeNames || "",
         totalChapters: item.totalChapters || "",
         redirectBaseUrl: item.redirectBaseUrl || "",
         chapterFormat: item.chapterFormat || "chapter-{n}",
@@ -126,8 +125,6 @@ function MangaContent() {
         author: item.author || "",
         genre: item.genre || "",
         status: item.status || "Ongoing",
-        chapterSeoTitle: item.chapterSeoTitle || "",
-        chapterSeoDescription: item.chapterSeoDescription || "",
         showOnWeb: item.showOnWeb !== false,
         showOnAndroid: item.showOnAndroid !== false,
         showOnIOS: item.showOnIOS !== false,
@@ -141,6 +138,7 @@ function MangaContent() {
         title: "",
         slug: "",
         description: "",
+        alternativeNames: "",
         totalChapters: "",
         redirectBaseUrl: "",
         chapterFormat: "chapter-{n}",
@@ -152,8 +150,6 @@ function MangaContent() {
         author: "",
         genre: "",
         status: "Ongoing",
-        chapterSeoTitle: "",
-        chapterSeoDescription: "",
         showOnWeb: true,
         showOnAndroid: true,
         showOnIOS: true,
@@ -642,6 +638,20 @@ function MangaContent() {
               </div>
 
               <div>
+                <label className="form-label">Alternative Names</label>
+                <input
+                  type="text"
+                  value={formData.alternativeNames}
+                  onChange={(e) => setFormData({ ...formData, alternativeNames: e.target.value })}
+                  className="form-input"
+                  placeholder="e.g., Solo Farming In The Tower, 나 혼자 탑에서 농사"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Comma-separated alternative titles (Korean, Japanese, etc.). Used in SEO descriptions via {"{altNames}"}.
+                </p>
+              </div>
+
+              <div>
                 <label className="form-label">Total Chapters *</label>
                 <input
                   type="number"
@@ -923,43 +933,6 @@ function MangaContent() {
                 </div>
               </div>
 
-              {/* Chapter SEO Section */}
-              <div className="border-t pt-4 mt-4">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">Chapter SEO Settings</h3>
-                <p className="text-sm text-gray-500 mb-4">
-                  Customize how chapter pages appear in search results. Use <code className="bg-gray-100 px-1 rounded">{"{title}"}</code> for manga title and <code className="bg-gray-100 px-1 rounded">{"{chapter}"}</code> for chapter number.
-                </p>
-                
-                <div className="space-y-4">
-                  <div>
-                    <label className="form-label">Chapter SEO Title Template</label>
-                    <input
-                      type="text"
-                      value={formData.chapterSeoTitle}
-                      onChange={(e) => setFormData({ ...formData, chapterSeoTitle: e.target.value })}
-                      className="form-input"
-                      placeholder="{title} Chapter {chapter} - Read Online Free"
-                    />
-                    <p className="text-xs text-gray-500 mt-1">
-                      Example: "Solo Leveling Chapter 150 - Read Online Free"
-                    </p>
-                  </div>
-
-                  <div>
-                    <label className="form-label">Chapter SEO Description Template</label>
-                    <textarea
-                      value={formData.chapterSeoDescription}
-                      onChange={(e) => setFormData({ ...formData, chapterSeoDescription: e.target.value })}
-                      className="form-input"
-                      rows={2}
-                      placeholder="Read {title} Chapter {chapter} online for free. Latest chapter available now!"
-                    />
-                    <p className="text-xs text-gray-500 mt-1">
-                      Example: "Read Solo Leveling Chapter 150 online for free. Latest chapter available now!"
-                    </p>
-                  </div>
-                </div>
-              </div>
 
               <div className="flex gap-4 pt-4">
                 <button

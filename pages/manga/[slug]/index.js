@@ -6,7 +6,7 @@ import Layout from "../../../components/Layout";
 import { getMangaBySlug, getSettings, incrementMangaViews, incrementMangaFavorites, decrementMangaFavorites, addToFavorites, removeFromFavorites, isItemFavorited } from "../../../lib/api-client";
 import { useAuth } from "../../../context/AuthContext";
 import { useSocket } from "../../../context/SocketContext";
-import { generateChapterList } from "../../../utils/mangaRedirectGenerator";
+import { generateChapterList, generateChapterUrl } from "../../../utils/mangaRedirectGenerator";
 import { MangaSchema, BreadcrumbSchema } from "../../../components/SEOHead";
 import AdRenderer from "../../../components/AdRenderer";
 import CommentSection from "../../../components/CommentSection";
@@ -36,15 +36,31 @@ const formatSlugToTitle = (slug) => {
   return slug.split("-").map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(" ");
 };
 
+// Helper to extract alternative names from manga data
+const getAltNames = (data) => {
+  if (data?.alternativeNames) return data.alternativeNames;
+  // Fallback: try to extract from description (common patterns like "Also known as: ...")
+  if (data?.description) {
+    const match = data.description.match(/(?:also known as|alternative names?|other names?)[:\s]+([^.\n]+)/i);
+    if (match) return match[1].trim();
+  }
+  return '';
+};
+
 // Helper to apply SEO template
 const applyTemplate = (template, data) => {
   if (!template) return null;
-  return template
+  const altNames = getAltNames(data);
+  let result = template
     .replace(/{title}/g, data?.title || '')
+    .replace(/{altNames}/g, altNames)
     .replace(/{chapters}/g, data?.totalChapters || '')
     .replace(/{status}/g, data?.status || 'Ongoing')
     .replace(/{author}/g, data?.author || '')
     .replace(/{genre}/g, data?.genre || '');
+  // Clean up empty alt names artifacts (e.g., "Also known as ." when no alt names)
+  result = result.replace(/Also known as\s*\.\s*/gi, '').replace(/\s{2,}/g, ' ').trim();
+  return result;
 };
 
 export default function MangaDetail({ initialManga, initialSettings }) {
@@ -66,20 +82,25 @@ export default function MangaDetail({ initialManga, initialSettings }) {
   // Format slug to readable title for SEO (from URL)
   const formattedSlugTitle = formatSlugToTitle(slug);
   
-  // SEO values - use manga data if loaded, otherwise use formatted slug
-  const seoTitle = manga?.seoTitle || (manga ? applyTemplate(settings?.mangaSeoDefaults?.titleTemplate, manga) : null) || (manga?.title ? `Read ${manga.title} Online - All Chapters` : `Read ${formattedSlugTitle} Online - All Chapters`);
+  // SEO values - static title (no chapter numbers) for stable indexing
+  const seoTitle = manga?.seoTitle || (manga ? applyTemplate(settings?.mangaSeoDefaults?.titleTemplate, manga) : null) || `${manga?.title || formattedSlugTitle} Manga | Luvrix`;
   
-  // Generate SEO description from manga description field if not explicitly set
+  // Dynamic meta description with chapter count + alt names — ranks for "manga name chapter N" queries
   const generateMangaDescription = () => {
     if (manga?.seoDescription) return manga.seoDescription;
-    if (manga ? applyTemplate(settings?.mangaSeoDefaults?.descriptionTemplate, manga) : null) {
-      return applyTemplate(settings?.mangaSeoDefaults?.descriptionTemplate, manga);
-    }
-    if (manga?.description) {
-      const plainText = manga.description.replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
-      return plainText.slice(0, 160) + (plainText.length > 160 ? "..." : "");
-    }
-    return `Read ${manga?.title || formattedSlugTitle} manga online for free. All chapters available with high-quality images.`;
+    const templateResult = manga ? applyTemplate(settings?.mangaSeoDefaults?.descriptionTemplate, manga) : null;
+    if (templateResult) return templateResult;
+    const name = manga?.title || formattedSlugTitle;
+    const total = manga?.totalChapters;
+    const altNames = getAltNames(manga);
+    const genre = manga?.genre;
+    const status = manga?.status || 'Ongoing';
+    let desc = `Read ${name} manga online.`;
+    if (altNames) desc += ` Also known as ${altNames}.`;
+    if (total) desc += ` Chapters 1 to ${total} available.`;
+    if (genre) desc += ` ${genre} manga, ${status}.`;
+    desc += ` Updated regularly on Luvrix.`;
+    return desc;
   };
   const seoDescription = generateMangaDescription();
   const seoKeywords = manga?.focusKeyword || (manga ? applyTemplate(settings?.mangaSeoDefaults?.focusKeywordTemplate, manga) : null) || `${formattedSlugTitle}, manga, read online`;
@@ -470,13 +491,15 @@ export default function MangaDetail({ initialManga, initialSettings }) {
                 {/* Action Buttons */}
                 <div className="flex flex-wrap gap-4">
                   <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                    <Link
-                      href={`/manga/${slug}/chapter-1`}
+                    <a
+                      href={chapters[0]?.url || generateChapterUrl(manga, 1) || '#'}
+                      target="_blank"
+                      rel="nofollow noopener"
                       className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-bold text-lg shadow-lg shadow-purple-500/30 hover:shadow-xl hover:shadow-purple-500/40 transition-all"
                     >
                       <FiBookOpen className="w-5 h-5" /> Start Reading
-                      <FiChevronRight className="w-5 h-5" />
-                    </Link>
+                      <FiExternalLink className="w-4 h-4" />
+                    </a>
                   </motion.div>
                   <motion.button
                     whileHover={{ scale: 1.05 }}
@@ -510,8 +533,21 @@ export default function MangaDetail({ initialManga, initialSettings }) {
           </div>
         </div>
 
+        {/* Chapter Availability — visible crawlable text for SEO (ranks for "manga name chapter N" queries) */}
+        <div className="max-w-7xl mx-auto px-4 pt-12 pb-4">
+          <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-100 rounded-xl p-6">
+            <p className="text-gray-700 text-base leading-relaxed">
+              <strong>{manga.title}</strong>{manga.alternativeNames ? <> (also known as <strong>{manga.alternativeNames}</strong>)</> : null} manga currently has <strong>{manga.totalChapters} chapters</strong> available.
+              Readers can access chapters from <strong>Chapter 1</strong> to <strong>Chapter {manga.totalChapters}</strong>.
+              Latest chapter: <strong>Chapter {manga.totalChapters}</strong>.
+              {manga.genre ? <> Genre: <strong>{manga.genre}</strong>.</> : null}
+              {manga.status ? <> Status: <strong>{manga.status}</strong>.</> : null}
+            </p>
+          </div>
+        </div>
+
         {/* Chapters Section */}
-        <div className="max-w-7xl mx-auto px-4 py-12">
+        <div className="max-w-7xl mx-auto px-4 py-8">
 
         <AdRenderer position="content_middle" settings={settings} className="mb-8" />
 
@@ -547,15 +583,18 @@ export default function MangaDetail({ initialManga, initialSettings }) {
 
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3">
             {(sortOrder === "desc" ? [...chapters].reverse() : chapters).slice(0, visibleChapters).map((chapter) => (
-              <Link
+              <a
                 key={chapter.number}
-                href={`/manga/${slug}/chapter-${chapter.number}`}
+                href={chapter.url || '#'}
+                target="_blank"
+                rel="nofollow noopener"
                 className="p-4 bg-white border rounded-lg hover:border-primary hover:shadow-md transition text-center group"
               >
-                <span className="text-gray-800 font-medium group-hover:text-primary">
+                <span className="text-gray-800 font-medium group-hover:text-primary flex items-center justify-center gap-1">
                   Chapter {chapter.number}
+                  <FiExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </span>
-              </Link>
+              </a>
             ))}
           </div>
 

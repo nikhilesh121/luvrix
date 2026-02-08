@@ -4,6 +4,7 @@ import AdminSidebar from "../../components/AdminSidebar";
 import { getSettings, updateSettings, createLog } from "../../lib/api-client";
 import { auth } from "../../lib/local-auth";
 import { motion } from "framer-motion";
+import Link from "next/link";
 import { FiSave, FiDollarSign, FiSettings, FiAlertTriangle, FiCheck, FiShield, FiBook, FiEye, FiEyeOff, FiMonitor, FiSmartphone, FiTablet, FiGlobe, FiSearch, FiFileText, FiCpu, FiKey, FiTrash2, FiRefreshCw, FiInfo } from "react-icons/fi";
 
 // Cookie Settings Component
@@ -189,14 +190,6 @@ function SettingsContent() {
       columns: 5, // 1-6 columns
       cardSize: "medium", // small, medium, large
     },
-    // Global Manga SEO Settings
-    mangaSeoDefaults: {
-      titleTemplate: "Read {title} Online - All Chapters Free",
-      descriptionTemplate: "Read {title} manga online for free. {chapters} chapters available. Updated {status}.",
-      chapterTitleTemplate: "{title} Chapter {chapter} - Read Online Free",
-      chapterDescriptionTemplate: "Read {title} Chapter {chapter} online for free. High quality images, fast loading.",
-      focusKeywordTemplate: "{title} manga, read {title} online, {title} chapters",
-    },
     // AI Settings
     openaiApiKey: "",
   });
@@ -219,13 +212,6 @@ function SettingsContent() {
         minContentScoreForAutoApproval: data.minContentScoreForAutoApproval || 80,
         mangaVisibility: data.mangaVisibility || { web: true, mobileWeb: true, android: true, ios: true },
         mangaLayout: data.mangaLayout || { viewType: "grid", columns: 5, cardSize: "medium" },
-        mangaSeoDefaults: data.mangaSeoDefaults || {
-          titleTemplate: "Read {title} Online - All Chapters Free",
-          descriptionTemplate: "Read {title} manga online for free. {chapters} chapters available. Updated {status}.",
-          chapterTitleTemplate: "{title} Chapter {chapter} - Read Online Free",
-          chapterDescriptionTemplate: "Read {title} Chapter {chapter} online for free. High quality images, fast loading.",
-          focusKeywordTemplate: "{title} manga, read {title} online, {title} chapters",
-        },
         openaiApiKey: data.openaiApiKey || "",
       });
     } catch (error) {
@@ -635,124 +621,20 @@ function SettingsContent() {
                 </div>
               </div>
 
-              {/* Global Manga SEO Settings */}
+              {/* SEO Settings Redirect */}
               <div className="bg-white rounded-xl shadow p-6">
-                <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                  <FiSearch /> Global Manga SEO Templates
+                <h2 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                  <FiSearch /> SEO Templates
                 </h2>
-                <p className="text-sm text-gray-500 mb-6">
-                  Set default SEO templates for all manga. These will be used when individual manga don't have custom SEO settings.
-                  <br />
-                  <span className="text-purple-600 font-medium">Available placeholders:</span> {"{title}"}, {"{chapter}"}, {"{chapters}"}, {"{status}"}, {"{author}"}, {"{genre}"}
-                </p>
-
-                <div className="space-y-4">
-                  {/* Manga Title Template */}
-                  <div>
-                    <label className="form-label">Manga Page Title Template</label>
-                    <input
-                      type="text"
-                      value={settings.mangaSeoDefaults?.titleTemplate || ""}
-                      onChange={(e) =>
-                        setSettings({
-                          ...settings,
-                          mangaSeoDefaults: { ...settings.mangaSeoDefaults, titleTemplate: e.target.value },
-                        })
-                      }
-                      className="form-input"
-                      placeholder="Read {title} Online - All Chapters Free"
-                    />
-                    <p className="text-xs text-gray-500 mt-1">
-                      Example: "Read Solo Leveling Online - All Chapters Free"
-                    </p>
-                  </div>
-
-                  {/* Manga Description Template */}
-                  <div>
-                    <label className="form-label">Manga Page Description Template</label>
-                    <textarea
-                      value={settings.mangaSeoDefaults?.descriptionTemplate || ""}
-                      onChange={(e) =>
-                        setSettings({
-                          ...settings,
-                          mangaSeoDefaults: { ...settings.mangaSeoDefaults, descriptionTemplate: e.target.value },
-                        })
-                      }
-                      className="form-input"
-                      rows={2}
-                      placeholder="Read {title} manga online for free. {chapters} chapters available."
-                    />
-                  </div>
-
-                  {/* Chapter Title Template */}
-                  <div>
-                    <label className="form-label">Chapter Page Title Template</label>
-                    <input
-                      type="text"
-                      value={settings.mangaSeoDefaults?.chapterTitleTemplate || ""}
-                      onChange={(e) =>
-                        setSettings({
-                          ...settings,
-                          mangaSeoDefaults: { ...settings.mangaSeoDefaults, chapterTitleTemplate: e.target.value },
-                        })
-                      }
-                      className="form-input"
-                      placeholder="{title} Chapter {chapter} - Read Online Free"
-                    />
-                    <p className="text-xs text-gray-500 mt-1">
-                      Example: "Solo Leveling Chapter 150 - Read Online Free"
-                    </p>
-                  </div>
-
-                  {/* Chapter Description Template */}
-                  <div>
-                    <label className="form-label">Chapter Page Description Template</label>
-                    <textarea
-                      value={settings.mangaSeoDefaults?.chapterDescriptionTemplate || ""}
-                      onChange={(e) =>
-                        setSettings({
-                          ...settings,
-                          mangaSeoDefaults: { ...settings.mangaSeoDefaults, chapterDescriptionTemplate: e.target.value },
-                        })
-                      }
-                      className="form-input"
-                      rows={2}
-                      placeholder="Read {title} Chapter {chapter} online for free. High quality images."
-                    />
-                  </div>
-
-                  {/* Focus Keyword Template */}
-                  <div>
-                    <label className="form-label">Focus Keywords Template</label>
-                    <input
-                      type="text"
-                      value={settings.mangaSeoDefaults?.focusKeywordTemplate || ""}
-                      onChange={(e) =>
-                        setSettings({
-                          ...settings,
-                          mangaSeoDefaults: { ...settings.mangaSeoDefaults, focusKeywordTemplate: e.target.value },
-                        })
-                      }
-                      className="form-input"
-                      placeholder="{title} manga, read {title} online, {title} chapters"
-                    />
-                  </div>
-
-                  {/* Info Box */}
-                  <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg">
-                    <div className="flex items-start gap-2">
-                      <FiFileText className="w-5 h-5 text-purple-600 flex-shrink-0 mt-0.5" />
-                      <div>
-                        <p className="font-medium text-purple-800">How it works:</p>
-                        <ul className="text-sm text-purple-700 mt-1 space-y-1">
-                          <li>• These templates apply to manga without custom SEO settings</li>
-                          <li>• Individual manga settings override these defaults</li>
-                          <li>• Placeholders are automatically replaced with actual values</li>
-                          <li>• Edit individual manga in Manage Manga for custom SEO</li>
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
+                <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg">
+                  <p className="text-sm text-purple-700">
+                    All SEO templates (manga titles, descriptions, keywords) are now managed in one place.
+                  </p>
+                  <Link href="/admin/seo-settings">
+                    <span className="inline-flex items-center gap-2 mt-3 px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700 transition cursor-pointer">
+                      <FiFileText className="w-4 h-4" /> Go to SEO Settings
+                    </span>
+                  </Link>
                 </div>
               </div>
 

@@ -160,11 +160,11 @@ export function BlogArticleSchema({ blog, url }) {
   );
 }
 
-// Manga Schema
+// Manga Schema — CreativeWorkSeries with numberOfEpisodes for chapter count signals
 export function MangaSchema({ manga, url }) {
   const schema = {
     "@context": "https://schema.org",
-    "@type": "Book",
+    "@type": "CreativeWorkSeries",
     name: manga.title,
     description: manga.seoDescription || manga.description,
     image: {
@@ -183,7 +183,7 @@ export function MangaSchema({ manga, url }) {
       "@type": "Organization",
       name: SITE_NAME,
     },
-    numberOfPages: manga.totalChapters,
+    numberOfEpisodes: manga.totalChapters,
     genre: manga.genre || "Manga",
     inLanguage: "en",
   };

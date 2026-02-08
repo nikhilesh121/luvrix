@@ -28,6 +28,9 @@ Disallow: /_next/
 Disallow: /login/
 Disallow: /register/
 
+# Disallow internal chapter pages (chapters link directly to external sources)
+Disallow: /manga/*/chapter*
+
 # Disallow user-specific / transactional pages
 Disallow: /profile/
 Disallow: /favorites/
@@ -67,7 +70,6 @@ Sitemap: https://luvrix.com/sitemap.xml
 Sitemap: https://luvrix.com/sitemap-pages.xml
 Sitemap: https://luvrix.com/sitemap-posts.xml
 Sitemap: https://luvrix.com/sitemap-manga.xml
-Sitemap: https://luvrix.com/sitemap-chapters.xml
 Sitemap: https://luvrix.com/sitemap-categories.xml
 `;
 
@@ -90,15 +92,16 @@ function SeoSettingsContent() {
   const [saved, setSaved] = useState(false);
   const [copied, setCopied] = useState({ robots: false, ads: false });
   
-  // Global SEO Templates
-  const [globalSEO, setGlobalSEO] = useState({
-    defaultMangaTitle: "Read {title} Manga Online Free - Luvrix",
-    defaultChapterTitle: "{title} Chapter {n} - Read Online Free",
-    defaultMangaDescription: "Read {title} manga online for free. Get the latest chapters in HD quality only on Luvrix.",
-    defaultChapterDescription: "Read {title} Chapter {n} online for free in HD quality. Enjoy the latest manga chapters on Luvrix.",
-    defaultOgImage: "https://luvrix.com/default-cover.jpg",
-    defaultBlogTitle: "{title} - Luvrix Blog",
-    defaultBlogDescription: "Read {title} on Luvrix Blog. Discover the latest articles and news.",
+  // Centralized SEO Templates (single source of truth — used by all frontend pages)
+  const [mangaSeoDefaults, setMangaSeoDefaults] = useState({
+    titleTemplate: "{title} Manga | Luvrix",
+    descriptionTemplate: "Read {title} manga online. Also known as {altNames}. Chapters 1 to {chapters} available. {genre} manga, {status}. Updated regularly on Luvrix.",
+    focusKeywordTemplate: "{title} manga, read {title} online, {title} chapters, {altNames}",
+    chapterTitleTemplate: "{title} Chapter {chapter} | Luvrix",
+    chapterDescriptionTemplate: "Read {title} Chapter {chapter} online. {chapters} chapters available. {genre} manga on Luvrix.",
+    blogTitleTemplate: "{title} | Luvrix Blog",
+    blogDescriptionTemplate: "Read {title} on Luvrix Blog. Discover the latest articles, guides, and news.",
+    defaultOgImage: "https://res.cloudinary.com/dsga2d0bv/image/upload/w_1200,h_630,c_pad,b_rgb:6366f1/Luvrix/Luvrix_favicon_yqovij.png",
   });
 
   useEffect(() => {
@@ -110,7 +113,7 @@ function SeoSettingsContent() {
       const data = await getSettings();
       if (data.robotsTxt) setRobotsTxt(data.robotsTxt);
       if (data.adsTxt) setAdsTxt(data.adsTxt);
-      if (data.globalSEO) setGlobalSEO({ ...globalSEO, ...data.globalSEO });
+      if (data.mangaSeoDefaults) setMangaSeoDefaults(prev => ({ ...prev, ...data.mangaSeoDefaults }));
     } catch (error) {
       console.error("Error fetching SEO settings:", error);
     } finally {
@@ -125,7 +128,7 @@ function SeoSettingsContent() {
     setWriteStatus(null);
     try {
       // 1. Save to database
-      await updateSettings({ robotsTxt, adsTxt, globalSEO });
+      await updateSettings({ robotsTxt, adsTxt, mangaSeoDefaults });
 
       // 2. Write files to disk (live sync)
       try {
@@ -209,116 +212,149 @@ function SeoSettingsContent() {
             </div>
           ) : (
             <div className="max-w-4xl space-y-6">
-              {/* Global SEO Templates */}
+              {/* Global SEO Templates — Single Source of Truth */}
               <div className="bg-white rounded-xl shadow p-6">
                 <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
                   <FiFileText className="text-purple-500" /> Global SEO Templates
                 </h2>
-                <p className="text-sm text-gray-500 mb-6">
-                  Set default SEO templates for manga and blog pages. Use <code className="bg-gray-100 px-1 rounded">{"{title}"}</code> for content title and <code className="bg-gray-100 px-1 rounded">{"{n}"}</code> for chapter number.
+                <p className="text-sm text-gray-500 mb-2">
+                  Set default SEO templates for all manga and blog pages. Individual manga/blog SEO overrides will take priority over these.
                 </p>
+                <div className="mb-6 p-3 bg-purple-50 border border-purple-200 rounded-lg">
+                  <p className="text-sm text-purple-700">
+                    <strong>Available placeholders:</strong>{" "}
+                    <code className="bg-purple-100 px-1 rounded">{"{title}"}</code>,{" "}
+                    <code className="bg-purple-100 px-1 rounded">{"{altNames}"}</code>,{" "}
+                    <code className="bg-purple-100 px-1 rounded">{"{chapters}"}</code>,{" "}
+                    <code className="bg-purple-100 px-1 rounded">{"{chapter}"}</code>,{" "}
+                    <code className="bg-purple-100 px-1 rounded">{"{genre}"}</code>,{" "}
+                    <code className="bg-purple-100 px-1 rounded">{"{status}"}</code>,{" "}
+                    <code className="bg-purple-100 px-1 rounded">{"{author}"}</code>
+                  </p>
+                </div>
 
-                <div className="space-y-4">
+                <div className="space-y-5">
+                  {/* Manga Section Header */}
+                  <h3 className="text-md font-semibold text-gray-700 border-b pb-2">Manga Page Defaults</h3>
+
                   {/* Manga Title Template */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Default Manga Title Template
-                    </label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Manga Title Template</label>
                     <input
                       type="text"
-                      value={globalSEO.defaultMangaTitle}
-                      onChange={(e) => setGlobalSEO({ ...globalSEO, defaultMangaTitle: e.target.value })}
+                      value={mangaSeoDefaults.titleTemplate}
+                      onChange={(e) => setMangaSeoDefaults({ ...mangaSeoDefaults, titleTemplate: e.target.value })}
                       className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
-                      placeholder="Read {title} Manga Online Free - Luvrix"
+                      placeholder="{title} Manga | Luvrix"
                     />
-                  </div>
-
-                  {/* Chapter Title Template */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Default Chapter Title Template
-                    </label>
-                    <input
-                      type="text"
-                      value={globalSEO.defaultChapterTitle}
-                      onChange={(e) => setGlobalSEO({ ...globalSEO, defaultChapterTitle: e.target.value })}
-                      className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
-                      placeholder="{title} Chapter {n} - Read Online Free"
-                    />
+                    <p className="text-xs text-gray-500 mt-1">Example: "Swordmaster's Youngest Son Manga | Luvrix"</p>
                   </div>
 
                   {/* Manga Description Template */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Default Manga Description Template
-                    </label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Manga Description Template</label>
                     <textarea
-                      value={globalSEO.defaultMangaDescription}
-                      onChange={(e) => setGlobalSEO({ ...globalSEO, defaultMangaDescription: e.target.value })}
+                      value={mangaSeoDefaults.descriptionTemplate}
+                      onChange={(e) => setMangaSeoDefaults({ ...mangaSeoDefaults, descriptionTemplate: e.target.value })}
                       className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 h-20"
-                      placeholder="Read {title} manga online for free..."
+                      placeholder="Read {title} manga online. Also known as {altNames}. Chapters 1 to {chapters} available."
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Use {"{altNames}"} for alternative names — auto-extracted from the manga's description field or alternativeNames field.</p>
+                  </div>
+
+                  {/* Focus Keyword Template */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Focus Keywords Template</label>
+                    <input
+                      type="text"
+                      value={mangaSeoDefaults.focusKeywordTemplate}
+                      onChange={(e) => setMangaSeoDefaults({ ...mangaSeoDefaults, focusKeywordTemplate: e.target.value })}
+                      className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
+                      placeholder="{title} manga, read {title} online, {title} chapters, {altNames}"
+                    />
+                  </div>
+
+                  {/* Chapter Section Header */}
+                  <h3 className="text-md font-semibold text-gray-700 border-b pb-2 mt-6">Chapter Page Defaults (noindex pages)</h3>
+
+                  {/* Chapter Title Template */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Chapter Title Template</label>
+                    <input
+                      type="text"
+                      value={mangaSeoDefaults.chapterTitleTemplate}
+                      onChange={(e) => setMangaSeoDefaults({ ...mangaSeoDefaults, chapterTitleTemplate: e.target.value })}
+                      className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
+                      placeholder="{title} Chapter {chapter} | Luvrix"
                     />
                   </div>
 
                   {/* Chapter Description Template */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Default Chapter Description Template
-                    </label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Chapter Description Template</label>
                     <textarea
-                      value={globalSEO.defaultChapterDescription}
-                      onChange={(e) => setGlobalSEO({ ...globalSEO, defaultChapterDescription: e.target.value })}
-                      className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 h-20"
-                      placeholder="Read {title} Chapter {n} online for free..."
+                      value={mangaSeoDefaults.chapterDescriptionTemplate}
+                      onChange={(e) => setMangaSeoDefaults({ ...mangaSeoDefaults, chapterDescriptionTemplate: e.target.value })}
+                      className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 h-16"
+                      placeholder="Read {title} Chapter {chapter} online. {chapters} chapters available."
                     />
                   </div>
 
-                  {/* Default OG Image */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Default OG Image URL
-                    </label>
-                    <input
-                      type="text"
-                      value={globalSEO.defaultOgImage}
-                      onChange={(e) => setGlobalSEO({ ...globalSEO, defaultOgImage: e.target.value })}
-                      className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
-                      placeholder="https://luvrix.com/default-cover.jpg"
-                    />
-                  </div>
+                  {/* Blog Section Header */}
+                  <h3 className="text-md font-semibold text-gray-700 border-b pb-2 mt-6">Blog Page Defaults</h3>
 
                   {/* Blog Title Template */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Default Blog Title Template
-                    </label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Blog Title Template</label>
                     <input
                       type="text"
-                      value={globalSEO.defaultBlogTitle}
-                      onChange={(e) => setGlobalSEO({ ...globalSEO, defaultBlogTitle: e.target.value })}
+                      value={mangaSeoDefaults.blogTitleTemplate}
+                      onChange={(e) => setMangaSeoDefaults({ ...mangaSeoDefaults, blogTitleTemplate: e.target.value })}
                       className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
-                      placeholder="{title} - Luvrix Blog"
+                      placeholder="{title} | Luvrix Blog"
                     />
                   </div>
 
                   {/* Blog Description Template */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Default Blog Description Template
-                    </label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Blog Description Template</label>
                     <textarea
-                      value={globalSEO.defaultBlogDescription}
-                      onChange={(e) => setGlobalSEO({ ...globalSEO, defaultBlogDescription: e.target.value })}
-                      className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 h-20"
-                      placeholder="Read {title} on Luvrix Blog..."
+                      value={mangaSeoDefaults.blogDescriptionTemplate}
+                      onChange={(e) => setMangaSeoDefaults({ ...mangaSeoDefaults, blogDescriptionTemplate: e.target.value })}
+                      className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 h-16"
+                      placeholder="Read {title} on Luvrix Blog."
                     />
                   </div>
-                </div>
 
-                <div className="mt-4 p-3 bg-purple-50 border border-purple-200 rounded-lg">
-                  <p className="text-sm text-purple-700">
-                    <strong>Variables:</strong> Use <code className="bg-purple-100 px-1 rounded">{"{title}"}</code> for manga/blog title, <code className="bg-purple-100 px-1 rounded">{"{n}"}</code> for chapter number
-                  </p>
+                  {/* Default OG Image */}
+                  <h3 className="text-md font-semibold text-gray-700 border-b pb-2 mt-6">Default Images</h3>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Default OG Image URL</label>
+                    <input
+                      type="text"
+                      value={mangaSeoDefaults.defaultOgImage}
+                      onChange={(e) => setMangaSeoDefaults({ ...mangaSeoDefaults, defaultOgImage: e.target.value })}
+                      className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
+                      placeholder="https://res.cloudinary.com/..."
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Used when a page has no specific image. Must be 1200×630 PNG/JPG.</p>
+                  </div>
+
+                  {/* How it works */}
+                  <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg mt-4">
+                    <div className="flex items-start gap-2">
+                      <FiFileText className="w-5 h-5 text-purple-600 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="font-medium text-purple-800">How it works:</p>
+                        <ul className="text-sm text-purple-700 mt-1 space-y-1">
+                          <li>• These templates apply globally when manga/blogs have no custom SEO fields set</li>
+                          <li>• Per-manga overrides (in Manage Manga) take priority over these defaults</li>
+                          <li>• {"{altNames}"} is auto-extracted from the manga's Alternative Names field or Description</li>
+                          <li>• Changes here take effect immediately on all pages using default templates</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
 

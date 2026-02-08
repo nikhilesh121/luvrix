@@ -46,11 +46,13 @@
 - **Canonical:** `https://luvrix.com/manga/{slug}`
 - **Priority:** 0.7
 
-### Chapter Page (`/manga/[slug]/chapter-[n]`)
-- **Title:** `{title} Chapter {n} — Read Online | Luvrix`
-- **Schema:** Chapter + BreadcrumbList
-- **Canonical to SELF** (not parent manga)
-- **Priority:** 0.6
+### Chapter Page (`/manga/[slug]/chapter-[n]`) — DEPRECATED / NOINDEX
+- **Robots:** `noindex, follow`
+- **Canonical:** `https://luvrix.com/manga/{slug}` (points to parent manga)
+- **Schema:** None (noindex pages do not need structured data)
+- **NOT in sitemaps**
+- **Blocked in robots.txt:** `Disallow: /manga/*/chapter*`
+- **Purpose:** Legacy fallback only. All chapter links on `/manga/[slug]` point directly to external source URLs.
 
 ### Categories (`/categories`)
 - **Title:** `Browse Categories | Luvrix`
@@ -78,7 +80,107 @@
 
 ---
 
-## 3. Image SEO Rules
+## 3. Manga Chapter Architecture (FINAL)
+
+**Decision Date:** February 8, 2026  
+**Status:** ENFORCED — This is the single source of truth for all manga chapter handling.
+
+### Architecture Principles
+
+| # | Principle |
+|---|----------|
+| 1 | `/manga/[slug]` is the **ONLY indexable manga URL** |
+| 2 | Chapter links on the manga page point **DIRECTLY to external source URLs** |
+| 3 | Internal chapter routes (`/manga/[slug]/chapter-[n]`) are **noindex, follow** |
+| 4 | Chapter URLs are **NOT in any sitemap** |
+| 5 | Chapter URLs are **blocked in robots.txt** |
+| 6 | All external chapter links use `target="_blank" rel="nofollow noopener"` |
+| 7 | No doorway pages — no thin auto-generated chapter content for SEO |
+| 8 | Structured data (CreativeWorkSeries schema) lives ONLY on `/manga/[slug]` |
+
+### Link Architecture
+
+```
+/manga/[slug]  (INDEXED — canonical, schema, description, chapter list)
+  └── Chapter 1  → <a href="EXTERNAL_URL/chapter-1" target="_blank" rel="nofollow noopener">
+  └── Chapter 2  → <a href="EXTERNAL_URL/chapter-2" target="_blank" rel="nofollow noopener">
+  └── Chapter N  → <a href="EXTERNAL_URL/chapter-N" target="_blank" rel="nofollow noopener">
+
+/manga/[slug]/chapter-[n]  (NOINDEX — legacy only, canonical → /manga/[slug])
+```
+
+### Admin Data Model
+
+| Field | Type | Purpose |
+|-------|------|--------|
+| `redirectBaseUrl` | string | External base URL for chapter links |
+| `totalChapters` | number | Total chapter count (virtual, display-only) |
+| `chapterFormat` | string | URL pattern, e.g. `chapter-{n}` |
+| `chapterPadding` | number | Zero-padding for chapter numbers |
+
+### SEO Content Strategy (Chapter Query Ranking)
+
+#### Title (STATIC — no chapter numbers)
+```
+{MANGA_NAME} Manga | Luvrix
+```
+- Admin `seoTitle` field overrides this if set.
+- DO NOT include chapter numbers, counts, or "Read Online" in `<title>`.
+
+#### Meta Description (DYNAMIC — auto-updates with chapter count)
+```
+Read {MANGA_NAME} manga online. Chapters 1 to {TOTAL_CHAPTERS} are available. Updated regularly.
+```
+- Admin `seoDescription` field overrides this if set.
+- Chapter count comes from `manga.totalChapters` in the data model.
+
+#### Visible Page Content (MOST IMPORTANT for chapter query ranking)
+The manga page renders a crawlable paragraph:
+```
+{MANGA_NAME} manga currently has {TOTAL_CHAPTERS} chapters available.
+Readers can access chapters from Chapter 1 to Chapter {TOTAL_CHAPTERS}.
+Latest chapter: Chapter {TOTAL_CHAPTERS}.
+```
+- This text is visible to users and crawlers.
+- It contains the chapter range Google needs to match "manga name chapter N" queries.
+
+#### Structured Data
+- Schema type: `CreativeWorkSeries`
+- Key field: `numberOfEpisodes: {TOTAL_CHAPTERS}`
+- Lives ONLY on `/manga/[slug]` — never on chapter pages.
+
+#### Expected Google Behavior
+Searches like:
+- "{manga name}" → `/manga/[slug]`
+- "{manga name} chapter 40" → `/manga/[slug]`
+- "{manga name} chapter 90" → `/manga/[slug]`
+- "{manga name} latest chapter" → `/manga/[slug]`
+
+All resolve to the single indexable manga page.
+
+### Google Safety
+
+- **Zero doorway pages** — chapter links go directly to external source
+- **Zero thin content indexed** — chapter pages are `noindex`
+- **AdSense compliant** — no ads on redirect/doorway pages
+- **Crawl budget preserved** — chapter URLs blocked in robots.txt
+- **Scales to 10k+ manga** — no sitemap bloat from chapter URLs
+
+### Files Implementing This Architecture
+
+| File | Role |
+|------|------|
+| `pages/manga/[slug]/index.js` | Static title, dynamic description, visible chapter text, external `<a>` links |
+| `components/SEOHead.js` | `MangaSchema` — CreativeWorkSeries with `numberOfEpisodes` |
+| `pages/manga/[slug]/[chapter].js` | Legacy route — `noindex, follow`, canonical to parent |
+| `utils/mangaRedirectGenerator.js` | Generates external URLs from `redirectBaseUrl` |
+| `public/robots.txt` | `Disallow: /manga/*/chapter*` |
+| `pages/api/sitemap/chapters.js` | Returns empty urlset |
+| `pages/api/sitemap/index.js` | Does NOT include chapters sub-sitemap |
+
+---
+
+## 4. Image SEO Rules
 
 | Rule | Requirement |
 |------|-------------|
@@ -101,7 +203,7 @@ https://res.cloudinary.com/dsga2d0bv/image/upload/w_1200,h_630,c_pad,b_rgb:6366f
 
 ---
 
-## 4. Indexing & Crawl Rules
+## 5. Indexing & Crawl Rules
 
 ### robots.txt
 - Allow: `/`, `/blog`, `/manga`, `/categories`, `/about`, `/contact`, `/publishers`, `/leaderboard`, `/policy/`
@@ -116,7 +218,7 @@ https://res.cloudinary.com/dsga2d0bv/image/upload/w_1200,h_630,c_pad,b_rgb:6366f
 | `/sitemap-pages.xml` | Static pages |
 | `/sitemap-posts.xml` | Published blogs only |
 | `/sitemap-manga.xml` | All manga series |
-| `/sitemap-chapters.xml` | All chapters |
+| `/sitemap-chapters.xml` | ~~Removed~~ — returns empty urlset |
 | `/sitemap-categories.xml` | Category page |
 
 ### Excluded from Sitemaps
@@ -128,7 +230,7 @@ https://res.cloudinary.com/dsga2d0bv/image/upload/w_1200,h_630,c_pad,b_rgb:6366f
 
 ---
 
-## 5. Structured Data Rules
+## 6. Structured Data Rules
 
 | Schema | Pages | Required Fields |
 |--------|-------|-----------------|
@@ -151,7 +253,7 @@ https://res.cloudinary.com/dsga2d0bv/image/upload/w_1200,h_630,c_pad,b_rgb:6366f
 
 ---
 
-## 6. AdSense + SEO Coexistence Rules
+## 7. AdSense + SEO Coexistence Rules
 
 | # | Rule |
 |---|------|
@@ -183,7 +285,7 @@ https://res.cloudinary.com/dsga2d0bv/image/upload/w_1200,h_630,c_pad,b_rgb:6366f
 
 ---
 
-## 7. Core Web Vitals Targets
+## 8. Core Web Vitals Targets
 
 | Metric | Target | Strategy |
 |--------|--------|----------|
@@ -204,7 +306,7 @@ https://res.cloudinary.com/dsga2d0bv/image/upload/w_1200,h_630,c_pad,b_rgb:6366f
 
 ---
 
-## 8. Regression Checklist
+## 9. Regression Checklist
 
 ### Before Every Merge
 - [ ] No new pages missing `<title>` or `meta description`
@@ -228,7 +330,7 @@ https://res.cloudinary.com/dsga2d0bv/image/upload/w_1200,h_630,c_pad,b_rgb:6366f
 
 ---
 
-## 9. SEO Priority / Internal Linking Hierarchy
+## 10. SEO Priority / Internal Linking Hierarchy
 
 ```
 Homepage (1.0)
@@ -252,7 +354,7 @@ Homepage (1.0)
 
 ---
 
-## 10. Build Stability & Low-Memory VPS Rules
+## 11. Build Stability & Low-Memory VPS Rules
 
 | # | Rule |
 |---|------|
@@ -272,7 +374,7 @@ pm2 restart luvrix
 
 ---
 
-## 11. Auto Ads + Manual Ads Coexistence
+## 12. Auto Ads + Manual Ads Coexistence
 
 ### Admin Settings Required
 | Setting | Type | Default | Description |
@@ -292,7 +394,7 @@ pm2 restart luvrix
 
 ---
 
-## 12. SEO Implementation Status
+## 13. SEO Implementation Status
 
 ### ✅ Completed
 - [x] Unique `<title>` per page (≤60 chars)
