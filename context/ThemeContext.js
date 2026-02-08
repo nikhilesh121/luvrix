@@ -14,16 +14,23 @@ export const ThemeProvider = ({ children }) => {
   const [theme, setTheme] = useState('light');
   const [mounted, setMounted] = useState(false);
 
-  // Load theme from localStorage on mount
+  // Load theme: saved preference → admin default → 'light'
   useEffect(() => {
     setMounted(true);
     const savedTheme = localStorage.getItem('theme');
-    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     
     if (savedTheme) {
       setTheme(savedTheme);
-    } else if (systemPrefersDark) {
-      setTheme('dark');
+    } else {
+      // No saved preference — fetch admin default
+      fetch('/api/settings')
+        .then(res => res.json())
+        .then(data => {
+          if (data?.defaultTheme && !localStorage.getItem('theme')) {
+            setTheme(data.defaultTheme);
+          }
+        })
+        .catch(() => {}); // Silently fail, keep 'light'
     }
   }, []);
 

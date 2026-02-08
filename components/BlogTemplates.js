@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { FiCalendar, FiClock, FiEye, FiUser, FiArrowLeft, FiTag, FiPlay, FiRadio } from "react-icons/fi";
+import { FiArrowLeft, FiPlay, FiRadio } from "react-icons/fi";
 import { useState, useEffect } from "react";
 
 export const BLOG_TEMPLATES = [
@@ -47,15 +47,21 @@ export function TemplateSelector({ value, onChange }) {
 }
 
 function AuthorMeta({ blog, author, readingTime, viewCount }) {
+  const stats = [
+    blog.createdAt && new Date(blog.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+    readingTime,
+    viewCount > 0 && `${viewCount.toLocaleString()} views`,
+  ].filter(Boolean);
+
   return (
-    <div className="flex flex-wrap items-center gap-4 text-sm">
+    <div className="flex flex-wrap items-center gap-x-2.5 sm:gap-x-3 gap-y-1 text-[11px] sm:text-sm">
       {author && (
-        <Link href={`/user/${blog.authorId}`} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-          <div className="w-8 h-8 rounded-full bg-primary/20 overflow-hidden">
+        <Link href={`/user/${blog.authorId}`} className="flex items-center gap-1.5 hover:opacity-80 transition-opacity">
+          <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-primary/20 overflow-hidden shrink-0">
             {author.photoURL ? (
               <img src={author.photoURL} alt="" className="w-full h-full object-cover" />
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-primary font-bold text-xs">
+              <div className="w-full h-full flex items-center justify-center text-primary font-bold text-[10px]">
                 {(author.name || "?")[0]}
               </div>
             )}
@@ -63,18 +69,20 @@ function AuthorMeta({ blog, author, readingTime, viewCount }) {
           <span className="font-medium">{author.name || author.displayName || "Author"}</span>
         </Link>
       )}
-      {blog.createdAt && (
-        <span className="flex items-center gap-1"><FiCalendar className="w-3.5 h-3.5" />{new Date(blog.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
+      {stats.length > 0 && (
+        <span className="inline-flex items-center gap-0.5 sm:gap-1 flex-wrap">
+          {stats.map((s, i) => (
+            <span key={i} className="whitespace-nowrap">{i > 0 && <span className="mx-0.5 opacity-40">·</span>}{s}</span>
+          ))}
+        </span>
       )}
-      {readingTime && <span className="flex items-center gap-1"><FiClock className="w-3.5 h-3.5" />{readingTime}</span>}
-      {viewCount > 0 && <span className="flex items-center gap-1"><FiEye className="w-3.5 h-3.5" />{viewCount.toLocaleString()} views</span>}
     </div>
   );
 }
 
 export function MagazineHero({ blog, author, readingTime, viewCount }) {
   return (
-    <div className="relative bg-gradient-to-br from-amber-50 via-white to-rose-50">
+    <div className="relative bg-gradient-to-br from-amber-50 via-white to-rose-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <div className="max-w-6xl mx-auto px-4 py-8 md:py-16">
         <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
           {/* Text side */}
@@ -83,20 +91,20 @@ export function MagazineHero({ blog, author, readingTime, viewCount }) {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.7 }}
           >
-            <Link href="/" className="inline-flex items-center gap-2 text-gray-500 hover:text-primary mb-6 transition text-sm">
+            <Link href="/" className="inline-flex items-center gap-2 text-gray-500 dark:text-gray-400 hover:text-primary mb-8 transition text-sm">
               <FiArrowLeft className="w-4 h-4" /> Back to Home
             </Link>
             {blog.category && (
-              <div className="mb-4">
+              <div className="mb-5">
                 <span className="inline-block px-3 py-1 bg-gradient-to-r from-amber-500 to-rose-500 text-white rounded-full text-xs font-bold uppercase tracking-wider">
                   {blog.category}
                 </span>
               </div>
             )}
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-black text-gray-900 mb-6 leading-tight break-words">
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-black text-gray-900 dark:text-white mb-6 leading-tight break-words">
               {blog.title}
             </h1>
-            <div className="text-gray-600">
+            <div className="text-gray-600 dark:text-gray-400">
               <AuthorMeta blog={blog} author={author} readingTime={readingTime} viewCount={viewCount} />
             </div>
             <motion.div
@@ -117,7 +125,7 @@ export function MagazineHero({ blog, author, readingTime, viewCount }) {
               <div className="aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl ring-1 ring-black/5">
                 <img src={blog.thumbnail} alt={blog.title} className="w-full h-full object-cover" />
               </div>
-              <div className="absolute -bottom-3 -right-3 w-full h-full rounded-2xl border-2 border-amber-200 -z-10" />
+              <div className="absolute -bottom-3 -right-3 w-full h-full rounded-2xl border-2 border-amber-200 dark:border-amber-800/40 -z-10" />
             </motion.div>
           )}
         </div>
@@ -128,19 +136,19 @@ export function MagazineHero({ blog, author, readingTime, viewCount }) {
 
 export function MinimalHero({ blog, author, readingTime, viewCount }) {
   return (
-    <div className="bg-white">
+    <div className="bg-white dark:bg-gray-900">
       <div className="max-w-2xl mx-auto px-4 pt-12 md:pt-20 pb-8">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-          <Link href="/" className="inline-flex items-center gap-2 text-gray-400 hover:text-gray-600 mb-8 transition text-sm">
+          <Link href="/" className="inline-flex items-center gap-2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 mb-10 transition text-sm">
             <FiArrowLeft className="w-4 h-4" /> Home
           </Link>
           {blog.category && (
-            <p className="text-primary font-semibold text-sm uppercase tracking-widest mb-4">{blog.category}</p>
+            <p className="text-primary font-semibold text-sm uppercase tracking-widest mb-5">{blog.category}</p>
           )}
-          <h1 className="text-3xl md:text-5xl font-serif font-bold text-gray-900 mb-6 leading-snug break-words">
+          <h1 className="text-3xl md:text-5xl font-serif font-bold text-gray-900 dark:text-white mb-6 leading-snug break-words">
             {blog.title}
           </h1>
-          <div className="flex items-center gap-6 text-gray-500 text-sm border-b border-gray-100 pb-8">
+          <div className="flex items-center gap-6 text-gray-500 dark:text-gray-400 text-sm border-b border-gray-100 dark:border-gray-700 pb-8">
             <AuthorMeta blog={blog} author={author} readingTime={readingTime} viewCount={viewCount} />
           </div>
         </motion.div>
@@ -168,11 +176,11 @@ export function CinematicHero({ blog, author, readingTime, viewCount }) {
       <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
       <div className="relative z-10 max-w-4xl mx-auto px-4 pb-12 md:pb-20 w-full">
         <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
-          <Link href="/" className="inline-flex items-center gap-2 text-white/60 hover:text-white mb-8 transition text-sm">
+          <Link href="/" className="inline-flex items-center gap-2 text-white/60 hover:text-white mb-10 transition text-sm">
             <FiArrowLeft className="w-4 h-4" /> Back
           </Link>
           {blog.category && (
-            <span className="inline-block px-3 py-1 border border-white/30 text-white/90 rounded text-xs font-semibold uppercase tracking-widest mb-5">
+            <span className="inline-block px-3 py-1 border border-white/30 text-white/90 rounded text-xs font-semibold uppercase tracking-widest mb-6">
               {blog.category}
             </span>
           )}
@@ -190,26 +198,26 @@ export function CinematicHero({ blog, author, readingTime, viewCount }) {
 
 export function NewsletterHero({ blog, author, readingTime, viewCount }) {
   return (
-    <div className="bg-gradient-to-b from-blue-50 to-white">
+    <div className="bg-gradient-to-b from-blue-50 to-white dark:from-gray-900 dark:to-gray-800">
       <div className="max-w-2xl mx-auto px-4 pt-12 md:pt-20 pb-8 text-center">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-          <Link href="/" className="inline-flex items-center gap-2 text-gray-400 hover:text-primary mb-6 transition text-sm">
+          <Link href="/" className="inline-flex items-center gap-2 text-gray-400 dark:text-gray-500 hover:text-primary mb-8 transition text-sm">
             <FiArrowLeft className="w-4 h-4" /> Home
           </Link>
           {blog.category && (
-            <div className="mb-5">
+            <div className="mb-6">
               <span className="inline-block px-4 py-1.5 bg-blue-600 text-white rounded-full text-xs font-bold uppercase tracking-wider">
                 {blog.category}
               </span>
             </div>
           )}
-          <h1 className="text-3xl md:text-5xl font-extrabold text-gray-900 mb-5 leading-tight break-words">
+          <h1 className="text-3xl md:text-5xl font-extrabold text-gray-900 dark:text-white mb-5 leading-tight break-words">
             {blog.title}
           </h1>
-          <div className="flex items-center justify-center text-gray-500 text-sm">
+          <div className="flex items-center justify-center text-gray-500 dark:text-gray-400 text-sm">
             <AuthorMeta blog={blog} author={author} readingTime={readingTime} viewCount={viewCount} />
           </div>
-          <div className="h-px w-full bg-gray-200 mt-8" />
+          <div className="h-px w-full bg-gray-200 dark:bg-gray-700 mt-8" />
         </motion.div>
         {blog.thumbnail && (
           <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.6, delay: 0.2 }} className="mt-8">
@@ -230,11 +238,11 @@ export function BoldHero({ blog, author, readingTime, viewCount }) {
       </div>
       <div className="relative z-10 max-w-4xl mx-auto px-4 py-16 md:py-24">
         <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}>
-          <Link href="/" className="inline-flex items-center gap-2 text-white/70 hover:text-white mb-8 transition text-sm">
+          <Link href="/" className="inline-flex items-center gap-2 text-white/70 hover:text-white mb-10 transition text-sm">
             <FiArrowLeft className="w-4 h-4" /> Back to Home
           </Link>
           {blog.category && (
-            <span className="inline-block px-4 py-1.5 bg-white/20 backdrop-blur-sm text-white rounded-full text-xs font-bold uppercase tracking-wider mb-5">
+            <span className="inline-block px-4 py-1.5 bg-white/20 backdrop-blur-sm text-white rounded-full text-xs font-bold uppercase tracking-wider mb-6">
               {blog.category}
             </span>
           )}
@@ -287,7 +295,7 @@ export function CinematicContent({ children }) {
 export function NewsletterContent({ children }) {
   return (
     <article className="max-w-2xl mx-auto px-4 py-10 md:py-14">
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-10">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 md:p-10">
         {children}
       </div>
     </article>
@@ -388,7 +396,7 @@ export function VideoHero({ blog, author, readingTime, viewCount }) {
       <div className="relative z-10 max-w-5xl mx-auto px-4 pt-6 pb-10 md:pt-10 md:pb-16">
         {/* Navigation */}
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
-          <Link href="/" className="inline-flex items-center gap-2 text-gray-400 hover:text-white mb-6 transition text-sm">
+          <Link href="/" className="inline-flex items-center gap-2 text-gray-400 hover:text-white mb-8 transition text-sm">
             <FiArrowLeft className="w-4 h-4" /> Back to Home
           </Link>
         </motion.div>
@@ -423,14 +431,14 @@ export function VideoHero({ blog, author, readingTime, viewCount }) {
           <h1 className="text-2xl md:text-4xl lg:text-5xl font-black text-white mb-5 leading-tight break-words">
             {blog.title}
           </h1>
-          <div className="flex flex-wrap items-center gap-4 text-gray-400 text-sm">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-gray-400 text-xs sm:text-sm">
             {author && (
-              <Link href={`/user/${blog.authorId}`} className="flex items-center gap-2 hover:text-white transition-colors">
-                <div className="w-8 h-8 rounded-full bg-white/10 overflow-hidden ring-2 ring-red-500/30">
+              <Link href={`/user/${blog.authorId}`} className="flex items-center gap-1.5 hover:text-white transition-colors">
+                <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-white/10 overflow-hidden ring-2 ring-red-500/30 shrink-0">
                   {author.photoURL ? (
                     <img src={author.photoURL} alt="" className="w-full h-full object-cover" />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-white font-bold text-xs">
+                    <div className="w-full h-full flex items-center justify-center text-white font-bold text-[10px]">
                       {(author.name || "?")[0]}
                     </div>
                   )}
@@ -438,17 +446,14 @@ export function VideoHero({ blog, author, readingTime, viewCount }) {
                 <span className="font-medium">{author.name || author.displayName || "Author"}</span>
               </Link>
             )}
-            {blog.createdAt && (
-              <span className="flex items-center gap-1">
-                <FiCalendar className="w-3.5 h-3.5" />
-                {new Date(blog.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-              </span>
-            )}
-            {viewCount > 0 && (
-              <span className="flex items-center gap-1">
-                <FiEye className="w-3.5 h-3.5" />{viewCount.toLocaleString()} views
-              </span>
-            )}
+            <span className="inline-flex items-center gap-1 flex-wrap">
+              {blog.createdAt && (
+                <span className="whitespace-nowrap">{new Date(blog.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
+              )}
+              {viewCount > 0 && (
+                <span className="whitespace-nowrap"><span className="mx-0.5 opacity-40">·</span>{viewCount.toLocaleString()} views</span>
+              )}
+            </span>
           </div>
           {/* Gradient divider */}
           <motion.div

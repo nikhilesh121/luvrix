@@ -10,13 +10,14 @@ import { useAuth } from "../context/AuthContext";
 import { useSocket } from "../context/SocketContext";
 import { BlogArticleSchema, BreadcrumbSchema } from "../components/SEOHead";
 import CommentSection from "../components/CommentSection";
-import SocialShare from "../components/SocialShare";
-import BlogContentWithAds from "../components/BlogContentWithAds";
+import BlogHero from "../components/BlogHero";
+import BlogContentRenderer from "../components/BlogContentRenderer";
 import AdRenderer from "../components/AdRenderer";
+import { shouldShowBlogAds, getBlogAdPlacements } from "../lib/ads";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  FiCalendar, FiUser, FiTag, FiArrowLeft, FiEye, FiShare2, 
-  FiClock, FiBookmark, FiHeart, FiMessageCircle, FiChevronUp,
+  FiCalendar, FiUser, FiArrowLeft, FiEye, FiShare2, 
+  FiClock, FiBookmark, FiHeart, FiChevronUp,
   FiTwitter, FiFacebook, FiLinkedin, FiCopy, FiCheck,
   FiUserPlus, FiUserCheck
 } from "react-icons/fi";
@@ -353,6 +354,8 @@ export default function BlogPage({ initialBlog, initialAuthor, initialSettings }
   const publishedDate = blog.createdAt?.toDate?.()?.toISOString() || new Date().toISOString();
   const modifiedDate = blog.updatedAt?.toDate?.()?.toISOString() || publishedDate;
   const readingTime = calculateReadingTime(blog.content);
+  const showAds = shouldShowBlogAds(settings, blog);
+  const adPlacements = getBlogAdPlacements(settings, blog);
 
   // Generate SEO description from content if not provided
   const generateDescription = () => {
@@ -410,56 +413,64 @@ export default function BlogPage({ initialBlog, initialAuthor, initialSettings }
         { name: blog.title, url: pageUrl },
       ]} />
 
-      {/* Reading Progress Bar */}
-      <div className="fixed top-0 left-0 right-0 h-1 bg-gray-200 z-50">
-        <motion.div 
+      {/* Inject admin blog color + spacing settings as CSS custom properties */}
+      <style jsx global>{`
+        :root {
+          ${settings?.blogTextColorLight ? `--blog-text-color: ${settings.blogTextColorLight};` : ''}
+          ${settings?.blogTextColorDark ? `--blog-text-color-dark: ${settings.blogTextColorDark};` : ''}
+          ${settings?.blogHeadingColorLight ? `--blog-heading-color: ${settings.blogHeadingColorLight};` : ''}
+          ${settings?.blogHeadingColorDark ? `--blog-heading-color-dark: ${settings.blogHeadingColorDark};` : ''}
+          ${settings?.blogLinkColorLight ? `--blog-link-color: ${settings.blogLinkColorLight};` : ''}
+          ${settings?.blogLinkColorDark ? `--blog-link-color-dark: ${settings.blogLinkColorDark};` : ''}
+          ${settings?.blogH1MarginTop ? `--blog-h1-mt: ${settings.blogH1MarginTop};` : ''}
+          ${settings?.blogH1MarginBottom ? `--blog-h1-mb: ${settings.blogH1MarginBottom};` : ''}
+          ${settings?.blogH2MarginTop ? `--blog-h2-mt: ${settings.blogH2MarginTop};` : ''}
+          ${settings?.blogH2MarginBottom ? `--blog-h2-mb: ${settings.blogH2MarginBottom};` : ''}
+          ${settings?.blogH3MarginTop ? `--blog-h3-mt: ${settings.blogH3MarginTop};` : ''}
+          ${settings?.blogH3MarginBottom ? `--blog-h3-mb: ${settings.blogH3MarginBottom};` : ''}
+          ${settings?.blogParagraphMarginBottom ? `--blog-p-mb: ${settings.blogParagraphMarginBottom};` : ''}
+          ${settings?.blogLineHeight ? `--blog-line-height: ${settings.blogLineHeight};` : ''}
+          ${settings?.blogLetterSpacing ? `--blog-letter-spacing: ${settings.blogLetterSpacing};` : ''}
+          ${settings?.blogWordSpacing ? `--blog-word-spacing: ${settings.blogWordSpacing};` : ''}
+        }
+      `}</style>
+
+      {/* ═══════════════════════════════════════════════
+           READING PROGRESS BAR
+         ═══════════════════════════════════════════════ */}
+      <div className="fixed top-0 left-0 right-0 h-0.5 sm:h-1 bg-gray-200/60 dark:bg-gray-700/60 z-50">
+        <motion.div
           className="h-full bg-gradient-to-r from-primary via-purple-500 to-pink-500"
           style={{ width: `${readingProgress}%` }}
           transition={{ duration: 0.1 }}
         />
       </div>
 
-      {/* Floating Share Buttons - Desktop */}
-      <div className="hidden lg:flex fixed left-8 top-1/2 -translate-y-1/2 flex-col gap-3 z-40">
-        <motion.button
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={() => handleShare('twitter')}
-          className="w-12 h-12 bg-white shadow-lg rounded-full flex items-center justify-center text-gray-600 hover:text-[#1DA1F2] hover:shadow-xl transition-all"
-          title="Share on Twitter"
-        >
-          <FiTwitter className="w-5 h-5" />
-        </motion.button>
-        <motion.button
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={() => handleShare('facebook')}
-          className="w-12 h-12 bg-white shadow-lg rounded-full flex items-center justify-center text-gray-600 hover:text-[#4267B2] hover:shadow-xl transition-all"
-          title="Share on Facebook"
-        >
-          <FiFacebook className="w-5 h-5" />
-        </motion.button>
-        <motion.button
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={() => handleShare('linkedin')}
-          className="w-12 h-12 bg-white shadow-lg rounded-full flex items-center justify-center text-gray-600 hover:text-[#0077B5] hover:shadow-xl transition-all"
-          title="Share on LinkedIn"
-        >
-          <FiLinkedin className="w-5 h-5" />
-        </motion.button>
-        <motion.button
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={() => handleShare('copy')}
-          className="w-12 h-12 bg-white shadow-lg rounded-full flex items-center justify-center text-gray-600 hover:text-primary hover:shadow-xl transition-all"
-          title="Copy Link"
-        >
-          {copied ? <FiCheck className="w-5 h-5 text-green-500" /> : <FiCopy className="w-5 h-5" />}
-        </motion.button>
+      {/* ═══════════════════════════════════════════════
+           FLOATING SHARE — Desktop only (left rail)
+         ═══════════════════════════════════════════════ */}
+      <div className="hidden xl:flex fixed left-6 top-1/2 -translate-y-1/2 flex-col gap-2.5 z-40">
+        {[
+          { fn: () => handleShare('twitter'),  icon: <FiTwitter className="w-4 h-4" />,  hover: 'hover:text-[#1DA1F2]' },
+          { fn: () => handleShare('facebook'), icon: <FiFacebook className="w-4 h-4" />, hover: 'hover:text-[#4267B2]' },
+          { fn: () => handleShare('linkedin'), icon: <FiLinkedin className="w-4 h-4" />, hover: 'hover:text-[#0077B5]' },
+          { fn: () => handleShare('copy'),     icon: copied ? <FiCheck className="w-4 h-4 text-green-500" /> : <FiCopy className="w-4 h-4" />, hover: 'hover:text-primary' },
+        ].map((btn, i) => (
+          <motion.button
+            key={i}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={btn.fn}
+            className={`w-10 h-10 bg-white dark:bg-gray-800 shadow-md dark:shadow-gray-900/50 rounded-full flex items-center justify-center text-gray-500 dark:text-gray-400 ${btn.hover} transition-all`}
+          >
+            {btn.icon}
+          </motion.button>
+        ))}
       </div>
 
-      {/* Hero Section - Template Aware */}
+      {/* ═══════════════════════════════════════════════
+           HERO SECTION — template-aware
+         ═══════════════════════════════════════════════ */}
       {blog.template === "magazine" ? (
         <MagazineHero blog={blog} author={author} readingTime={`${readingTime} min read`} viewCount={viewCount} />
       ) : blog.template === "minimal" ? (
@@ -473,233 +484,184 @@ export default function BlogPage({ initialBlog, initialAuthor, initialSettings }
       ) : blog.template === "video" ? (
         <VideoHero blog={blog} author={author} readingTime={`${readingTime} min read`} viewCount={viewCount} />
       ) : (
-        <div className="relative">
-          {blog.thumbnail ? (
-            <div className="relative aspect-video md:h-[60vh] md:aspect-auto overflow-hidden">
-              <img src={blog.thumbnail} alt={blog.title} className="w-full h-full object-cover" loading="eager" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
-              <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 md:p-12">
-                <div className="max-w-4xl mx-auto">
-                  <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-                    <Link href="/" className="inline-flex items-center gap-2 text-white/80 hover:text-white mb-6 transition">
-                      <FiArrowLeft className="w-4 h-4" /> Back to Home
-                    </Link>
-                    {blog.category && (
-                      <Link href={`/categories?cat=${blog.category.toLowerCase()}`} className="inline-block px-4 py-1.5 bg-primary text-white rounded-full text-sm font-semibold mb-4 hover:bg-primary/90 transition">
-                        {blog.category}
-                      </Link>
-                    )}
-                    <h1 className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-bold text-white mb-4 md:mb-6 leading-tight break-words line-clamp-4">{blog.title}</h1>
-                    <div className="flex flex-wrap items-center gap-4 md:gap-6 text-white/80 text-sm md:text-base">
-                      {author && (
-                        <Link href={`/user/${blog.authorId}`} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-                          <div className="w-8 h-8 rounded-full bg-white/20 overflow-hidden">
-                            {author.photoURL ? <img src={author.photoURL} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-white font-bold">{author.name?.charAt(0)}</div>}
-                          </div>
-                          <span className="font-medium hover:underline">{author.name}</span>
-                        </Link>
-                      )}
-                      <div className="flex items-center gap-2"><FiCalendar className="w-4 h-4" /><span>{formatDate(blog.createdAt)}</span></div>
-                      <div className="flex items-center gap-2"><FiClock className="w-4 h-4" /><span>{readingTime} min read</span></div>
-                      <div className="flex items-center gap-2"><FiEye className="w-4 h-4" /><span>{viewCount.toLocaleString()} views</span></div>
-                    </div>
-                  </motion.div>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="bg-gradient-to-br from-primary/10 via-purple-50 to-pink-50 pt-8 pb-16">
-              <div className="max-w-4xl mx-auto px-4">
-                <Link href="/" className="inline-flex items-center gap-2 text-gray-600 hover:text-primary mb-8 transition"><FiArrowLeft className="w-4 h-4" /> Back to Home</Link>
-                {blog.category && <Link href={`/categories?cat=${blog.category.toLowerCase()}`} className="inline-block px-4 py-1.5 bg-primary text-white rounded-full text-sm font-semibold mb-4">{blog.category}</Link>}
-                <h1 className="text-2xl sm:text-3xl md:text-5xl font-bold text-gray-900 mb-4 md:mb-6 leading-tight break-words line-clamp-4">{blog.title}</h1>
-                <div className="flex flex-wrap items-center gap-4 md:gap-6 text-gray-600">
-                  {author && (
-                    <Link href={`/user/${blog.authorId}`} className="flex items-center gap-2 hover:text-primary transition-colors">
-                      <div className="w-8 h-8 rounded-full bg-primary/20 overflow-hidden">
-                        {author.photoURL ? <img src={author.photoURL} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-primary font-bold">{author.name?.charAt(0)}</div>}
-                      </div>
-                      <span className="font-medium hover:underline">{author.name}</span>
-                    </Link>
-                  )}
-                  <div className="flex items-center gap-2"><FiCalendar className="w-4 h-4" /><span>{formatDate(blog.createdAt)}</span></div>
-                  <div className="flex items-center gap-2"><FiClock className="w-4 h-4" /><span>{readingTime} min read</span></div>
-                  <div className="flex items-center gap-2"><FiEye className="w-4 h-4" /><span>{viewCount.toLocaleString()} views</span></div>
-                </div>
-              </div>
-            </div>
-          )}
+        <BlogHero blog={blog} author={author} readingTime={readingTime} viewCount={viewCount} formatDate={formatDate} />
+      )}
+
+      {/* ═══════════════════════════════════════════════
+           TOP AD SLOT — below hero, above article body
+         ═══════════════════════════════════════════════ */}
+      {showAds && adPlacements.top && (
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8">
+          <p className="text-[10px] text-gray-400 dark:text-gray-500 text-center mb-1 uppercase tracking-widest select-none">Advertisement</p>
+          <div className="border border-gray-100 dark:border-gray-700 rounded-xl overflow-hidden bg-gray-50/50 dark:bg-gray-800/50">
+            <AdRenderer position="blog_top" settings={settings} className="w-full" />
+          </div>
         </div>
       )}
 
-      {/* Main Content - Template Aware */}
+      {/* ═══════════════════════════════════════════════
+           ARTICLE BODY — unified renderer per template
+         ═══════════════════════════════════════════════ */}
       {blog.template === "magazine" ? (
         <MagazineContent>
-          <AdRenderer position="content_middle" settings={settings} className="mb-10" />
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-            <BlogContentWithAds
+            <BlogContentRenderer
               html={cleanContentForDisplay(blog.content)}
               settings={settings}
-              className="blog-content prose prose-base md:prose-lg max-w-none prose-headings:font-bold prose-headings:text-gray-900 prose-p:text-gray-700 prose-p:leading-loose prose-a:text-primary prose-img:rounded-xl prose-img:shadow-lg prose-blockquote:border-l-4 prose-blockquote:border-amber-400 prose-blockquote:bg-amber-50 prose-blockquote:rounded-r-xl prose-code:bg-gray-100 prose-code:rounded prose-pre:bg-gray-900 prose-pre:rounded-xl"
+              blog={blog}
+              template="magazine"
+              adsEnabled={showAds && adPlacements.inContent}
             />
           </motion.div>
         </MagazineContent>
       ) : blog.template === "minimal" ? (
         <MinimalContent>
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-            <BlogContentWithAds
+            <BlogContentRenderer
               html={cleanContentForDisplay(blog.content)}
               settings={settings}
-              className="blog-content prose prose-lg max-w-none prose-headings:font-serif prose-headings:text-gray-900 prose-p:text-gray-600 prose-p:leading-loose prose-p:text-lg prose-a:text-primary prose-img:rounded-lg prose-blockquote:border-l-2 prose-blockquote:border-gray-300 prose-blockquote:italic prose-code:bg-gray-50 prose-code:rounded prose-pre:bg-gray-900 prose-pre:rounded-lg"
+              blog={blog}
+              template="minimal"
+              adsEnabled={showAds && adPlacements.inContent}
             />
           </motion.div>
         </MinimalContent>
       ) : blog.template === "cinematic" ? (
         <CinematicContent>
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-            <BlogContentWithAds
+            <BlogContentRenderer
               html={cleanContentForDisplay(blog.content)}
               settings={settings}
-              className="blog-content prose prose-lg max-w-none prose-headings:font-bold prose-headings:text-gray-900 prose-p:text-gray-700 prose-p:leading-loose prose-a:text-primary prose-img:rounded-xl prose-img:shadow-xl prose-blockquote:border-l-4 prose-blockquote:border-gray-800 prose-blockquote:bg-gray-50 prose-blockquote:rounded-r-xl prose-code:bg-gray-100 prose-code:rounded prose-pre:bg-gray-950 prose-pre:rounded-xl"
+              blog={blog}
+              template="cinematic"
+              adsEnabled={showAds && adPlacements.inContent}
             />
           </motion.div>
         </CinematicContent>
       ) : blog.template === "newsletter" ? (
         <NewsletterContent>
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-            <BlogContentWithAds
+            <BlogContentRenderer
               html={cleanContentForDisplay(blog.content)}
               settings={settings}
-              className="blog-content prose prose-base md:prose-lg max-w-none prose-headings:font-extrabold prose-headings:text-gray-900 prose-p:text-gray-600 prose-p:leading-relaxed prose-a:text-blue-600 prose-img:rounded-xl prose-blockquote:border-l-4 prose-blockquote:border-blue-500 prose-blockquote:bg-blue-50 prose-blockquote:rounded-r-xl prose-code:bg-blue-50 prose-code:text-blue-700 prose-code:rounded prose-pre:bg-gray-900 prose-pre:rounded-xl"
+              blog={blog}
+              template="newsletter"
+              adsEnabled={showAds && adPlacements.inContent}
             />
           </motion.div>
         </NewsletterContent>
       ) : blog.template === "bold" ? (
         <BoldContent>
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-            <BlogContentWithAds
+            <BlogContentRenderer
               html={cleanContentForDisplay(blog.content)}
               settings={settings}
-              className="blog-content prose prose-lg max-w-none prose-headings:font-black prose-headings:text-gray-900 prose-p:text-gray-700 prose-p:leading-loose prose-a:text-purple-600 prose-img:rounded-2xl prose-img:shadow-lg prose-blockquote:border-l-4 prose-blockquote:border-purple-500 prose-blockquote:bg-purple-50 prose-blockquote:rounded-r-xl prose-code:bg-purple-50 prose-code:text-purple-700 prose-code:rounded prose-pre:bg-gray-900 prose-pre:rounded-xl"
+              blog={blog}
+              template="bold"
+              adsEnabled={showAds && adPlacements.inContent}
             />
           </motion.div>
         </BoldContent>
       ) : blog.template === "video" ? (
         <VideoContent>
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-            <BlogContentWithAds
+            <BlogContentRenderer
               html={cleanContentForDisplay(blog.content)}
               settings={settings}
-              className="blog-content prose prose-lg max-w-none prose-headings:font-bold prose-headings:text-gray-900 prose-p:text-gray-700 prose-p:leading-relaxed prose-a:text-red-600 prose-img:rounded-xl prose-img:shadow-lg prose-blockquote:border-l-4 prose-blockquote:border-red-500 prose-blockquote:bg-red-50 prose-blockquote:rounded-r-xl prose-code:bg-gray-100 prose-code:rounded prose-pre:bg-gray-900 prose-pre:rounded-xl"
+              blog={blog}
+              template="video"
+              adsEnabled={showAds && adPlacements.inContent}
             />
           </motion.div>
         </VideoContent>
       ) : (
-        <article className="max-w-4xl mx-auto px-3 sm:px-4 py-6 md:py-12">
-          <AdRenderer position="content_middle" settings={settings} className="mb-10" />
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-          >
-            <BlogContentWithAds
+        <article className="max-w-3xl mx-auto px-4 sm:px-6 py-8 md:py-12">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+            <BlogContentRenderer
               html={cleanContentForDisplay(blog.content)}
               settings={settings}
-              className="blog-content prose prose-base md:prose-lg max-w-none
-                prose-headings:font-bold prose-headings:text-gray-900 prose-headings:break-words
-                prose-h2:text-2xl md:prose-h2:text-3xl prose-h2:mt-8 md:prose-h2:mt-12 prose-h2:mb-4 md:prose-h2:mb-6
-                prose-h3:text-xl md:prose-h3:text-2xl prose-h3:mt-6 md:prose-h3:mt-10 prose-h3:mb-3 md:prose-h3:mb-4
-                prose-p:text-gray-700 prose-p:leading-relaxed md:prose-p:leading-loose prose-p:text-base md:prose-p:text-lg
-                prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-a:break-words
-                prose-img:rounded-xl prose-img:shadow-lg prose-img:w-full
-                prose-blockquote:border-l-4 prose-blockquote:border-primary prose-blockquote:bg-primary/5 prose-blockquote:rounded-r-xl prose-blockquote:py-4 prose-blockquote:italic
-                prose-code:bg-gray-100 prose-code:px-2 prose-code:py-1 prose-code:rounded prose-code:text-primary prose-code:break-words
-                prose-pre:bg-gray-900 prose-pre:rounded-xl prose-pre:overflow-x-auto"
+              blog={blog}
+              template="default"
+              adsEnabled={showAds && adPlacements.inContent}
             />
           </motion.div>
         </article>
       )}
 
-      {/* Shared sections for all templates */}
-      <article className="max-w-4xl mx-auto px-3 sm:px-4 py-6">
-        {/* Engagement Bar */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex items-center justify-between mt-10 py-6 px-6 bg-gradient-to-r from-gray-50 to-gray-100 rounded-2xl border border-gray-200"
+      {/* ═══════════════════════════════════════════════
+           BELOW-CONTENT SECTIONS (shared by all templates)
+         ═══════════════════════════════════════════════ */}
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 pb-12">
+
+        {/* ── Engagement bar ─────────────────────────── */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="flex flex-wrap items-center justify-between gap-4 py-5 px-4 sm:px-6 mt-8 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700"
         >
-          <div className="flex items-center gap-4">
+          {/* Like + views */}
+          <div className="flex items-center gap-3">
             <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              whileTap={{ scale: 0.92 }}
               onClick={handleLike}
               disabled={likeLoading}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium transition-all ${
-                isLiked 
-                  ? "bg-red-500 text-white shadow-lg shadow-red-500/30" 
-                  : "bg-white text-gray-600 border border-gray-200 hover:border-red-300 hover:text-red-500"
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all min-h-[44px] ${
+                isLiked
+                  ? "bg-red-500 text-white shadow-lg shadow-red-500/25"
+                  : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-600 hover:border-red-300 hover:text-red-500 active:bg-red-50 dark:active:bg-red-500/10"
               }`}
             >
               {likeLoading ? (
-                <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
               ) : (
-                <FiHeart className={`w-5 h-5 ${isLiked ? "fill-current" : ""}`} />
+                <FiHeart className={`w-4 h-4 ${isLiked ? "fill-current" : ""}`} />
               )}
               <span>{likeCount}</span>
             </motion.button>
-            <div className="flex items-center gap-2 text-gray-500">
-              <FiEye className="w-5 h-5" />
-              <span>{viewCount.toLocaleString()}</span>
-            </div>
+            <span className="flex items-center gap-1.5 text-gray-400 text-sm">
+              <FiEye className="w-4 h-4" />
+              {viewCount.toLocaleString()}
+            </span>
           </div>
-          
-          <div className="flex items-center gap-2">
-            <span className="text-gray-400 text-sm hidden sm:inline">Share:</span>
-            <button
-              onClick={() => handleShare('twitter')}
-              className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-gray-500 hover:bg-[#1DA1F2] hover:text-white transition border border-gray-200"
-            >
-              <FiTwitter className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => handleShare('facebook')}
-              className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-gray-500 hover:bg-[#4267B2] hover:text-white transition border border-gray-200"
-            >
-              <FiFacebook className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => handleShare('copy')}
-              className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-gray-500 hover:bg-primary hover:text-white transition border border-gray-200"
-            >
-              {copied ? <FiCheck className="w-4 h-4 text-green-500" /> : <FiCopy className="w-4 h-4" />}
-            </button>
+
+          {/* Share buttons — all devices */}
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            {[
+              { fn: () => handleShare('twitter'),  icon: <FiTwitter className="w-4 h-4" />,  label: 'Twitter' },
+              { fn: () => handleShare('facebook'), icon: <FiFacebook className="w-4 h-4" />, label: 'Facebook' },
+              { fn: () => handleShare('linkedin'), icon: <FiLinkedin className="w-4 h-4" />, label: 'LinkedIn' },
+              { fn: () => handleShare('copy'),     icon: copied ? <FiCheck className="w-4 h-4 text-green-500" /> : <FiCopy className="w-4 h-4" />, label: 'Copy' },
+            ].map((btn) => (
+              <button
+                key={btn.label}
+                onClick={btn.fn}
+                title={btn.label}
+                className="w-10 h-10 sm:w-9 sm:h-9 bg-white dark:bg-gray-800 rounded-full flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-primary hover:bg-primary/5 border border-gray-200 dark:border-gray-600 transition min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
+              >
+                {btn.icon}
+              </button>
+            ))}
+            {/* Native share on mobile */}
+            {typeof navigator !== 'undefined' && navigator.share && (
+              <button
+                onClick={() => handleShare('native')}
+                className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white sm:hidden min-h-[44px] min-w-[44px]"
+              >
+                <FiShare2 className="w-4 h-4" />
+              </button>
+            )}
           </div>
         </motion.div>
 
-        {/* Mobile Share Buttons - Hidden on larger screens */}
-        <div className="lg:hidden flex items-center justify-center gap-3 mt-6 py-4 border-t border-gray-100">
-          <button
-            onClick={() => handleShare('linkedin')}
-            className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-gray-600 hover:bg-[#0077B5] hover:text-white transition"
-          >
-            <FiLinkedin className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => handleShare('native')}
-            className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white"
-          >
-            <FiShare2 className="w-4 h-4" />
-          </button>
-        </div>
-
-        {/* Tags */}
+        {/* ── Tags ────────────────────────────────────── */}
         {blog.keywords && (
-          <div className="mt-10">
+          <div className="mt-8">
             <div className="flex flex-wrap gap-2">
               {blog.keywords.split(",").map((keyword) => (
                 <span
                   key={keyword}
-                  className="px-4 py-2 bg-gray-100 hover:bg-primary hover:text-white text-gray-700 rounded-full text-sm font-medium transition cursor-pointer"
+                  className="px-3.5 py-1.5 bg-gray-100 dark:bg-gray-800 hover:bg-primary hover:text-white text-gray-600 dark:text-gray-300 rounded-full text-sm font-medium transition cursor-pointer min-h-[36px] flex items-center"
                 >
                   #{keyword.trim()}
                 </span>
@@ -708,151 +670,152 @@ export default function BlogPage({ initialBlog, initialAuthor, initialSettings }
           </div>
         )}
 
-        {/* Ad Space - Bottom */}
-        {settings?.adsEnabled && (
-          <div className="mt-10 p-6 bg-gradient-to-r from-gray-50 to-gray-100 rounded-2xl text-center border border-gray-200">
-            <p className="text-xs text-gray-400 mb-2">Advertisement</p>
-            <div id="blog-bottom-ad" className="min-h-[100px]"></div>
+        {/* ── Bottom Ad ──────────────────────────────── */}
+        {showAds && adPlacements.bottom && (
+          <div className="mt-10">
+            <p className="text-[10px] text-gray-400 dark:text-gray-500 text-center mb-1 uppercase tracking-widest select-none">Advertisement</p>
+            <div className="border border-gray-100 dark:border-gray-700 rounded-xl overflow-hidden bg-gray-50/50 dark:bg-gray-800/50">
+              <AdRenderer position="blog_bottom" settings={settings} className="w-full" />
+            </div>
           </div>
         )}
 
-        {/* Author Card with Follow */}
+        {/* ── Author card ────────────────────────────── */}
         {author && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="mt-12 p-8 bg-gradient-to-br from-primary/5 via-purple-50 to-pink-50 rounded-3xl border border-primary/10"
+            className="mt-10 sm:mt-12"
           >
-            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
-              <Link href={`/user/${blog.authorId}`} className="shrink-0">
-                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center text-white text-2xl font-bold overflow-hidden shadow-lg hover:scale-105 transition-transform">
-                  {author.photoURL ? (
-                    <img src={author.photoURL} alt="" className="w-full h-full object-cover" />
-                  ) : (
-                    author.name?.charAt(0).toUpperCase()
-                  )}
-                </div>
-              </Link>
-              <div className="text-center sm:text-left flex-1">
-                <p className="text-xs text-primary font-semibold uppercase tracking-wide mb-1">Written by</p>
-                <Link href={`/user/${blog.authorId}`} className="hover:text-primary transition-colors">
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">{author.name}</h3>
+            <div className="p-5 sm:p-6 bg-gradient-to-br from-primary/5 via-purple-50/60 to-pink-50/60 dark:from-gray-800 dark:via-gray-800/80 dark:to-gray-800/60 rounded-2xl border border-primary/10 dark:border-gray-700">
+              <div className="flex items-start gap-4">
+                {/* Avatar */}
+                <Link href={`/user/${blog.authorId}`} className="shrink-0">
+                  <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center text-white text-xl font-bold overflow-hidden shadow-md hover:scale-105 transition-transform">
+                    {author.photoURL ? (
+                      <img src={author.photoURL} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      author.name?.charAt(0).toUpperCase()
+                    )}
+                  </div>
                 </Link>
-                <p className="text-gray-600 leading-relaxed mb-4">{author.bio || "Passionate content creator sharing insights and stories with the world."}</p>
-                {author.uniqueId && (
-                  <p className="text-xs text-gray-400 mb-3">ID: {author.uniqueId}</p>
-                )}
-                <div className="flex flex-wrap items-center gap-3 justify-center sm:justify-start">
-                  <Link
-                    href={`/user/${blog.authorId}`}
-                    className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-medium text-sm transition-colors flex items-center gap-2"
-                  >
-                    <FiUser className="w-4 h-4" />
-                    View Profile
+
+                {/* Info */}
+                <div className="flex-1 min-w-0">
+                  <p className="text-[11px] text-primary font-semibold uppercase tracking-wide mb-0.5">Written by</p>
+                  <Link href={`/user/${blog.authorId}`} className="hover:text-primary transition-colors">
+                    <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 truncate">{author.name}</h3>
                   </Link>
-                  {user && user.uid !== blog.authorId && (
-                    <motion.button
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={handleFollow}
-                      disabled={followLoading}
-                      className={`px-4 py-2 rounded-xl font-medium text-sm transition-all flex items-center gap-2 ${
-                        isFollowingAuthor
-                          ? "bg-primary/10 text-primary border border-primary/20"
-                          : "bg-primary text-white shadow-lg shadow-primary/30"
-                      }`}
+                  <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed mt-1 line-clamp-2">
+                    {author.bio || "Passionate content creator sharing insights and stories."}
+                  </p>
+
+                  {/* Action buttons */}
+                  <div className="flex flex-wrap items-center gap-2 mt-3">
+                    <Link
+                      href={`/user/${blog.authorId}`}
+                      className="px-3.5 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg font-medium text-xs transition-colors flex items-center gap-1.5 min-h-[36px]"
                     >
-                      {followLoading ? (
-                        <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                      ) : isFollowingAuthor ? (
-                        <>
-                          <FiUserCheck className="w-4 h-4" />
-                          Following
-                        </>
-                      ) : (
-                        <>
-                          <FiUserPlus className="w-4 h-4" />
-                          Follow
-                        </>
-                      )}
-                    </motion.button>
-                  )}
+                      <FiUser className="w-3.5 h-3.5" />
+                      Profile
+                    </Link>
+                    {user && user.uid !== blog.authorId && (
+                      <motion.button
+                        whileTap={{ scale: 0.96 }}
+                        onClick={handleFollow}
+                        disabled={followLoading}
+                        className={`px-3.5 py-2 rounded-lg font-medium text-xs transition-all flex items-center gap-1.5 min-h-[36px] ${
+                          isFollowingAuthor
+                            ? "bg-primary/10 text-primary border border-primary/20"
+                            : "bg-primary text-white shadow-md shadow-primary/25"
+                        }`}
+                      >
+                        {followLoading ? (
+                          <div className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                        ) : isFollowingAuthor ? (
+                          <><FiUserCheck className="w-3.5 h-3.5" /> Following</>
+                        ) : (
+                          <><FiUserPlus className="w-3.5 h-3.5" /> Follow</>
+                        )}
+                      </motion.button>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
           </motion.div>
         )}
 
-        {/* Related Articles */}
+        {/* ── Related articles ───────────────────────── */}
         {relatedBlogs.length > 0 && (
-          <div className="mt-16">
-            <h2 className="text-2xl font-bold text-gray-900 mb-8 flex items-center gap-3">
-              <span className="w-10 h-1 bg-primary rounded-full"></span>
+          <div className="mt-12 sm:mt-14">
+            <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100 mb-5 flex items-center gap-2.5">
+              <span className="w-8 h-0.5 bg-primary rounded-full" />
               You Might Also Like
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               {relatedBlogs.map((related) => (
-                <motion.div
+                <Link
                   key={related.id}
-                  whileHover={{ y: -5 }}
-                  className="group"
+                  href={related.slug ? `/blog/${related.slug}` : `/blog?id=${related.id}`}
+                  className="group block bg-white dark:bg-gray-800 rounded-xl overflow-hidden border border-gray-100 dark:border-gray-700 hover:shadow-lg hover:border-gray-200 dark:hover:border-gray-600 transition-all"
                 >
-                  <Link
-                    href={related.slug ? `/blog/${related.slug}` : `/blog?id=${related.id}`}
-                    className="block bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-shadow border border-gray-100"
-                  >
-                    <div className="aspect-video bg-gray-100 overflow-hidden">
-                      {related.thumbnail ? (
-                        <img
-                          src={related.thumbnail}
-                          alt={related.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-purple-200">
-                          <FiBookmark className="w-8 h-8 text-primary/50" />
-                        </div>
-                      )}
-                    </div>
-                    <div className="p-5">
-                      {related.category && (
-                        <span className="text-xs font-semibold text-primary uppercase tracking-wide">
-                          {related.category}
-                        </span>
-                      )}
-                      <h3 className="text-lg font-bold text-gray-900 mt-2 line-clamp-2 group-hover:text-primary transition">
-                        {related.title}
-                      </h3>
-                      <div className="flex items-center gap-3 mt-3 text-sm text-gray-500">
-                        <span className="flex items-center gap-1">
-                          <FiClock className="w-3 h-3" />
-                          {calculateReadingTime(related.content)} min
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <FiEye className="w-3 h-3" />
-                          {related.views || 0}
-                        </span>
+                  {/* Thumbnail */}
+                  <div className="aspect-[16/10] bg-gray-100 dark:bg-gray-700 overflow-hidden">
+                    {related.thumbnail ? (
+                      <img
+                        src={related.thumbnail}
+                        alt={related.title}
+                        loading="lazy"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/10 to-purple-100 dark:from-primary/20 dark:to-purple-900/30">
+                        <FiBookmark className="w-6 h-6 text-primary/40" />
                       </div>
+                    )}
+                  </div>
+                  {/* Text */}
+                  <div className="p-4">
+                    {related.category && (
+                      <span className="text-[11px] font-semibold text-primary uppercase tracking-wide">
+                        {related.category}
+                      </span>
+                    )}
+                    <h3 className="text-sm sm:text-[15px] font-bold text-gray-900 dark:text-gray-100 mt-1 line-clamp-2 leading-snug group-hover:text-primary transition">
+                      {related.title}
+                    </h3>
+                    <div className="flex items-center gap-3 mt-2.5 text-xs text-gray-400">
+                      <span className="flex items-center gap-1">
+                        <FiClock className="w-3 h-3" />
+                        {calculateReadingTime(related.content)} min
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <FiEye className="w-3 h-3" />
+                        {(related.views || 0).toLocaleString()}
+                      </span>
                     </div>
-                  </Link>
-                </motion.div>
+                  </div>
+                </Link>
               ))}
             </div>
           </div>
         )}
 
-        {/* Comments Section */}
-        <div className="mt-16">
-          <h2 className="text-2xl font-bold text-gray-900 mb-8 flex items-center gap-3">
-            <span className="w-10 h-1 bg-primary rounded-full"></span>
+        {/* ── Comments ───────────────────────────────── */}
+        <div className="mt-12 sm:mt-14">
+          <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100 mb-5 flex items-center gap-2.5">
+            <span className="w-8 h-0.5 bg-primary rounded-full" />
             Comments
           </h2>
           <CommentSection targetId={blog.id} targetType="blog" />
         </div>
-      </article>
+      </div>
 
-      {/* Scroll to Top Button */}
+      {/* ═══════════════════════════════════════════════
+           SCROLL TO TOP — mobile-friendly
+         ═══════════════════════════════════════════════ */}
       <AnimatePresence>
         {showScrollTop && (
           <motion.button
@@ -860,9 +823,9 @@ export default function BlogPage({ initialBlog, initialAuthor, initialSettings }
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.8 }}
             onClick={scrollToTop}
-            className="fixed bottom-8 right-8 w-12 h-12 bg-primary text-white rounded-full shadow-lg flex items-center justify-center hover:bg-primary/90 transition z-40"
+            className="fixed bottom-6 right-4 sm:bottom-8 sm:right-8 w-11 h-11 sm:w-12 sm:h-12 bg-primary text-white rounded-full shadow-lg flex items-center justify-center hover:bg-primary/90 transition z-40 min-h-[44px] min-w-[44px]"
           >
-            <FiChevronUp className="w-6 h-6" />
+            <FiChevronUp className="w-5 h-5 sm:w-6 sm:h-6" />
           </motion.button>
         )}
       </AnimatePresence>

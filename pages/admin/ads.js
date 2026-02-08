@@ -17,8 +17,10 @@ const AD_POSITIONS = [
   { id: "sidebar_left", name: "Left Sidebar", description: "Fixed on the left side", icon: FiSidebar },
   { id: "sidebar_right", name: "Right Sidebar", description: "Fixed on the right side", icon: FiSidebar },
   { id: "content_top", name: "Content Top", description: "Above main content area", icon: FiBox },
+  { id: "blog_top", name: "Blog Top", description: "Below blog hero, above article body", icon: FiBox },
   { id: "content_middle", name: "In-Content", description: "Between content paragraphs", icon: FiSquare },
   { id: "content_bottom", name: "Content Bottom", description: "Below main content area", icon: FiBox },
+  { id: "blog_bottom", name: "Blog Bottom", description: "Below blog article, above comments", icon: FiBox },
   { id: "footer_above", name: "Above Footer", description: "Just before the footer", icon: FiLayout },
   { id: "footer_inside", name: "Footer Inside", description: "Within the footer area", icon: FiGrid },
   { id: "popup", name: "Popup/Modal", description: "Overlay popup ad", icon: FiMaximize },
@@ -72,6 +74,7 @@ function AdsContent() {
     adsTxt: DEFAULT_ADS_TXT,
     enableAutoAds: false,
     autoAdsExcludedRoutes: "/admin,/login,/register,/error,/create-blog,/edit-blog,/preview-blog,/dashboard",
+    blogAdInterval: 4,
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -107,6 +110,7 @@ function AdsContent() {
         adsTxt: data.adsTxt || DEFAULT_ADS_TXT,
         enableAutoAds: data.enableAutoAds || false,
         autoAdsExcludedRoutes: data.autoAdsExcludedRoutes || "/admin,/login,/register,/error,/create-blog,/edit-blog,/preview-blog,/dashboard",
+        blogAdInterval: data.blogAdInterval || 4,
       });
     } catch (error) {
       console.error("Error fetching settings:", error);
@@ -581,6 +585,24 @@ function AdsContent() {
                       <p className="text-sm text-gray-500 mt-2">
                         This code is loaded globally on all pages. Add your AdSense verification script here.
                       </p>
+                    </div>
+
+                    {/* Blog Ad Settings */}
+                    <div className="p-5 bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl border border-amber-200">
+                      <h3 className="font-bold text-amber-800 mb-3">Blog In-Content Ad Interval</h3>
+                      <p className="text-sm text-amber-700 mb-3">Number of paragraphs between in-content ads on blog posts.</p>
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="number"
+                          min={2}
+                          max={20}
+                          value={settings.blogAdInterval}
+                          onChange={(e) => setSettings({ ...settings, blogAdInterval: parseInt(e.target.value) || 4 })}
+                          className="w-24 px-3 py-2 rounded-lg border-2 border-amber-200 focus:border-amber-500 focus:outline-none text-center font-bold"
+                        />
+                        <span className="text-sm text-amber-700">paragraphs between ads</span>
+                      </div>
+                      <p className="text-xs text-amber-600 mt-2">Recommended: 3-6. Lower = more ads. Higher = better reading flow.</p>
                     </div>
 
                     {/* Ad Types Reference */}

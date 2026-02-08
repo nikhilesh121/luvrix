@@ -15,7 +15,7 @@ import { checkForSpam } from "../utils/spamFilter";
 import { canUserPost } from "../utils/paymentLogic";
 import { canAutoApprove } from "../utils/contentValidator";
 import { motion, AnimatePresence } from "framer-motion";
-import { FiAlertCircle, FiCheck, FiImage, FiDollarSign, FiShoppingCart, FiEdit3, FiZap, FiStar, FiArrowRight, FiTag, FiFileText, FiSearch, FiTrendingUp, FiVideo, FiPlay, FiRadio } from "react-icons/fi";
+import { FiAlertCircle, FiCheck, FiImage, FiDollarSign, FiShoppingCart, FiEdit3, FiZap, FiStar, FiArrowRight, FiTag, FiFileText, FiSearch, FiTrendingUp, FiVideo, FiPlay, FiRadio, FiPlus, FiTrash2, FiX } from "react-icons/fi";
 
 const BlogEditor = dynamic(() => import("../components/BlogEditor"), { ssr: false });
 
@@ -65,7 +65,10 @@ function CreateBlogContent({ user, userData }) {
     template: "default",
     videoUrl: "",
     isLive: false,
+    mediaItems: [],
   });
+  const [showMediaModal, setShowMediaModal] = useState(false);
+  const [newMedia, setNewMedia] = useState({ type: 'image', url: '', caption: '', position: 1 });
 
   const [seoData, setSeoData] = useState({
     seoTitle: "",
@@ -165,6 +168,9 @@ function CreateBlogContent({ user, userData }) {
         content: content_html,
         content_text,
         template: blog.template || "default",
+        mediaItems: blog.mediaItems || [],
+        adsEnabled: true,
+        adPlacements: ["top", "inContent", "bottom"],
         videoUrl: blog.template === "video" ? blog.videoUrl : undefined,
         isLive: blog.template === "video" ? blog.isLive : undefined,
         seoScore: seoResult.score,
@@ -238,31 +244,11 @@ function CreateBlogContent({ user, userData }) {
       <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
         {/* Hero Header */}
         <div className="relative overflow-hidden">
-          {/* Animated Background */}
-          <div className="absolute inset-0">
-            <motion.div 
-              animate={{ scale: [1, 1.2, 1], opacity: [0.2, 0.4, 0.2] }}
-              transition={{ duration: 8, repeat: Infinity }}
-              className="absolute top-0 left-0 w-[500px] h-[500px] bg-gradient-to-r from-purple-600/30 to-pink-600/30 rounded-full blur-[100px] -translate-x-1/2 -translate-y-1/2"
-            />
-            <motion.div 
-              animate={{ scale: [1.2, 1, 1.2], opacity: [0.2, 0.4, 0.2] }}
-              transition={{ duration: 10, repeat: Infinity }}
-              className="absolute top-0 right-0 w-[400px] h-[400px] bg-gradient-to-r from-blue-600/30 to-cyan-600/30 rounded-full blur-[100px] translate-x-1/3"
-            />
+          {/* Static Background (no infinite animations — prevents scroll jank) */}
+          <div className="absolute inset-0 pointer-events-none">
+            <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-gradient-to-r from-purple-600/20 to-pink-600/20 rounded-full blur-[100px] -translate-x-1/2 -translate-y-1/2" />
+            <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-gradient-to-r from-blue-600/20 to-cyan-600/20 rounded-full blur-[100px] translate-x-1/3" />
           </div>
-
-          {/* Floating Elements */}
-          <motion.div
-            animate={{ y: [0, -20, 0], rotate: [0, 5, 0] }}
-            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute top-32 right-20 w-16 h-16 border border-white/10 rounded-2xl backdrop-blur-sm hidden lg:block"
-          />
-          <motion.div
-            animate={{ y: [0, 15, 0], x: [0, 10, 0] }}
-            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute bottom-10 left-20 w-12 h-12 border border-purple-500/20 rounded-full backdrop-blur-sm hidden lg:block"
-          />
 
           <div className="relative z-10 max-w-5xl mx-auto px-4 py-12">
             <motion.div
@@ -271,31 +257,12 @@ function CreateBlogContent({ user, userData }) {
               className="flex flex-col md:flex-row md:items-center md:justify-between gap-6"
             >
               <div className="flex items-center gap-5">
-                <motion.div 
-                  initial={{ scale: 0, rotate: -180 }}
-                  animate={{ scale: 1, rotate: 0 }}
-                  transition={{ type: "spring", stiffness: 200, delay: 0.2 }}
-                  className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center shadow-2xl shadow-purple-500/30"
-                >
+                <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center shadow-2xl shadow-purple-500/30">
                   <FiEdit3 className="w-8 h-8 text-white" />
-                </motion.div>
+                </div>
                 <div>
-                  <motion.h1 
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.3 }}
-                    className="text-3xl md:text-4xl font-black text-white"
-                  >
-                    Create Your Story
-                  </motion.h1>
-                  <motion.p 
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.4 }}
-                    className="text-slate-400 text-lg"
-                  >
-                    Share your knowledge with the world
-                  </motion.p>
+                  <h1 className="text-3xl md:text-4xl font-black text-white">Create Your Story</h1>
+                  <p className="text-slate-400 text-lg">Share your knowledge with the world</p>
                 </div>
               </div>
 
@@ -533,6 +500,172 @@ function CreateBlogContent({ user, userData }) {
                 </motion.div>
               )}
             </AnimatePresence>
+
+            {/* In-Content Media Card */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.28 }}
+              className="group relative"
+            >
+              <div className="relative bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 hover:border-white/20 transition-all duration-300 shadow-2xl shadow-black/20">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-gradient-to-r from-indigo-500 to-violet-500 rounded-xl flex items-center justify-center">
+                      <FiVideo className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <h2 className="text-lg font-bold text-white">In-Content Media</h2>
+                      <p className="text-xs text-slate-400">Add images or videos between content sections</p>
+                    </div>
+                  </div>
+                  <motion.button
+                    type="button"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => {
+                      setNewMedia({ type: 'image', url: '', caption: '', position: (blog.mediaItems?.length || 0) + 1 });
+                      setShowMediaModal(true);
+                    }}
+                    disabled={!postStatus.canPost}
+                    className="px-4 py-2 bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 rounded-xl text-sm font-medium hover:bg-indigo-500/30 transition flex items-center gap-1.5 disabled:opacity-40"
+                  >
+                    <FiPlus className="w-4 h-4" /> Add
+                  </motion.button>
+                </div>
+
+                {/* Media list */}
+                {blog.mediaItems?.length > 0 && (
+                  <div className="space-y-2 mb-4">
+                    {blog.mediaItems.map((item, idx) => (
+                      <div key={idx} className="flex items-center gap-3 p-3 bg-white/5 rounded-xl border border-white/10">
+                        <div className="shrink-0 w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
+                          {item.type === 'video' ? <FiVideo className="w-4 h-4 text-red-400" /> : <FiImage className="w-4 h-4 text-blue-400" />}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs text-slate-300 truncate">{item.url}</p>
+                          <p className="text-[10px] text-slate-500">After section {item.position}{item.caption ? ` · ${item.caption}` : ''}</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setBlog({ ...blog, mediaItems: blog.mediaItems.filter((_, i) => i !== idx) })}
+                          className="shrink-0 p-1.5 text-red-400/60 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition"
+                        >
+                          <FiTrash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {blog.mediaItems?.length === 0 && (
+                  <div className="py-6 text-center border-2 border-dashed border-white/10 rounded-xl">
+                    <FiImage className="w-8 h-8 text-slate-600 mx-auto mb-2" />
+                    <p className="text-sm text-slate-500">No media added yet</p>
+                    <p className="text-xs text-slate-600">Add images or YouTube videos that appear between paragraphs</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Add Media Modal */}
+              {showMediaModal && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setShowMediaModal(false)}>
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    className="bg-slate-800 border border-white/10 rounded-2xl shadow-2xl w-full max-w-md p-6"
+                    onClick={e => e.stopPropagation()}
+                  >
+                    <div className="flex items-center justify-between mb-5">
+                      <h4 className="text-lg font-bold text-white">Add Media</h4>
+                      <button type="button" onClick={() => setShowMediaModal(false)} className="p-1.5 hover:bg-white/10 rounded-lg transition">
+                        <FiX className="w-5 h-5 text-slate-400" />
+                      </button>
+                    </div>
+                    <div className="space-y-4">
+                      {/* Type */}
+                      <div>
+                        <label className="block text-sm font-medium text-slate-300 mb-2">Type</label>
+                        <div className="flex gap-2">
+                          {[{ id: 'image', icon: <FiImage className="w-4 h-4" />, label: 'Image' }, { id: 'video', icon: <FiVideo className="w-4 h-4" />, label: 'Video' }].map(t => (
+                            <button
+                              key={t.id}
+                              type="button"
+                              onClick={() => setNewMedia({ ...newMedia, type: t.id })}
+                              className={`flex-1 py-2.5 rounded-xl text-sm font-medium flex items-center justify-center gap-2 border-2 transition ${
+                                newMedia.type === t.id
+                                  ? 'border-indigo-400 bg-indigo-500/20 text-indigo-300'
+                                  : 'border-white/10 text-slate-500 hover:border-white/20'
+                              }`}
+                            >
+                              {t.icon} {t.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      {/* URL */}
+                      <div>
+                        <label className="block text-sm font-medium text-slate-300 mb-1">
+                          {newMedia.type === 'video' ? 'Video URL' : 'Image URL'}
+                        </label>
+                        <input
+                          type="url"
+                          value={newMedia.url}
+                          onChange={e => setNewMedia({ ...newMedia, url: e.target.value })}
+                          placeholder={newMedia.type === 'video' ? 'https://youtube.com/watch?v=...' : 'https://example.com/image.jpg'}
+                          className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:ring-2 focus:ring-indigo-500/50 text-sm"
+                        />
+                      </div>
+                      {/* Caption */}
+                      <div>
+                        <label className="block text-sm font-medium text-slate-300 mb-1">Caption (optional)</label>
+                        <input
+                          type="text"
+                          value={newMedia.caption}
+                          onChange={e => setNewMedia({ ...newMedia, caption: e.target.value })}
+                          placeholder="Describe this media..."
+                          className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:ring-2 focus:ring-indigo-500/50 text-sm"
+                        />
+                      </div>
+                      {/* Position */}
+                      <div>
+                        <label className="block text-sm font-medium text-slate-300 mb-1">Insert after section #</label>
+                        <input
+                          type="number"
+                          min={1}
+                          max={50}
+                          value={newMedia.position}
+                          onChange={e => setNewMedia({ ...newMedia, position: parseInt(e.target.value) || 1 })}
+                          className="w-20 px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white text-center text-sm"
+                        />
+                        <p className="text-[11px] text-slate-500 mt-1">Media appears after the Nth paragraph group</p>
+                      </div>
+                      {/* Preview */}
+                      {newMedia.url && newMedia.type === 'image' && (
+                        <div className="rounded-xl overflow-hidden border border-white/10">
+                          <img src={newMedia.url} alt="Preview" className="w-full h-32 object-cover" onError={e => e.target.style.display = 'none'} />
+                        </div>
+                      )}
+                      {/* Add button */}
+                      <button
+                        type="button"
+                        disabled={!newMedia.url.trim()}
+                        onClick={() => {
+                          setBlog({
+                            ...blog,
+                            mediaItems: [...(blog.mediaItems || []), { ...newMedia }].sort((a, b) => a.position - b.position),
+                          });
+                          setShowMediaModal(false);
+                        }}
+                        className="w-full py-2.5 bg-gradient-to-r from-indigo-500 to-violet-500 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-indigo-500/25 transition disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                      >
+                        <FiPlus className="w-4 h-4" /> Add to Post
+                      </button>
+                    </div>
+                  </motion.div>
+                </div>
+              )}
+            </motion.div>
 
             {/* Content Editor Card */}
             <motion.div 

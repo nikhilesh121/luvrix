@@ -79,7 +79,7 @@ export default function AdRenderer({ position, settings, className = '' }) {
   );
 }
 
-const BELOW_FOLD_POSITIONS = ['content_bottom', 'footer_above', 'footer_inside', 'sticky_bottom'];
+const BELOW_FOLD_POSITIONS = ['content_middle', 'content_bottom', 'blog_bottom', 'footer_above', 'footer_inside', 'sticky_bottom', 'between_posts'];
 
 function SafeAdSlot({ ad }) {
   const slotRef = useRef(null);

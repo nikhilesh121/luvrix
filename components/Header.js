@@ -5,13 +5,14 @@ import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion"
 import { useAuth } from "../context/AuthContext";
 import { getSettings } from "../lib/api-client";
 import NotificationBell from "./NotificationBell";
-import ThemeToggle from "./ThemeToggle";
+import { useTheme } from "../context/ThemeContext";
 import { 
   FiMenu, FiX, FiUser, FiLogOut, FiSettings, FiChevronDown, 
   FiEdit3, FiGrid, FiBookOpen, FiTrendingUp, FiCpu, FiHeart,
   FiDollarSign, FiGlobe, FiActivity, FiCoffee, FiMapPin, FiBook,
   FiFilm, FiMusic, FiCamera, FiStar, FiAward, FiTrophy, FiHome,
-  FiSearch, FiZap, FiLayers, FiBell, FiCommand, FiUsers
+  FiSearch, FiZap, FiLayers, FiBell, FiCommand, FiUsers,
+  FiSun, FiMoon
 } from "react-icons/fi";
 
 const defaultMenuData = [
@@ -83,6 +84,7 @@ const convertSettingsMenuToMenuData = (settingsMenus) => {
 export default function Header() {
   const router = useRouter();
   const { user, userData, logout, isLoggedIn } = useAuth();
+  const { isDark, toggleTheme } = useTheme();
   const [settings, setSettings] = useState(null);
   const [menuData, setMenuData] = useState(defaultMenuData);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -302,11 +304,6 @@ export default function Header() {
               <FiSearch className="w-5 h-5" />
             </motion.button>
 
-            {/* Theme Toggle - hidden on mobile */}
-            <div className="hidden sm:block">
-              <ThemeToggle />
-            </div>
-
             {/* Notification Bell - Real-time notifications */}
             {user && <NotificationBell />}
 
@@ -406,6 +403,16 @@ export default function Header() {
                         )}
                       </div>
 
+                      <div className="border-t border-gray-100 py-2">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); toggleTheme(); }}
+                          className="flex items-center gap-3 px-4 py-2.5 w-full text-gray-600 hover:text-primary hover:bg-gray-50 transition-colors"
+                        >
+                          {isDark ? <FiSun className="w-4 h-4" /> : <FiMoon className="w-4 h-4" />}
+                          <span>{isDark ? 'Light Mode' : 'Dark Mode'}</span>
+                        </button>
+                      </div>
+
                       <div className="border-t border-gray-100 pt-2">
                         <button
                           onClick={() => { handleLogout(); setDropdownOpen(false); }}
@@ -421,6 +428,13 @@ export default function Header() {
               </div>
             ) : (
               <div className="flex items-center gap-1 sm:gap-2">
+                <button
+                  onClick={toggleTheme}
+                  className="hidden sm:flex p-2.5 text-gray-500 hover:text-primary hover:bg-primary/5 rounded-xl transition-all"
+                  title={`Switch to ${isDark ? 'light' : 'dark'} mode`}
+                >
+                  {isDark ? <FiSun className="w-5 h-5" /> : <FiMoon className="w-5 h-5" />}
+                </button>
                 <Link
                   href="/login"
                   className="hidden sm:inline-flex px-3 sm:px-4 py-2 text-sm font-semibold text-gray-600 hover:text-primary transition-colors rounded-xl hover:bg-gray-50"
@@ -480,7 +494,6 @@ export default function Header() {
 
                 {/* Mobile Quick Actions */}
                 <div className="flex items-center gap-2 px-4 pb-3 sm:hidden border-b border-gray-100 mb-2">
-                  <ThemeToggle />
                   {!user && (
                     <Link href="/login" onClick={() => setMenuOpen(false)} className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-primary bg-gray-50 rounded-lg">
                       Sign In
@@ -521,6 +534,17 @@ export default function Header() {
                     )}
                   </div>
                 ))}
+
+                {/* Mobile Theme Toggle */}
+                <div className="border-t border-gray-100 mt-2 pt-2 px-4">
+                  <button
+                    onClick={toggleTheme}
+                    className="flex items-center gap-3 w-full px-4 py-3 text-gray-700 hover:text-primary hover:bg-gray-50 rounded-lg transition-colors"
+                  >
+                    {isDark ? <FiSun className="w-4 h-4" /> : <FiMoon className="w-4 h-4" />}
+                    <span className="font-medium">{isDark ? 'Light Mode' : 'Dark Mode'}</span>
+                  </button>
+                </div>
               </div>
             </motion.div>
           )}

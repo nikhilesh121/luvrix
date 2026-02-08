@@ -6,7 +6,7 @@ import AdminSidebar from "../../components/AdminSidebar";
 import { createBlog, createLog, getSettings } from "../../lib/api-client";
 import { auth } from "../../lib/local-auth";
 import { motion } from "framer-motion";
-import { FiSave, FiEye, FiImage, FiTag, FiFileText, FiCheckCircle, FiArrowLeft } from "react-icons/fi";
+import { FiSave, FiEye, FiImage, FiTag, FiFileText, FiCheckCircle, FiArrowLeft, FiVideo, FiPlus, FiTrash2, FiX } from "react-icons/fi";
 import Link from "next/link";
 import { slugify } from "../../utils/slugify";
 
@@ -38,7 +38,15 @@ function CreateBlogContent() {
     focusKeyword: "",
     featuredImage: "",
     tags: "",
+    // Per-post ad controls
+    adsEnabled: true,
+    adPlacements: ["top", "inContent", "bottom"],
+    adInterval: 0, // 0 = use global default
+    // Media items — rendered between content blocks
+    mediaItems: [], // [{type:'image'|'video', url:'', caption:'', position: number}]
   });
+  const [showMediaModal, setShowMediaModal] = useState(false);
+  const [newMedia, setNewMedia] = useState({ type: 'image', url: '', caption: '', position: 1 });
 
   const handleTitleChange = (e) => {
     const title = e.target.value;
@@ -302,6 +310,229 @@ function CreateBlogContent() {
                     className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500"
                   />
                   <p className="text-xs text-slate-500 mt-2">Separate tags with commas</p>
+                </motion.div>
+
+                {/* Media Gallery — video/image URLs between content blocks */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.32 }}
+                  className="bg-white rounded-2xl shadow-lg border border-slate-100 p-6"
+                >
+                  <h3 className="text-lg font-semibold text-slate-800 mb-2 flex items-center gap-2">
+                    <FiVideo className="w-5 h-5" /> In-Content Media
+                  </h3>
+                  <p className="text-xs text-slate-500 mb-4">Add images or videos that appear between content sections. No need to paste URLs in the editor.</p>
+
+                  {/* Existing media list */}
+                  {formData.mediaItems.length > 0 && (
+                    <div className="space-y-2 mb-4">
+                      {formData.mediaItems.map((item, idx) => (
+                        <div key={idx} className="flex items-start gap-2 p-2.5 bg-slate-50 rounded-xl border border-slate-100">
+                          <div className="shrink-0 w-8 h-8 rounded-lg bg-slate-200 flex items-center justify-center">
+                            {item.type === 'video' ? (
+                              <FiVideo className="w-4 h-4 text-red-500" />
+                            ) : (
+                              <FiImage className="w-4 h-4 text-blue-500" />
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs font-medium text-slate-700 truncate">{item.url}</p>
+                            {item.caption && <p className="text-[11px] text-slate-400 truncate">{item.caption}</p>}
+                            <p className="text-[11px] text-slate-400">After section {item.position}</p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const updated = formData.mediaItems.filter((_, i) => i !== idx);
+                              setFormData({ ...formData, mediaItems: updated });
+                            }}
+                            className="shrink-0 p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
+                          >
+                            <FiTrash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Add button */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setNewMedia({ type: 'image', url: '', caption: '', position: formData.mediaItems.length + 1 });
+                      setShowMediaModal(true);
+                    }}
+                    className="w-full py-2.5 border-2 border-dashed border-slate-200 rounded-xl text-sm text-slate-500 hover:border-blue-300 hover:text-blue-600 hover:bg-blue-50/50 transition flex items-center justify-center gap-2"
+                  >
+                    <FiPlus className="w-4 h-4" /> Add Media
+                  </button>
+
+                  {/* Add Media Modal */}
+                  {showMediaModal && (
+                    <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={() => setShowMediaModal(false)}>
+                      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6" onClick={e => e.stopPropagation()}>
+                        <div className="flex items-center justify-between mb-4">
+                          <h4 className="text-lg font-semibold text-slate-800">Add Media</h4>
+                          <button type="button" onClick={() => setShowMediaModal(false)} className="p-1.5 hover:bg-slate-100 rounded-lg transition">
+                            <FiX className="w-5 h-5 text-slate-400" />
+                          </button>
+                        </div>
+
+                        <div className="space-y-4">
+                          {/* Type toggle */}
+                          <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-2">Type</label>
+                            <div className="flex gap-2">
+                              {[{ id: 'image', icon: <FiImage className="w-4 h-4" />, label: 'Image' }, { id: 'video', icon: <FiVideo className="w-4 h-4" />, label: 'Video' }].map(t => (
+                                <button
+                                  key={t.id}
+                                  type="button"
+                                  onClick={() => setNewMedia({ ...newMedia, type: t.id })}
+                                  className={`flex-1 py-2.5 rounded-xl text-sm font-medium flex items-center justify-center gap-2 border-2 transition ${
+                                    newMedia.type === t.id
+                                      ? 'border-blue-400 bg-blue-50 text-blue-700'
+                                      : 'border-slate-200 text-slate-500 hover:border-slate-300'
+                                  }`}
+                                >
+                                  {t.icon} {t.label}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* URL */}
+                          <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-1">
+                              {newMedia.type === 'video' ? 'Video URL' : 'Image URL'}
+                            </label>
+                            <input
+                              type="url"
+                              value={newMedia.url}
+                              onChange={e => setNewMedia({ ...newMedia, url: e.target.value })}
+                              placeholder={newMedia.type === 'video' ? 'https://youtube.com/watch?v=... or https://vimeo.com/...' : 'https://example.com/image.jpg'}
+                              className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 text-sm"
+                            />
+                          </div>
+
+                          {/* Caption */}
+                          <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-1">Caption (optional)</label>
+                            <input
+                              type="text"
+                              value={newMedia.caption}
+                              onChange={e => setNewMedia({ ...newMedia, caption: e.target.value })}
+                              placeholder="Describe this media..."
+                              className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 text-sm"
+                            />
+                          </div>
+
+                          {/* Position */}
+                          <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-1">Insert after section #</label>
+                            <input
+                              type="number"
+                              min={1}
+                              max={50}
+                              value={newMedia.position}
+                              onChange={e => setNewMedia({ ...newMedia, position: parseInt(e.target.value) || 1 })}
+                              className="w-20 px-3 py-2 border border-slate-200 rounded-xl text-center text-sm"
+                            />
+                            <p className="text-[11px] text-slate-400 mt-1">The media will appear after the Nth content section (paragraph group)</p>
+                          </div>
+
+                          {/* Preview */}
+                          {newMedia.url && newMedia.type === 'image' && (
+                            <div className="rounded-xl overflow-hidden border border-slate-100">
+                              <img src={newMedia.url} alt="Preview" className="w-full h-32 object-cover" onError={e => e.target.style.display = 'none'} />
+                            </div>
+                          )}
+
+                          {/* Save */}
+                          <button
+                            type="button"
+                            disabled={!newMedia.url.trim()}
+                            onClick={() => {
+                              setFormData({
+                                ...formData,
+                                mediaItems: [...formData.mediaItems, { ...newMedia }].sort((a, b) => a.position - b.position),
+                              });
+                              setShowMediaModal(false);
+                            }}
+                            className="w-full py-2.5 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                          >
+                            <FiPlus className="w-4 h-4" /> Add to Post
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </motion.div>
+
+                {/* Ad Controls */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.35 }}
+                  className="bg-white rounded-2xl shadow-lg border border-slate-100 p-6"
+                >
+                  <h3 className="text-lg font-semibold text-slate-800 mb-4">Ad Settings</h3>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-slate-700">Show Ads</p>
+                        <p className="text-xs text-slate-500">Enable ads on this post</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setFormData({ ...formData, adsEnabled: !formData.adsEnabled })}
+                        className={`relative w-11 h-6 rounded-full transition-colors ${formData.adsEnabled ? 'bg-green-500' : 'bg-gray-300'}`}
+                      >
+                        <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${formData.adsEnabled ? 'translate-x-5' : ''}`} />
+                      </button>
+                    </div>
+                    {formData.adsEnabled && (
+                      <>
+                        <div>
+                          <p className="text-sm font-medium text-slate-700 mb-2">Ad Placements</p>
+                          <div className="flex flex-wrap gap-2">
+                            {[{id: 'top', label: 'Top'}, {id: 'inContent', label: 'In-Content'}, {id: 'bottom', label: 'Bottom'}].map(p => (
+                              <button
+                                key={p.id}
+                                type="button"
+                                onClick={() => {
+                                  const current = formData.adPlacements || [];
+                                  const next = current.includes(p.id)
+                                    ? current.filter(x => x !== p.id)
+                                    : [...current, p.id];
+                                  setFormData({ ...formData, adPlacements: next });
+                                }}
+                                className={`px-3 py-1.5 rounded-lg text-xs font-medium border-2 transition ${
+                                  (formData.adPlacements || []).includes(p.id)
+                                    ? 'border-green-400 bg-green-50 text-green-700'
+                                    : 'border-slate-200 text-slate-500'
+                                }`}
+                              >
+                                {(formData.adPlacements || []).includes(p.id) ? '\u2713 ' : ''}{p.label}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-slate-700 mb-1">Ad Interval Override</p>
+                          <input
+                            type="number"
+                            min={0}
+                            max={20}
+                            value={formData.adInterval}
+                            onChange={(e) => setFormData({ ...formData, adInterval: parseInt(e.target.value) || 0 })}
+                            className="w-20 px-3 py-1.5 border border-slate-200 rounded-lg text-center text-sm"
+                          />
+                          <p className="text-xs text-slate-500 mt-1">0 = use global default</p>
+                        </div>
+                      </>
+                    )}
+                  </div>
                 </motion.div>
               </div>
             </div>

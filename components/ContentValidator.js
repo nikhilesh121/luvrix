@@ -28,10 +28,10 @@ export default function ContentValidator({ blog, onValidationChange }) {
   const statusMessage = getValidationStatusMessage(result.score);
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg border overflow-hidden">
+    <div className="bg-white dark:bg-white/5 rounded-2xl shadow-lg dark:shadow-none border dark:border-white/10 overflow-hidden">
       {/* Header */}
       <div 
-        className="p-5 cursor-pointer hover:bg-gray-50 transition-colors"
+        className="p-5 cursor-pointer hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
         onClick={() => setExpanded(!expanded)}
       >
         <div className="flex items-center justify-between">
@@ -43,8 +43,8 @@ export default function ContentValidator({ blog, onValidationChange }) {
               <FiShield className="w-7 h-7" />
             </div>
             <div>
-              <h3 className="font-bold text-gray-800 text-lg">Content Policy Check</h3>
-              <p className="text-gray-500 text-sm">{statusMessage}</p>
+              <h3 className="font-bold text-gray-800 dark:text-gray-100 text-lg">Content Policy Check</h3>
+              <p className="text-gray-500 dark:text-gray-400 text-sm">{statusMessage}</p>
             </div>
           </div>
           <div className="flex items-center gap-4">
@@ -52,7 +52,7 @@ export default function ContentValidator({ blog, onValidationChange }) {
               <div className="text-3xl font-bold" style={{ color: statusColor }}>
                 {result.score}
               </div>
-              <div className="text-xs text-gray-400">/ 100</div>
+              <div className="text-xs text-gray-400 dark:text-gray-500">/ 100</div>
             </div>
             {expanded ? (
               <FiChevronUp className="w-5 h-5 text-gray-400" />
@@ -76,13 +76,13 @@ export default function ContentValidator({ blog, onValidationChange }) {
             <div className="px-5 pb-5 space-y-4">
               {/* Issues */}
               {result.issues.length > 0 && (
-                <div className="bg-red-50 rounded-xl p-4">
-                  <h4 className="font-semibold text-red-700 mb-3 flex items-center gap-2">
+                <div className="bg-red-50 dark:bg-red-500/10 rounded-xl p-4">
+                  <h4 className="font-semibold text-red-700 dark:text-red-400 mb-3 flex items-center gap-2">
                     <FiX className="w-5 h-5" /> Policy Violations ({result.issues.length})
                   </h4>
                   <ul className="space-y-2">
                     {result.issues.map((issue, i) => (
-                      <li key={i} className="text-sm text-red-600 flex items-start gap-2">
+                      <li key={i} className="text-sm text-red-600 dark:text-red-300 flex items-start gap-2">
                         <span className="w-1.5 h-1.5 rounded-full bg-red-500 mt-2 flex-shrink-0" />
                         {issue.message}
                       </li>
@@ -93,13 +93,13 @@ export default function ContentValidator({ blog, onValidationChange }) {
 
               {/* Warnings */}
               {result.warnings.length > 0 && (
-                <div className="bg-yellow-50 rounded-xl p-4">
-                  <h4 className="font-semibold text-yellow-700 mb-3 flex items-center gap-2">
+                <div className="bg-yellow-50 dark:bg-yellow-500/10 rounded-xl p-4">
+                  <h4 className="font-semibold text-yellow-700 dark:text-yellow-400 mb-3 flex items-center gap-2">
                     <FiAlertTriangle className="w-5 h-5" /> Warnings ({result.warnings.length})
                   </h4>
                   <ul className="space-y-2">
                     {result.warnings.map((warning, i) => (
-                      <li key={i} className="text-sm text-yellow-700 flex items-start gap-2">
+                      <li key={i} className="text-sm text-yellow-700 dark:text-yellow-300 flex items-start gap-2">
                         <span className="w-1.5 h-1.5 rounded-full bg-yellow-500 mt-2 flex-shrink-0" />
                         {warning.message}
                       </li>
@@ -110,13 +110,13 @@ export default function ContentValidator({ blog, onValidationChange }) {
 
               {/* Passed Checks */}
               {result.passed.length > 0 && (
-                <div className="bg-green-50 rounded-xl p-4">
-                  <h4 className="font-semibold text-green-700 mb-3 flex items-center gap-2">
+                <div className="bg-green-50 dark:bg-green-500/10 rounded-xl p-4">
+                  <h4 className="font-semibold text-green-700 dark:text-green-400 mb-3 flex items-center gap-2">
                     <FiCheck className="w-5 h-5" /> Passed Checks ({result.passed.length})
                   </h4>
                   <ul className="space-y-2">
                     {result.passed.map((item, i) => (
-                      <li key={i} className="text-sm text-green-600 flex items-start gap-2">
+                      <li key={i} className="text-sm text-green-600 dark:text-green-300 flex items-start gap-2">
                         <FiCheck className="w-4 h-4 mt-0.5 flex-shrink-0" />
                         {item}
                       </li>
@@ -126,19 +126,19 @@ export default function ContentValidator({ blog, onValidationChange }) {
               )}
 
               {/* Google Policy Agreement */}
-              <div className="bg-blue-50 rounded-xl p-4">
+              <div className="bg-blue-50 dark:bg-blue-500/10 rounded-xl p-4">
                 <label className="flex items-start gap-3 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={agreed}
                     onChange={(e) => setAgreed(e.target.checked)}
-                    className="w-5 h-5 rounded border-blue-300 text-blue-600 focus:ring-blue-500 mt-0.5"
+                    className="w-5 h-5 rounded border-blue-300 dark:border-blue-600 text-blue-600 focus:ring-blue-500 mt-0.5 dark:bg-white/5"
                   />
                   <div>
-                    <p className="font-medium text-blue-800">
+                    <p className="font-medium text-blue-800 dark:text-blue-300">
                       I confirm this content complies with Google policies
                     </p>
-                    <p className="text-sm text-blue-600 mt-1">
+                    <p className="text-sm text-blue-600 dark:text-blue-400 mt-1">
                       By checking this box, you confirm that your content follows{" "}
                       <a 
                         href="https://support.google.com/adsense/answer/48182" 
