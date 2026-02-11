@@ -209,16 +209,31 @@ export default function GiveawayDetailPage() {
     }
   };
 
-  const handleStartTask = async (task) => {
-    // Open the URL in a new tab
+  // Default minimum timers per task type (seconds) — forces users to actually visit
+  const DEFAULT_TIMERS = {
+    facebook_like: 30, facebook_follow: 30,
+    instagram_follow: 30,
+    youtube_like: 30, youtube_subscribe: 30,
+    twitter_follow: 30, twitter_like: 30,
+    visit_website: 30,
+    join_telegram: 20, join_discord: 20,
+  };
+
+  // Get effective timer for a task (admin override or default for that type)
+  const getEffectiveTimer = (task) => {
+    const adminTimer = task.metadata?.timerDuration;
+    if (adminTimer && adminTimer > 0) return adminTimer;
+    return DEFAULT_TIMERS[task.type] || 0;
+  };
+
+  // Start a timer-based task (open URL + countdown)
+  const startTimerTask = async (task, duration) => {
+    // Open the URL
     if (task.metadata?.url) {
       window.open(task.metadata.url, "_blank", "noopener,noreferrer");
     }
 
-    const timerDuration = task.metadata?.timerDuration;
-    if (!timerDuration || timerDuration <= 0) return; // No timer needed
-
-    // Call start-task API to record the start time server-side
+    // Record start time server-side
     try {
       const token = localStorage.getItem("luvrix_auth_token");
       await fetch(`/api/giveaways/${giveaway.id}/start-task`, {
@@ -228,27 +243,70 @@ export default function GiveawayDetailPage() {
       });
     } catch {}
 
-    // Start local countdown
-    // Clear any existing timer for this task
-    if (taskTimers[task.id]?.intervalId) {
-      clearInterval(taskTimers[task.id].intervalId);
-    }
+    // Clear existing timer
+    if (taskTimers[task.id]?.intervalId) clearInterval(taskTimers[task.id].intervalId);
 
-    setTaskTimers(prev => ({ ...prev, [task.id]: { remaining: timerDuration, done: false } }));
+    setTaskTimers(prev => ({ ...prev, [task.id]: { remaining: duration, total: duration, done: false } }));
 
     const intervalId = setInterval(() => {
       setTaskTimers(prev => {
         const current = prev[task.id];
         if (!current || current.remaining <= 1) {
           clearInterval(intervalId);
-          return { ...prev, [task.id]: { remaining: 0, done: true } };
+          return { ...prev, [task.id]: { remaining: 0, total: duration, done: true } };
         }
         return { ...prev, [task.id]: { ...current, remaining: current.remaining - 1 } };
       });
     }, 1000);
 
-    // Store intervalId for cleanup
     setTaskTimers(prev => ({ ...prev, [task.id]: { ...prev[task.id], intervalId } }));
+  };
+
+  // Handle share task — uses Web Share API, auto-completes on success
+  const handleShareTask = async (task) => {
+    const shareData = {
+      title: giveaway.title,
+      text: `Check out this giveaway: ${giveaway.title}`,
+      url: `${SITE_URL}/giveaway/${giveaway.slug}`,
+    };
+
+    try {
+      if (navigator.share && navigator.canShare?.(shareData)) {
+        await navigator.share(shareData);
+        // User completed the share — auto-complete the task
+        await handleCompleteTask(task.id);
+      } else {
+        // Fallback: copy share link to clipboard + mark as shared
+        await navigator.clipboard.writeText(shareData.url);
+        setTaskTimers(prev => ({ ...prev, [task.id]: { remaining: 0, total: 0, done: true, shared: true } }));
+      }
+    } catch (err) {
+      // User cancelled the share dialog
+      if (err.name !== "AbortError") {
+        console.error("Share failed:", err);
+      }
+    }
+  };
+
+  // Main handler — routes to the correct verification method per task type
+  const handleStartTask = async (task) => {
+    const type = task.type;
+
+    // Share tasks — use Web Share API
+    if (type === "share_post") {
+      return handleShareTask(task);
+    }
+
+    // All URL-based tasks — use timer
+    const duration = getEffectiveTimer(task);
+    if (duration > 0) {
+      return startTimerTask(task, duration);
+    }
+
+    // No timer, just open URL
+    if (task.metadata?.url) {
+      window.open(task.metadata.url, "_blank", "noopener,noreferrer");
+    }
   };
 
   const handleCompleteTask = async (taskId) => {
@@ -925,18 +983,30 @@ export default function GiveawayDetailPage() {
                           </div>
                           <div className="flex items-center gap-2">
                             {(() => {
-                              const timerDuration = task.metadata?.timerDuration || 0;
-                              const hasTimer = timerDuration > 0;
+                              const effectiveTimer = getEffectiveTimer(task);
+                              const hasTimer = effectiveTimer > 0;
+                              const isShare = task.type === "share_post";
                               const timer = taskTimers[task.id];
                               const timerActive = timer && timer.remaining > 0;
-                              const timerDone = timer && timer.done;
+                              const timerDone = timer?.done;
 
                               if (isCompleted) return null;
 
                               return (
                                 <>
-                                  {/* Visit / Start button */}
-                                  {task.metadata?.url && !timerActive && !timerDone && (
+                                  {/* Share button — for share_post tasks */}
+                                  {isShare && !timerDone && (
+                                    <motion.button
+                                      whileHover={{ scale: 1.05 }}
+                                      whileTap={{ scale: 0.95 }}
+                                      onClick={() => handleStartTask(task)}
+                                      className="text-xs px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center gap-1">
+                                      <FiSend className="w-3 h-3" /> Share Now
+                                    </motion.button>
+                                  )}
+
+                                  {/* Start Task / Visit button — for URL-based tasks */}
+                                  {!isShare && task.metadata?.url && !timerActive && !timerDone && (
                                     <motion.button
                                       whileHover={{ scale: 1.05 }}
                                       whileTap={{ scale: 0.95 }}
@@ -946,14 +1016,14 @@ export default function GiveawayDetailPage() {
                                     </motion.button>
                                   )}
 
-                                  {/* Timer countdown */}
+                                  {/* Timer countdown ring */}
                                   {timerActive && (
                                     <div className="flex items-center gap-2">
                                       <div className="relative w-8 h-8">
                                         <svg className="w-8 h-8 -rotate-90" viewBox="0 0 32 32">
                                           <circle cx="16" cy="16" r="14" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="2" />
                                           <circle cx="16" cy="16" r="14" fill="none" stroke="#a78bfa" strokeWidth="2"
-                                            strokeDasharray={`${(1 - timer.remaining / timerDuration) * 88} 88`}
+                                            strokeDasharray={`${(1 - timer.remaining / (timer.total || effectiveTimer)) * 88} 88`}
                                             strokeLinecap="round" />
                                         </svg>
                                         <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-purple-400">
@@ -961,13 +1031,13 @@ export default function GiveawayDetailPage() {
                                         </span>
                                       </div>
                                       <span className="text-[10px] text-gray-500 max-w-[80px] leading-tight">
-                                        Stay on the page...
+                                        Verifying...
                                       </span>
                                     </div>
                                   )}
 
-                                  {/* Done button — enabled only when timer is done or task has no timer */}
-                                  {myStatus?.joined && isActive && (
+                                  {/* Done/Complete button */}
+                                  {myStatus?.joined && isActive && !isShare && (
                                     <motion.button
                                       whileHover={(!hasTimer || timerDone) ? { scale: 1.05 } : {}}
                                       whileTap={(!hasTimer || timerDone) ? { scale: 0.95 } : {}}
@@ -980,7 +1050,19 @@ export default function GiveawayDetailPage() {
                                           ? "bg-gray-700 text-gray-500 cursor-not-allowed"
                                           : "bg-purple-600 text-white hover:bg-purple-700"
                                       }`}>
-                                      {completing === task.id ? "..." : timerDone ? "Complete ✓" : hasTimer ? `⏱ ${timerDuration}s` : "Done ✓"}
+                                      {completing === task.id ? "..." : timerDone ? "Complete ✓" : hasTimer ? `⏱ ${effectiveTimer}s` : "Done ✓"}
+                                    </motion.button>
+                                  )}
+
+                                  {/* Share fallback: if shared via clipboard, show Complete button */}
+                                  {isShare && timerDone && myStatus?.joined && isActive && (
+                                    <motion.button
+                                      whileHover={{ scale: 1.05 }}
+                                      whileTap={{ scale: 0.95 }}
+                                      onClick={() => handleCompleteTask(task.id)}
+                                      disabled={completing === task.id}
+                                      className="text-xs px-3 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition animate-pulse disabled:opacity-50">
+                                      {completing === task.id ? "..." : "Link Copied — Complete ✓"}
                                     </motion.button>
                                   )}
                                 </>
