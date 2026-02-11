@@ -1044,7 +1044,7 @@ function GiveawayDetail({ giveaway, onRefresh }) {
             </h2>
             {donationData.total > 0 && (
               <div className="flex items-center gap-3">
-                <span className="text-sm text-gray-500">{donationData.count} donation{donationData.count !== 1 ? "s" : ""}</span>
+                <span className="text-sm text-gray-500">{donationData.supporters?.length || 0} supporter{(donationData.supporters?.length || 0) !== 1 ? "s" : ""} · {donationData.count} donation{donationData.count !== 1 ? "s" : ""}</span>
                 <span className="px-3 py-1 bg-green-100 text-green-700 font-bold text-sm rounded-full">
                   ₹{donationData.total?.toLocaleString() || 0}
                 </span>
@@ -1083,7 +1083,10 @@ function GiveawayDetail({ giveaway, onRefresh }) {
                       </p>
                     </div>
                   </div>
-                  <span className="text-sm font-bold text-green-600">₹{s.amount}</span>
+                  <div className="text-right">
+                    <span className="text-sm font-bold text-green-600">₹{s.amount}</span>
+                    {s.donationCount > 1 && <p className="text-[10px] text-gray-400">{s.donationCount} donations</p>}
+                  </div>
                 </div>
               ))}
             </div>

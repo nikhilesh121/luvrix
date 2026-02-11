@@ -684,7 +684,7 @@ export default function GiveawayDetailPage() {
                     <FiDollarSign className="w-4 h-4 text-green-400" /> Donations
                   </h3>
                   <p className="text-2xl font-black text-green-400">₹{supportData.total?.toLocaleString()}</p>
-                  <p className="text-xs text-gray-500 mt-1">{supportData.count} supporter{supportData.count !== 1 ? "s" : ""}</p>
+                  <p className="text-xs text-gray-500 mt-1">{supportData.supporters?.length || 0} supporter{(supportData.supporters?.length || 0) !== 1 ? "s" : ""}</p>
                 </motion.div>
               )}
 
