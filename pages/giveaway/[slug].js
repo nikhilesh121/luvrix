@@ -79,8 +79,11 @@ export default function GiveawayDetailPage() {
         fetch(`/api/giveaways/${encodeURIComponent(gRes.id)}/winner-info`).then(r => r.ok ? r.json() : null).then(w => { if (w) setWinnerInfo(w); }).catch(() => {});
       }
 
-      // Fetch support/donation data
-      fetch(`/api/giveaways/${encodedSlug}/support`).then(r => r.ok ? r.json() : null).then(d => {
+      // Fetch support/donation data (with auth for myDonation info)
+      const supportHeaders = {};
+      const sToken = localStorage.getItem("luvrix_auth_token");
+      if (sToken) supportHeaders.Authorization = `Bearer ${sToken}`;
+      fetch(`/api/giveaways/${encodedSlug}/support`, { headers: supportHeaders }).then(r => r.ok ? r.json() : null).then(d => {
         if (d && !d.error) setSupportData(d);
       }).catch(() => {});
     } catch (err) {
@@ -286,20 +289,6 @@ export default function GiveawayDetailPage() {
     setSupportLoading(true);
     setSupportError("");
     try {
-      const token = localStorage.getItem("luvrix_auth_token");
-
-      // Record donation info (name/email/anonymous) before redirecting to PayU
-      await fetch(`/api/giveaways/${encodeURIComponent(giveaway.slug)}/support`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({
-          amount: supportAmount,
-          donorName: donorName || user?.displayName || user?.name || "",
-          donorEmail: donorEmail || user?.email || "",
-          isAnonymous,
-        }),
-      });
-
       const response = await initiatePayment({
         amount: supportAmount.toString(),
         productInfo: `Giveaway Support: ${giveaway.title}`,
@@ -308,6 +297,11 @@ export default function GiveawayDetailPage() {
         phone: "9999999999",
         userId: user?.uid,
         posts: 0,
+        // Giveaway support metadata — recorded only after payment success
+        giveawayId: giveaway.id,
+        donorName: donorName || user?.displayName || user?.name || "",
+        donorEmail: donorEmail || user?.email || "",
+        isAnonymous: !!isAnonymous,
       });
       if (!response.success) throw new Error(response.error || "Failed to initiate payment");
 
@@ -1058,12 +1052,46 @@ export default function GiveawayDetailPage() {
                       <FiDollarSign className="text-green-400" /> Supporters
                     </h2>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs text-gray-500">{supportData.count} donation{supportData.count !== 1 ? "s" : ""}</span>
+                      <span className="text-xs text-gray-500">{supportData.supporters?.length || 0} supporter{(supportData.supporters?.length || 0) !== 1 ? "s" : ""}</span>
                       <span className="px-3 py-1 bg-green-500/10 text-green-400 text-sm font-bold rounded-full">
                         ₹{supportData.total?.toLocaleString() || 0}
                       </span>
                     </div>
                   </div>
+                  {/* Anonymous toggle for current user */}
+                  {supportData.myDonation && isLoggedIn && (
+                    <div className="flex items-center justify-between p-3 mb-3 rounded-xl bg-purple-500/5 border border-purple-500/10">
+                      <div className="text-xs text-gray-400">
+                        Your total: <span className="font-bold text-green-400">₹{supportData.myDonation.amount}</span>
+                      </div>
+                      <button
+                        onClick={async () => {
+                          const token = localStorage.getItem("luvrix_auth_token");
+                          if (!token) return;
+                          const newAnon = !supportData.myDonation.isAnonymous;
+                          try {
+                            const r = await fetch(`/api/giveaways/${encodeURIComponent(giveaway.slug)}/support`, {
+                              method: "PATCH",
+                              headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                              body: JSON.stringify({ isAnonymous: newAnon }),
+                            });
+                            if (r.ok) {
+                              setSupportData(prev => ({
+                                ...prev,
+                                myDonation: { ...prev.myDonation, isAnonymous: newAnon },
+                                supporters: prev.supporters.map(s =>
+                                  s.userId === user?.uid ? { ...s, isAnonymous: newAnon, userName: newAnon ? "Anonymous" : (user?.displayName || user?.name || s.userName), userPhoto: newAnon ? null : (user?.photoURL || s.userPhoto) } : s
+                                ),
+                              }));
+                            }
+                          } catch {}
+                        }}
+                        className={`text-xs px-3 py-1.5 rounded-full font-semibold transition ${supportData.myDonation.isAnonymous ? "bg-amber-500/10 text-amber-400 hover:bg-amber-500/20" : "bg-purple-500/10 text-purple-400 hover:bg-purple-500/20"}`}
+                      >
+                        {supportData.myDonation.isAnonymous ? "🕶 Anonymous — Show Name" : "🕶 Go Anonymous"}
+                      </button>
+                    </div>
+                  )}
                   <div className="space-y-2 max-h-64 overflow-y-auto">
                     {supportData.supporters?.slice(0, 20).map((s, i) => (
                       <motion.div

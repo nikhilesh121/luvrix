@@ -7,7 +7,8 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { amount, productInfo, firstName, email, phone, userId, posts } = req.body;
+    const { amount, productInfo, firstName, email, phone, userId, posts,
+      giveawayId, donorName, donorEmail, isAnonymous } = req.body;
     
     if (!amount || !productInfo || !firstName || !email || !userId) {
       return res.status(400).json({ error: "Missing required fields" });
@@ -33,8 +34,8 @@ export default async function handler(req, res) {
     const hashString = `${merchantKey}|${txnId}|${amount}|${productInfo}|${firstName}|${email}|||||||||||${merchantSalt}`;
     const hash = crypto.createHash("sha512").update(hashString).digest("hex");
     
-    // Save payment record
-    await db.collection("payments").insertOne({
+    // Save payment record (includes giveaway support metadata if present)
+    const paymentRecord = {
       txnId,
       userId,
       amount: parseFloat(amount),
@@ -45,7 +46,15 @@ export default async function handler(req, res) {
       phone: phone || "",
       status: "initiated",
       createdAt: new Date()
-    });
+    };
+    // Attach giveaway support metadata for post-payment recording
+    if (giveawayId) {
+      paymentRecord.giveawayId = giveawayId;
+      paymentRecord.donorName = donorName || "";
+      paymentRecord.donorEmail = donorEmail || "";
+      paymentRecord.isAnonymous = !!isAnonymous;
+    }
+    await db.collection("payments").insertOne(paymentRecord);
     
     // PayU URLs
     const payuUrl = isTestMode 

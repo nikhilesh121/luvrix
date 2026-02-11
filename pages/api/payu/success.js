@@ -47,6 +47,20 @@ export default async function handler(req, res) {
           { $inc: { extraPosts: payment.posts } }
         );
       }
+
+      // Record giveaway support entry (only after successful payment)
+      if (payment.giveawayId && payment.userId) {
+        await db.collection("giveaway_supports").insertOne({
+          giveawayId: payment.giveawayId,
+          userId: payment.userId,
+          amount: payment.amount,
+          donorName: payment.donorName || "",
+          donorEmail: payment.donorEmail || "",
+          isAnonymous: !!payment.isAnonymous,
+          txnId: txnid,
+          createdAt: new Date(),
+        });
+      }
     }
     
     return res.redirect(`/payment-success?txnId=${txnid}`);

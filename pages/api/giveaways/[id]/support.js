@@ -14,11 +14,13 @@ export default async function handler(req, res) {
     // GET: Support totals + supporters list (admin gets full details)
     if (req.method === "GET") {
       let isAdmin = false;
+      let currentUserId = null;
       const token = req.headers.authorization?.replace("Bearer ", "");
       if (token) {
         try {
           const decoded = verifyToken(token);
           if (decoded) {
+            currentUserId = decoded.uid;
             const db = await getDb();
             const user = await db.collection("users").findOne({ _id: decoded.uid });
             if (user?.role === "ADMIN") isAdmin = true;
@@ -28,7 +30,37 @@ export default async function handler(req, res) {
 
       const totals = await getGiveawaySupportTotal(giveawayId);
       const supporters = await getGiveawaySupporters(giveawayId, { isAdmin });
-      return res.status(200).json({ ...totals, supporters });
+
+      // Include current user's anonymous status so they can toggle it
+      let myDonation = null;
+      if (currentUserId) {
+        const mySup = supporters.find(s => s.userId === currentUserId);
+        if (mySup) {
+          myDonation = { isAnonymous: !!mySup.isAnonymous, amount: mySup.amount };
+        }
+      }
+
+      return res.status(200).json({ ...totals, supporters, myDonation });
+    }
+
+    // PATCH: Toggle anonymous status on all user's donations for this giveaway
+    if (req.method === "PATCH") {
+      const token = req.headers.authorization?.replace("Bearer ", "");
+      if (!token) return res.status(401).json({ error: "Please log in" });
+
+      const decoded = verifyToken(token);
+      if (!decoded) return res.status(401).json({ error: "Invalid token" });
+
+      const { isAnonymous } = req.body;
+      const db = await getDb();
+
+      // Update ALL of this user's donations for this giveaway
+      const result = await db.collection("giveaway_supports").updateMany(
+        { giveawayId, userId: decoded.uid },
+        { $set: { isAnonymous: !!isAnonymous } }
+      );
+
+      return res.status(200).json({ success: true, updated: result.modifiedCount, isAnonymous: !!isAnonymous });
     }
 
     // POST: Record a support contribution (authenticated user)
