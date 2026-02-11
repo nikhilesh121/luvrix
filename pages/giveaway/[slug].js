@@ -200,6 +200,19 @@ export default function GiveawayDetailPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
+
+      // Process invite referral if ref param is present
+      const refCode = router.query.ref;
+      if (refCode) {
+        try {
+          await fetch(`/api/giveaways/${giveaway.id}/invite`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+            body: JSON.stringify({ inviteCode: refCode }),
+          });
+        } catch {}
+      }
+
       await fetchMyStatus();
       setParticipantCount(c => c + 1);
     } catch (err) {
