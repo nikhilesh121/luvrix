@@ -54,6 +54,11 @@ export default function GiveawayDetailPage() {
   // Donors / support data
   const [supportData, setSupportData] = useState({ total: 0, count: 0, supporters: [] });
 
+  // Upcoming / Interest state
+  const [interested, setInterested] = useState(false);
+  const [interestCount, setInterestCount] = useState(0);
+  const [togglingInterest, setTogglingInterest] = useState(false);
+
   const fetchData = useCallback(async () => {
     if (!slug) return;
     const encodedSlug = encodeURIComponent(slug);
@@ -100,6 +105,57 @@ export default function GiveawayDetailPage() {
 
   useEffect(() => { fetchData(); }, [fetchData]);
   useEffect(() => { fetchMyStatus(); }, [fetchMyStatus]);
+
+  // Fetch interest count + check if current user is interested (for upcoming giveaways)
+  useEffect(() => {
+    if (!giveaway || giveaway.status !== "upcoming") return;
+    const encodedSlug = encodeURIComponent(giveaway.slug || slug);
+    const headers = {};
+    if (isLoggedIn) {
+      const token = localStorage.getItem("luvrix_auth_token");
+      if (token) headers.Authorization = `Bearer ${token}`;
+    }
+    fetch(`/api/giveaways/${encodedSlug}/interest`, { headers }).then(r => r.ok ? r.json() : null).then(d => {
+      if (d) {
+        setInterestCount(d.count || 0);
+        setInterested(!!d.interested);
+      }
+    }).catch(() => {});
+  }, [giveaway, slug, isLoggedIn]);
+
+  // Auto-refresh: if upcoming and startDate passes, re-fetch to get the live state
+  useEffect(() => {
+    if (!giveaway || giveaway.status !== "upcoming" || !giveaway.startDate) return;
+    const startMs = new Date(giveaway.startDate).getTime();
+    const now = Date.now();
+    const diff = startMs - now;
+    if (diff <= 0) {
+      // Already past start — refetch immediately
+      fetchData();
+      return;
+    }
+    // Set a timer to refetch when start time is reached
+    const timer = setTimeout(() => { fetchData(); }, diff + 1000);
+    return () => clearTimeout(timer);
+  }, [giveaway, fetchData]);
+
+  const handleInterest = async () => {
+    if (!isLoggedIn) { router.push("/login"); return; }
+    setTogglingInterest(true);
+    try {
+      const token = localStorage.getItem("luvrix_auth_token");
+      const res = await fetch(`/api/giveaways/${encodeURIComponent(giveaway.slug || slug)}/interest`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setInterested(data.interested);
+        setInterestCount(data.count || 0);
+      }
+    } catch (err) { console.error(err); }
+    finally { setTogglingInterest(false); }
+  };
 
   // Fetch existing shipping details if winner
   useEffect(() => {
@@ -281,6 +337,7 @@ export default function GiveawayDetailPage() {
   };
 
   const countdown = useCountdown(giveaway?.endDate);
+  const startCountdown = useCountdown(giveaway?.startDate);
   const progressPercent = giveaway?.targetParticipants
     ? Math.min(100, Math.round((participantCount / giveaway.targetParticipants) * 100))
     : 0;
@@ -316,6 +373,7 @@ export default function GiveawayDetailPage() {
   }
 
   const isUnlimited = giveaway.maxExtensions === -1;
+  const isUpcoming = giveaway.status === "upcoming" && !startCountdown.ended;
   const isActive = giveaway.status === "active" && (!countdown.ended || isUnlimited);
   const hasWinner = giveaway.status === "winner_selected";
   const isWinner = myStatus?.status === "winner";
@@ -404,6 +462,12 @@ export default function GiveawayDetailPage() {
               </Link>
               <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black text-white mb-3 drop-shadow-lg tracking-tight">{giveaway.title}</h1>
               <div className="flex flex-wrap items-center gap-3">
+                {isUpcoming && (
+                  <span className="relative bg-amber-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg shadow-amber-500/30">
+                    <span className="absolute inset-0 bg-amber-400 rounded-full animate-ping opacity-30" />
+                    <span className="relative">UPCOMING</span>
+                  </span>
+                )}
                 {isActive && (
                   <span className="relative bg-green-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg shadow-green-500/30">
                     <span className="absolute inset-0 bg-green-400 rounded-full animate-ping opacity-30" />
@@ -463,8 +527,301 @@ export default function GiveawayDetailPage() {
           )}
 
           <motion.div variants={stagger} initial="hidden" animate="visible" className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Main Content */}
-            <div className="lg:col-span-2 space-y-6">
+            {/* Sidebar — appears FIRST on mobile, RIGHT column on desktop */}
+            <div className="order-1 lg:order-2 space-y-6">
+              {/* Countdown — Premium Glowing Timer */}
+              <motion.div variants={fadeUp} className="relative rounded-2xl overflow-hidden">
+                {/* Animated gradient border */}
+                {((isUpcoming || ((!countdown.ended || isUnlimited) && !hasWinner)) && !hasWinner) && (
+                  <div className={`absolute inset-0 ${isUpcoming ? "bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500" : "bg-gradient-to-r from-purple-500 via-pink-500 to-cyan-500"} animate-[shimmer_3s_linear_infinite] bg-[length:200%_auto] rounded-2xl`} />
+                )}
+                <div className={`relative ${((isUpcoming || ((!countdown.ended || isUnlimited) && !hasWinner)) && !hasWinner) ? "m-[1.5px]" : ""} bg-[#0c0c14] rounded-[15px] p-5 overflow-hidden`}>
+                  {/* Glow orbs */}
+                  {((isUpcoming || ((!countdown.ended || isUnlimited) && !hasWinner)) && !hasWinner) && (
+                    <>
+                      <motion.div
+                        animate={{ opacity: [0.2, 0.5, 0.2], scale: [1, 1.3, 1] }}
+                        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                        className={`absolute -top-16 -right-16 w-48 h-48 ${isUpcoming ? "bg-amber-600" : "bg-purple-600"} rounded-full blur-[80px] pointer-events-none`}
+                      />
+                      <motion.div
+                        animate={{ opacity: [0.15, 0.35, 0.15] }}
+                        transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+                        className={`absolute -bottom-10 -left-10 w-36 h-36 ${isUpcoming ? "bg-orange-600" : "bg-pink-600"} rounded-full blur-[60px] pointer-events-none`}
+                      />
+                    </>
+                  )}
+                  <div className="relative z-10">
+                    <h3 className="text-sm font-bold text-gray-300 mb-4 flex items-center gap-2">
+                      <FiClock className={`w-4 h-4 ${isUpcoming ? "text-amber-400" : "text-purple-400"}`} />
+                      {isUpcoming ? "Starts In" : hasWinner ? "Completed" : (countdown.ended && !isUnlimited) ? "Ended" : isUnlimited && countdown.ended ? "Open-Ended" : "Time Left"}
+                      {((isUpcoming || ((!countdown.ended || isUnlimited) && !hasWinner)) && !hasWinner) && (
+                        <motion.span
+                          animate={{ scale: [1, 1.5, 1], opacity: [1, 0.4, 1] }}
+                          transition={{ duration: 1.2, repeat: Infinity }}
+                          className={`w-2.5 h-2.5 ${isUpcoming ? "bg-amber-400 shadow-amber-400/50" : "bg-green-400 shadow-green-400/50"} rounded-full ml-auto shadow-lg`}
+                        />
+                      )}
+                    </h3>
+                    {/* Upcoming countdown */}
+                    {isUpcoming ? (
+                      <div className="grid grid-cols-4 gap-2 text-center">
+                        {[
+                          { value: startCountdown.days, label: "Days", grad: "from-amber-600/30 via-amber-500/10 to-amber-900/20", border: "border-amber-500/20", glow: "shadow-amber-500/10" },
+                          { value: startCountdown.hours, label: "Hours", grad: "from-orange-600/30 via-orange-500/10 to-orange-900/20", border: "border-orange-500/20", glow: "shadow-orange-500/10" },
+                          { value: startCountdown.minutes, label: "Min", grad: "from-yellow-600/30 via-yellow-500/10 to-yellow-900/20", border: "border-yellow-500/20", glow: "shadow-yellow-500/10" },
+                          { value: startCountdown.seconds, label: "Sec", grad: "from-red-600/30 via-red-500/10 to-red-900/20", border: "border-red-500/20", glow: "shadow-red-500/10" },
+                        ].map((t, i) => (
+                          <motion.div
+                            key={t.label}
+                            initial={{ opacity: 0, scale: 0.7, y: 10 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            transition={{ delay: i * 0.1, type: "spring", stiffness: 200 }}
+                            className={`bg-gradient-to-b ${t.grad} rounded-xl p-2.5 border ${t.border} shadow-lg ${t.glow} backdrop-blur-sm`}
+                          >
+                            <motion.p
+                              key={t.value}
+                              initial={{ opacity: 0.6, scale: 0.85 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              transition={{ type: "spring", stiffness: 400, damping: 15 }}
+                              className="text-2xl sm:text-3xl font-black text-white font-mono tracking-tighter drop-shadow-[0_0_12px_rgba(245,158,11,0.4)]"
+                            >
+                              {String(t.value).padStart(2, "0")}
+                            </motion.p>
+                            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-[0.15em] mt-1">{t.label}</p>
+                          </motion.div>
+                        ))}
+                      </div>
+                    ) : isUnlimited && countdown.ended && !hasWinner ? (
+                      <div className="text-center py-4">
+                        <motion.div
+                          animate={{ scale: [1, 1.1, 1], opacity: [0.7, 1, 0.7] }}
+                          transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+                          className="text-5xl font-black bg-gradient-to-r from-purple-400 via-pink-400 to-purple-400 bg-clip-text text-transparent mb-2"
+                        >
+                          ♾
+                        </motion.div>
+                        <p className="text-sm font-semibold text-purple-300">No Time Limit</p>
+                        <p className="text-xs text-gray-500 mt-1">Open until all participants join</p>
+                      </div>
+                    ) : !countdown.ended && !hasWinner ? (
+                      <div className="grid grid-cols-4 gap-2 text-center">
+                        {[
+                          { value: countdown.days, label: "Days", grad: "from-purple-600/30 via-purple-500/10 to-purple-900/20", border: "border-purple-500/20", glow: "shadow-purple-500/10" },
+                          { value: countdown.hours, label: "Hours", grad: "from-blue-600/30 via-blue-500/10 to-blue-900/20", border: "border-blue-500/20", glow: "shadow-blue-500/10" },
+                          { value: countdown.minutes, label: "Min", grad: "from-pink-600/30 via-pink-500/10 to-pink-900/20", border: "border-pink-500/20", glow: "shadow-pink-500/10" },
+                          { value: countdown.seconds, label: "Sec", grad: "from-amber-600/30 via-amber-500/10 to-amber-900/20", border: "border-amber-500/20", glow: "shadow-amber-500/10" },
+                        ].map((t, i) => (
+                          <motion.div
+                            key={t.label}
+                            initial={{ opacity: 0, scale: 0.7, y: 10 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            transition={{ delay: i * 0.1, type: "spring", stiffness: 200 }}
+                            className={`bg-gradient-to-b ${t.grad} rounded-xl p-2.5 border ${t.border} shadow-lg ${t.glow} backdrop-blur-sm`}
+                          >
+                            <motion.p
+                              key={t.value}
+                              initial={{ opacity: 0.6, scale: 0.85 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              transition={{ type: "spring", stiffness: 400, damping: 15 }}
+                              className="text-2xl sm:text-3xl font-black text-white font-mono tracking-tighter drop-shadow-[0_0_12px_rgba(168,85,247,0.4)]"
+                            >
+                              {String(t.value).padStart(2, "0")}
+                            </motion.p>
+                            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-[0.15em] mt-1">{t.label}</p>
+                          </motion.div>
+                        ))}
+                      </div>
+                    ) : hasWinner ? (
+                      <div className="text-center py-3">
+                        <motion.div
+                          animate={{ rotate: [0, 10, -10, 0], scale: [1, 1.1, 1] }}
+                          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                        >
+                          <FiAward className="w-12 h-12 text-yellow-400 mx-auto mb-3 drop-shadow-[0_0_15px_rgba(250,204,21,0.5)]" />
+                        </motion.div>
+                        <p className="text-base font-black bg-gradient-to-r from-yellow-300 via-purple-400 to-pink-400 bg-clip-text text-transparent">Winner Announced!</p>
+                      </div>
+                    ) : (
+                      <div className="text-center py-3">
+                        <p className="text-red-400 font-bold text-base">Giveaway has ended</p>
+                        <p className="text-xs text-gray-600 mt-1">Winner will be announced soon</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Participants Progress */}
+              {!isUpcoming && (
+                <motion.div variants={fadeUp} className="bg-[#12121a] rounded-2xl p-5 border border-white/5">
+                  <h3 className="text-sm font-semibold text-gray-400 mb-3 flex items-center gap-1.5">
+                    <FiUsers className="w-4 h-4" /> Participants
+                  </h3>
+                  <p className="text-2xl font-bold text-white mb-1">
+                    {participantCount} <span className="text-sm font-normal text-gray-500">/ {giveaway.targetParticipants}</span>
+                  </p>
+                  <div className="w-full bg-white/5 rounded-full h-2.5 mb-1 overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${progressPercent}%` }}
+                      transition={{ duration: 1, ease: "easeOut", delay: 0.5 }}
+                      className="bg-gradient-to-r from-purple-500 to-pink-500 h-2.5 rounded-full"
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500">{progressPercent}% of target</p>
+                </motion.div>
+              )}
+
+              {/* Interest count for upcoming */}
+              {isUpcoming && (
+                <motion.div variants={fadeUp} className="bg-[#12121a] rounded-2xl p-5 border border-white/5">
+                  <h3 className="text-sm font-semibold text-gray-400 mb-3 flex items-center gap-1.5">
+                    <FiHeart className="w-4 h-4 text-amber-400" /> Interested
+                  </h3>
+                  <p className="text-2xl font-bold text-white">{interestCount} <span className="text-sm font-normal text-gray-500">people interested</span></p>
+                </motion.div>
+              )}
+
+              {/* Total Donations Sidebar Card */}
+              {supportData.total > 0 && (
+                <motion.div variants={fadeUp} className="bg-gradient-to-br from-green-900/20 to-emerald-900/10 rounded-2xl p-5 border border-green-500/10">
+                  <h3 className="text-sm font-semibold text-gray-400 mb-2 flex items-center gap-1.5">
+                    <FiDollarSign className="w-4 h-4 text-green-400" /> Donations
+                  </h3>
+                  <p className="text-2xl font-black text-green-400">₹{supportData.total?.toLocaleString()}</p>
+                  <p className="text-xs text-gray-500 mt-1">{supportData.count} supporter{supportData.count !== 1 ? "s" : ""}</p>
+                </motion.div>
+              )}
+
+              {/* Join / Interest / Status CTA */}
+              <motion.div variants={fadeUp} className="bg-[#12121a] rounded-2xl p-5 border border-white/5">
+                {error && (
+                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                    className="bg-red-900/20 text-red-400 p-2 rounded-lg mb-3 text-xs border border-red-500/20">{error}</motion.div>
+                )}
+
+                {isUpcoming ? (
+                  <div className="text-center">
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={handleInterest}
+                      disabled={togglingInterest}
+                      className={`w-full py-3.5 rounded-xl font-bold text-sm transition flex items-center justify-center gap-2 ${
+                        interested
+                          ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
+                          : "bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg shadow-amber-500/20"
+                      }`}
+                    >
+                      <FiHeart className={`w-4 h-4 ${interested ? "fill-current" : ""}`} />
+                      {togglingInterest ? "..." : interested ? "Interested — We'll Notify You" : "I'm Interested — Notify Me"}
+                    </motion.button>
+                    <p className="text-xs text-gray-500 mt-2">You'll receive an email when this giveaway goes live</p>
+                  </div>
+                ) : !myStatus?.joined ? (
+                  <>
+                    <AnimatedCTA onClick={handleJoin} disabled={joining || !isActive} variant={!isActive ? "disabled" : "join"}>
+                      <FiGift className="w-5 h-5" /> {ctaText}
+                    </AnimatedCTA>
+                    <p className="text-xs text-center text-gray-500 mt-2">100% free · No purchase required</p>
+                  </>
+                ) : (
+                  <div className="text-center">
+                    <AnimatedCTA variant={ctaVariant}>
+                      {ctaText}
+                    </AnimatedCTA>
+
+                    {myStatus.status === "participant" && (
+                      <p className="text-xs text-amber-400 mt-3">
+                        <FiAlertCircle className="inline w-3 h-3 mr-1" />
+                        Joined — wait for announcement or complete tasks
+                      </p>
+                    )}
+
+                    <div className="mt-3 flex items-center justify-center gap-4 text-xs text-gray-500">
+                      <span><strong className="text-white">{myStatus.points}</strong> pts</span>
+                      {giveaway.invitePointsEnabled && <span><strong className="text-white">{myStatus.inviteCount || 0}</strong> invites</span>}
+                    </div>
+                  </div>
+                )}
+              </motion.div>
+            </div>
+
+            {/* Main Content — appears SECOND on mobile, LEFT columns on desktop */}
+            <div className="lg:col-span-2 order-2 lg:order-1 space-y-6">
+              {/* Support Section (ISOLATED — PayU Direct Payment) — AT TOP */}
+              <motion.div variants={fadeUp} className="bg-[#12121a] rounded-2xl p-6 border-2 border-dashed border-white/10">
+                <div className="flex items-center gap-2 mb-2">
+                  <FiHeart className="w-5 h-5 text-pink-400" />
+                  <h2 className="font-bold text-white">Support This Giveaway</h2>
+                </div>
+                <p className="text-sm text-gray-400 mb-3">Help us organize more giveaways for the community!</p>
+                <div className="bg-amber-900/20 border border-amber-500/20 rounded-lg p-3 text-xs text-amber-300 mb-4">
+                  <strong>Note:</strong> Supporting Luvrix is optional and does <strong>not</strong> affect eligibility or winning chances.
+                </div>
+
+                {/* Donor Info */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+                  <div>
+                    <label className="text-xs text-gray-400 mb-1 block">Your Name (optional)</label>
+                    <input type="text" value={donorName} onChange={e => setDonorName(e.target.value)}
+                      placeholder={user?.displayName || user?.name || "Your name"}
+                      className="w-full px-3 py-2 border border-white/10 rounded-lg text-sm bg-white/5 text-white placeholder-gray-600" />
+                  </div>
+                  <div>
+                    <label className="text-xs text-gray-400 mb-1 block">Email (optional)</label>
+                    <input type="email" value={donorEmail} onChange={e => setDonorEmail(e.target.value)}
+                      placeholder={user?.email || "your@email.com"}
+                      className="w-full px-3 py-2 border border-white/10 rounded-lg text-sm bg-white/5 text-white placeholder-gray-600" />
+                  </div>
+                </div>
+                <label className="flex items-center gap-2 cursor-pointer mb-4">
+                  <input type="checkbox" checked={isAnonymous} onChange={e => setIsAnonymous(e.target.checked)}
+                    className="w-4 h-4 rounded border-white/20 bg-white/5 text-purple-500 focus:ring-purple-500/30" />
+                  <span className="text-xs text-gray-400">Show as Anonymous publicly</span>
+                </label>
+
+                {/* Preset amounts */}
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {[50, 100, 200, 500].map(amt => (
+                    <motion.button key={amt} whileTap={{ scale: 0.95 }}
+                      onClick={() => setSupportAmount(amt)}
+                      className={`px-4 py-2 rounded-xl text-sm font-semibold border transition ${
+                        supportAmount === amt
+                          ? "bg-pink-500 text-white border-pink-500 shadow-lg shadow-pink-500/20"
+                          : "bg-white/5 text-gray-300 border-white/10 hover:border-pink-500/30"
+                      }`}>
+                      ₹{amt}
+                    </motion.button>
+                  ))}
+                </div>
+
+                {/* Manual amount input */}
+                <div className="flex gap-2 items-center mb-3">
+                  <div className="relative flex-1">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm font-semibold">₹</span>
+                    <input type="number" min={1} value={supportAmount}
+                      onChange={e => setSupportAmount(Number(e.target.value))}
+                      className="w-full pl-7 pr-3 py-2.5 border border-white/10 rounded-xl text-sm bg-white/5 text-white focus:ring-2 focus:ring-pink-500/30 focus:border-pink-400 outline-none"
+                      placeholder="Enter amount" />
+                  </div>
+                  <motion.button
+                    whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                    onClick={handleSupportPayment}
+                    disabled={supportLoading || !supportAmount}
+                    className="px-5 py-2.5 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-xl font-semibold text-sm hover:from-pink-600 hover:to-rose-600 transition disabled:opacity-50 flex items-center gap-1.5 shadow-lg shadow-pink-500/20">
+                    {supportLoading ? (
+                      <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Processing...</>
+                    ) : (
+                      <><FiHeart className="w-4 h-4" /> Support ₹{supportAmount || 0}</>
+                    )}
+                  </motion.button>
+                </div>
+                {supportError && <p className="text-xs text-red-400 mb-1">{supportError}</p>}
+                <p className="text-[10px] text-gray-600">Secured by PayU. You will be redirected to complete payment.</p>
+              </motion.div>
+
               {/* Prize */}
               <motion.div variants={fadeUp} className="bg-[#12121a] rounded-2xl p-6 border border-white/5">
                 <h2 className="font-bold text-white mb-3 flex items-center gap-2">
@@ -733,78 +1090,6 @@ export default function GiveawayDetailPage() {
                 </motion.div>
               )}
 
-              {/* Support Section (ISOLATED — PayU Direct Payment) */}
-              <motion.div variants={fadeUp} className="bg-[#12121a] rounded-2xl p-6 border-2 border-dashed border-white/10">
-                <div className="flex items-center gap-2 mb-2">
-                  <FiHeart className="w-5 h-5 text-pink-400" />
-                  <h2 className="font-bold text-white">Support This Giveaway</h2>
-                </div>
-                <p className="text-sm text-gray-400 mb-3">Help us organize more giveaways for the community!</p>
-                <div className="bg-amber-900/20 border border-amber-500/20 rounded-lg p-3 text-xs text-amber-300 mb-4">
-                  <strong>Note:</strong> Supporting Luvrix is optional and does <strong>not</strong> affect eligibility or winning chances.
-                </div>
-
-                {/* Donor Info */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
-                  <div>
-                    <label className="text-xs text-gray-400 mb-1 block">Your Name (optional)</label>
-                    <input type="text" value={donorName} onChange={e => setDonorName(e.target.value)}
-                      placeholder={user?.displayName || user?.name || "Your name"}
-                      className="w-full px-3 py-2 border border-white/10 rounded-lg text-sm bg-white/5 text-white placeholder-gray-600" />
-                  </div>
-                  <div>
-                    <label className="text-xs text-gray-400 mb-1 block">Email (optional)</label>
-                    <input type="email" value={donorEmail} onChange={e => setDonorEmail(e.target.value)}
-                      placeholder={user?.email || "your@email.com"}
-                      className="w-full px-3 py-2 border border-white/10 rounded-lg text-sm bg-white/5 text-white placeholder-gray-600" />
-                  </div>
-                </div>
-                <label className="flex items-center gap-2 cursor-pointer mb-4">
-                  <input type="checkbox" checked={isAnonymous} onChange={e => setIsAnonymous(e.target.checked)}
-                    className="w-4 h-4 rounded border-white/20 bg-white/5 text-purple-500 focus:ring-purple-500/30" />
-                  <span className="text-xs text-gray-400">Show as Anonymous publicly</span>
-                </label>
-
-                {/* Preset amounts */}
-                <div className="flex flex-wrap gap-2 mb-3">
-                  {[50, 100, 200, 500].map(amt => (
-                    <motion.button key={amt} whileTap={{ scale: 0.95 }}
-                      onClick={() => setSupportAmount(amt)}
-                      className={`px-4 py-2 rounded-xl text-sm font-semibold border transition ${
-                        supportAmount === amt
-                          ? "bg-pink-500 text-white border-pink-500 shadow-lg shadow-pink-500/20"
-                          : "bg-white/5 text-gray-300 border-white/10 hover:border-pink-500/30"
-                      }`}>
-                      ₹{amt}
-                    </motion.button>
-                  ))}
-                </div>
-
-                {/* Manual amount input */}
-                <div className="flex gap-2 items-center mb-3">
-                  <div className="relative flex-1">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm font-semibold">₹</span>
-                    <input type="number" min={1} value={supportAmount}
-                      onChange={e => setSupportAmount(Number(e.target.value))}
-                      className="w-full pl-7 pr-3 py-2.5 border border-white/10 rounded-xl text-sm bg-white/5 text-white focus:ring-2 focus:ring-pink-500/30 focus:border-pink-400 outline-none"
-                      placeholder="Enter amount" />
-                  </div>
-                  <motion.button
-                    whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-                    onClick={handleSupportPayment}
-                    disabled={supportLoading || !supportAmount}
-                    className="px-5 py-2.5 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-xl font-semibold text-sm hover:from-pink-600 hover:to-rose-600 transition disabled:opacity-50 flex items-center gap-1.5 shadow-lg shadow-pink-500/20">
-                    {supportLoading ? (
-                      <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Processing...</>
-                    ) : (
-                      <><FiHeart className="w-4 h-4" /> Support ₹{supportAmount || 0}</>
-                    )}
-                  </motion.button>
-                </div>
-                {supportError && <p className="text-xs text-red-400 mb-1">{supportError}</p>}
-                <p className="text-[10px] text-gray-600">Secured by PayU. You will be redirected to complete payment.</p>
-              </motion.div>
-
               {/* Legal Notice */}
               <motion.div variants={fadeUp} className="bg-blue-900/10 border border-blue-500/10 rounded-2xl p-5">
                 <div className="flex items-start gap-3">
@@ -819,168 +1104,6 @@ export default function GiveawayDetailPage() {
                     </p>
                   </div>
                 </div>
-              </motion.div>
-            </div>
-
-            {/* Sidebar */}
-            <div className="space-y-6">
-              {/* Countdown — Premium Glowing Timer */}
-              <motion.div variants={fadeUp} className="relative rounded-2xl overflow-hidden">
-                {/* Animated gradient border */}
-                {((!countdown.ended || isUnlimited) && !hasWinner) && (
-                  <div className="absolute inset-0 bg-gradient-to-r from-purple-500 via-pink-500 to-cyan-500 animate-[shimmer_3s_linear_infinite] bg-[length:200%_auto] rounded-2xl" />
-                )}
-                <div className={`relative ${((!countdown.ended || isUnlimited) && !hasWinner) ? "m-[1.5px]" : ""} bg-[#0c0c14] rounded-[15px] p-6 overflow-hidden`}>
-                  {/* Glow orbs */}
-                  {((!countdown.ended || isUnlimited) && !hasWinner) && (
-                    <>
-                      <motion.div
-                        animate={{ opacity: [0.2, 0.5, 0.2], scale: [1, 1.3, 1] }}
-                        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                        className="absolute -top-16 -right-16 w-48 h-48 bg-purple-600 rounded-full blur-[80px] pointer-events-none"
-                      />
-                      <motion.div
-                        animate={{ opacity: [0.15, 0.35, 0.15] }}
-                        transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-                        className="absolute -bottom-10 -left-10 w-36 h-36 bg-pink-600 rounded-full blur-[60px] pointer-events-none"
-                      />
-                    </>
-                  )}
-                  <div className="relative z-10">
-                    <h3 className="text-sm font-bold text-gray-300 mb-5 flex items-center gap-2">
-                      <FiClock className="w-4 h-4 text-purple-400" />
-                      {hasWinner ? "Completed" : (countdown.ended && !isUnlimited) ? "Ended" : isUnlimited && countdown.ended ? "Open-Ended" : "Time Left"}
-                      {((!countdown.ended || isUnlimited) && !hasWinner) && (
-                        <motion.span
-                          animate={{ scale: [1, 1.5, 1], opacity: [1, 0.4, 1] }}
-                          transition={{ duration: 1.2, repeat: Infinity }}
-                          className="w-2.5 h-2.5 bg-green-400 rounded-full ml-auto shadow-lg shadow-green-400/50"
-                        />
-                      )}
-                    </h3>
-                    {isUnlimited && countdown.ended && !hasWinner ? (
-                      <div className="text-center py-4">
-                        <motion.div
-                          animate={{ scale: [1, 1.1, 1], opacity: [0.7, 1, 0.7] }}
-                          transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
-                          className="text-5xl font-black bg-gradient-to-r from-purple-400 via-pink-400 to-purple-400 bg-clip-text text-transparent mb-2"
-                        >
-                          ♾
-                        </motion.div>
-                        <p className="text-sm font-semibold text-purple-300">No Time Limit</p>
-                        <p className="text-xs text-gray-500 mt-1">Open until all participants join</p>
-                      </div>
-                    ) : !countdown.ended && !hasWinner ? (
-                      <div className="grid grid-cols-4 gap-2.5 text-center">
-                        {[
-                          { value: countdown.days, label: "Days", grad: "from-purple-600/30 via-purple-500/10 to-purple-900/20", border: "border-purple-500/20", glow: "shadow-purple-500/10" },
-                          { value: countdown.hours, label: "Hours", grad: "from-blue-600/30 via-blue-500/10 to-blue-900/20", border: "border-blue-500/20", glow: "shadow-blue-500/10" },
-                          { value: countdown.minutes, label: "Min", grad: "from-pink-600/30 via-pink-500/10 to-pink-900/20", border: "border-pink-500/20", glow: "shadow-pink-500/10" },
-                          { value: countdown.seconds, label: "Sec", grad: "from-amber-600/30 via-amber-500/10 to-amber-900/20", border: "border-amber-500/20", glow: "shadow-amber-500/10" },
-                        ].map((t, i) => (
-                          <motion.div
-                            key={t.label}
-                            initial={{ opacity: 0, scale: 0.7, y: 10 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            transition={{ delay: i * 0.1, type: "spring", stiffness: 200 }}
-                            className={`bg-gradient-to-b ${t.grad} rounded-xl p-3 border ${t.border} shadow-lg ${t.glow} backdrop-blur-sm`}
-                          >
-                            <motion.p
-                              key={t.value}
-                              initial={{ opacity: 0.6, scale: 0.85 }}
-                              animate={{ opacity: 1, scale: 1 }}
-                              transition={{ type: "spring", stiffness: 400, damping: 15 }}
-                              className="text-3xl sm:text-4xl font-black text-white font-mono tracking-tighter drop-shadow-[0_0_12px_rgba(168,85,247,0.4)]"
-                            >
-                              {String(t.value).padStart(2, "0")}
-                            </motion.p>
-                            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-[0.2em] mt-1.5">{t.label}</p>
-                          </motion.div>
-                        ))}
-                      </div>
-                    ) : hasWinner ? (
-                      <div className="text-center py-3">
-                        <motion.div
-                          animate={{ rotate: [0, 10, -10, 0], scale: [1, 1.1, 1] }}
-                          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                        >
-                          <FiAward className="w-12 h-12 text-yellow-400 mx-auto mb-3 drop-shadow-[0_0_15px_rgba(250,204,21,0.5)]" />
-                        </motion.div>
-                        <p className="text-base font-black bg-gradient-to-r from-yellow-300 via-purple-400 to-pink-400 bg-clip-text text-transparent">Winner Announced!</p>
-                      </div>
-                    ) : (
-                      <div className="text-center py-3">
-                        <p className="text-red-400 font-bold text-base">Giveaway has ended</p>
-                        <p className="text-xs text-gray-600 mt-1">Winner will be announced soon</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </motion.div>
-
-              {/* Participants Progress */}
-              <motion.div variants={fadeUp} className="bg-[#12121a] rounded-2xl p-6 border border-white/5">
-                <h3 className="text-sm font-semibold text-gray-400 mb-3 flex items-center gap-1.5">
-                  <FiUsers className="w-4 h-4" /> Participants
-                </h3>
-                <p className="text-2xl font-bold text-white mb-1">
-                  {participantCount} <span className="text-sm font-normal text-gray-500">/ {giveaway.targetParticipants}</span>
-                </p>
-                <div className="w-full bg-white/5 rounded-full h-2.5 mb-1 overflow-hidden">
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${progressPercent}%` }}
-                    transition={{ duration: 1, ease: "easeOut", delay: 0.5 }}
-                    className="bg-gradient-to-r from-purple-500 to-pink-500 h-2.5 rounded-full"
-                  />
-                </div>
-                <p className="text-xs text-gray-500">{progressPercent}% of target</p>
-              </motion.div>
-
-              {/* Total Donations Sidebar Card */}
-              {supportData.total > 0 && (
-                <motion.div variants={fadeUp} className="bg-gradient-to-br from-green-900/20 to-emerald-900/10 rounded-2xl p-6 border border-green-500/10">
-                  <h3 className="text-sm font-semibold text-gray-400 mb-2 flex items-center gap-1.5">
-                    <FiDollarSign className="w-4 h-4 text-green-400" /> Donations
-                  </h3>
-                  <p className="text-2xl font-black text-green-400">₹{supportData.total?.toLocaleString()}</p>
-                  <p className="text-xs text-gray-500 mt-1">{supportData.count} supporter{supportData.count !== 1 ? "s" : ""}</p>
-                </motion.div>
-              )}
-
-              {/* Join / Status CTA */}
-              <motion.div variants={fadeUp} className="bg-[#12121a] rounded-2xl p-6 border border-white/5">
-                {error && (
-                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                    className="bg-red-900/20 text-red-400 p-2 rounded-lg mb-3 text-xs border border-red-500/20">{error}</motion.div>
-                )}
-
-                {!myStatus?.joined ? (
-                  <>
-                    <AnimatedCTA onClick={handleJoin} disabled={joining || !isActive} variant={!isActive ? "disabled" : "join"}>
-                      <FiGift className="w-5 h-5" /> {ctaText}
-                    </AnimatedCTA>
-                    <p className="text-xs text-center text-gray-500 mt-2">100% free · No purchase required</p>
-                  </>
-                ) : (
-                  <div className="text-center">
-                    <AnimatedCTA variant={ctaVariant}>
-                      {ctaText}
-                    </AnimatedCTA>
-
-                    {myStatus.status === "participant" && (
-                      <p className="text-xs text-amber-400 mt-3">
-                        <FiAlertCircle className="inline w-3 h-3 mr-1" />
-                        Joined — wait for announcement or complete tasks
-                      </p>
-                    )}
-
-                    <div className="mt-3 flex items-center justify-center gap-4 text-xs text-gray-500">
-                      <span><strong className="text-white">{myStatus.points}</strong> pts</span>
-                      {giveaway.invitePointsEnabled && <span><strong className="text-white">{myStatus.inviteCount || 0}</strong> invites</span>}
-                    </div>
-                  </div>
-                )}
               </motion.div>
             </div>
           </motion.div>

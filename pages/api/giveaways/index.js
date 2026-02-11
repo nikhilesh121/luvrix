@@ -24,10 +24,26 @@ export default async function handler(req, res) {
         if (req.query.status) filter.status = req.query.status;
       } else {
         // Public: show active, ended, and winner_selected (not draft)
-        filter.status = { $in: ["active", "ended", "winner_selected"] };
+        filter.status = { $in: ["upcoming", "active", "ended", "winner_selected"] };
       }
 
       const giveaways = await listGiveaways(filter);
+
+      // Auto-transition any upcoming giveaways whose startDate has passed
+      const now = new Date();
+      for (const g of giveaways) {
+        if (g.status === "upcoming" && g.startDate && new Date(g.startDate) <= now) {
+          try {
+            const { ObjectId } = require("mongodb");
+            await db.collection("giveaways").updateOne(
+              { _id: ObjectId.isValid(g.id) && g.id.length === 24 ? new ObjectId(g.id) : g.id },
+              { $set: { status: "active", updatedAt: now } }
+            );
+            g.status = "active";
+          } catch (e) { console.error("Auto-transition error:", e); }
+        }
+      }
+
       return res.status(200).json(giveaways);
     }
 

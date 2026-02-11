@@ -2,14 +2,47 @@ import { verifyToken } from "../../../lib/auth";
 import { getDb } from "../../../lib/mongodb";
 import { getGiveaway, updateGiveaway, deleteGiveaway } from "../../../lib/giveaway";
 import { createAuditLog, AUDIT_CATEGORIES, SEVERITY } from "../../../lib/auditLog";
+import { sendGiveawayLiveEmail } from "../../../utils/email";
 
 export default async function handler(req, res) {
   const { id } = req.query;
 
   try {
     if (req.method === "GET") {
-      const giveaway = await getGiveaway(id);
+      let giveaway = await getGiveaway(id);
       if (!giveaway) return res.status(404).json({ error: "Giveaway not found" });
+
+      // Auto-transition: upcoming → active when startDate has passed
+      if (giveaway.status === "upcoming" && giveaway.startDate) {
+        const now = new Date();
+        const startDate = new Date(giveaway.startDate);
+        if (now >= startDate) {
+          try {
+            const db = await getDb();
+            await db.collection("giveaways").updateOne(
+              { slug: giveaway.slug || undefined, _id: giveaway.id ? require("mongodb").ObjectId.createFromHexString(giveaway.id) : undefined },
+              { $set: { status: "active", updatedAt: new Date() } }
+            );
+            giveaway.status = "active";
+
+            // Send emails to interested users (fire-and-forget)
+            const interests = await db.collection("giveaway_interests")
+              .find({ giveawayId: giveaway.id })
+              .project({ email: 1, name: 1 })
+              .toArray();
+            if (interests.length > 0 && typeof sendGiveawayLiveEmail === "function") {
+              for (const interest of interests) {
+                if (interest.email) {
+                  sendGiveawayLiveEmail(interest.email, interest.name || "there", giveaway.title, giveaway.slug).catch(() => {});
+                }
+              }
+            }
+          } catch (transErr) {
+            console.error("Auto-transition error:", transErr);
+          }
+        }
+      }
+
       return res.status(200).json(giveaway);
     }
 

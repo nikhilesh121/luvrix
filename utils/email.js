@@ -278,4 +278,38 @@ export const sendGiveawayWinnerEmail = async (email, name, giveawayTitle, giveaw
   return sendEmail(email, template);
 };
 
+// Giveaway Live Notification Email (sent to interested users)
+export const sendGiveawayLiveEmail = async (email, name, giveawayTitle, giveawaySlug) => {
+  const template = {
+    subject: `🎉 "${giveawayTitle}" is NOW LIVE on Luvrix!`,
+    html: `
+      <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff;">
+        <div style="background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); padding: 40px 30px; text-align: center;">
+          <h1 style="color: #ffffff; margin: 0; font-size: 28px;">🚀 Giveaway is LIVE!</h1>
+          <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0; font-size: 16px;">${giveawayTitle}</p>
+        </div>
+        <div style="padding: 40px 30px;">
+          <p style="font-size: 16px; color: #333; line-height: 1.6;">Hi ${name},</p>
+          <p style="font-size: 16px; color: #333; line-height: 1.6;">
+            The giveaway you were interested in — <strong>"${giveawayTitle}"</strong> — is now <strong style="color: #22c55e;">LIVE</strong>!
+          </p>
+          <p style="font-size: 16px; color: #333; line-height: 1.6;">
+            Join now before it's too late. Complete the tasks and become eligible to win!
+          </p>
+          <div style="text-align: center; margin-top: 30px;">
+            <a href="https://luvrix.com/giveaway/${giveawaySlug}" style="display: inline-block; padding: 14px 40px; background: linear-gradient(135deg, #9333ea 0%, #ec4899 100%); color: #ffffff; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">Join Now →</a>
+          </div>
+          <p style="font-size: 14px; color: #999; line-height: 1.6; margin-top: 30px; text-align: center;">
+            Hurry — spots fill up fast!
+          </p>
+        </div>
+        <div style="background: #f8f9fa; padding: 20px 30px; text-align: center; border-top: 1px solid #e9ecef;">
+          <p style="margin: 0; color: #666; font-size: 14px;">© ${new Date().getFullYear()} Luvrix. All rights reserved.</p>
+        </div>
+      </div>
+    `,
+  };
+  return sendEmail(email, template);
+};
+
 export default transporter;

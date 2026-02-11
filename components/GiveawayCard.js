@@ -38,13 +38,19 @@ export { useCountdown };
 
 export default function GiveawayCard({ giveaway, compact = false }) {
   const { days, hours, minutes, seconds, ended } = useCountdown(giveaway.endDate);
+  const startCountdown = useCountdown(giveaway.startDate);
   const hasWinner = giveaway.status === "winner_selected";
+  const isUpcoming = giveaway.status === "upcoming" && !startCountdown.ended;
 
   return (
     <Link href={`/giveaway/${giveaway.slug}`} className="group block">
       <motion.div
         whileHover={{ y: -6, transition: { duration: 0.25 } }}
-        className="relative bg-[#0e0e18] rounded-2xl border border-white/[0.06] hover:border-purple-500/20 shadow-lg shadow-black/20 hover:shadow-purple-500/10 transition-all duration-300 overflow-hidden"
+        className={`relative bg-[#0e0e18] rounded-2xl border shadow-lg transition-all duration-300 overflow-hidden ${
+          isUpcoming
+            ? "border-amber-500/10 hover:border-amber-500/20 shadow-black/20 hover:shadow-amber-500/10"
+            : "border-white/[0.06] hover:border-purple-500/20 shadow-black/20 hover:shadow-purple-500/10"
+        }`}
       >
         {/* Image */}
         <div className="relative overflow-hidden">
@@ -67,27 +73,37 @@ export default function GiveawayCard({ giveaway, compact = false }) {
                 <FiAward className="w-3 h-3" /> Winner
               </span>
             )}
+            {isUpcoming && (
+              <span className="relative bg-amber-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider shadow-lg shadow-amber-500/30">
+                <span className="absolute inset-0 bg-amber-400 rounded-full animate-ping opacity-40" />
+                <span className="relative">Upcoming</span>
+              </span>
+            )}
             {giveaway.status === "active" && !ended && !hasWinner && (
               <span className="relative bg-green-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider shadow-lg shadow-green-500/30">
                 <span className="absolute inset-0 bg-green-400 rounded-full animate-ping opacity-40" />
                 <span className="relative">Live</span>
               </span>
             )}
-            {ended && !hasWinner && (
+            {ended && !hasWinner && !isUpcoming && (
               <span className="bg-red-500/90 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider shadow-lg shadow-red-500/20">
                 Ended
               </span>
             )}
           </div>
 
-          {/* "Join Now" hover overlay */}
-          {!ended && !hasWinner && (
+          {/* Hover overlay */}
+          {(!ended || isUpcoming) && !hasWinner && (
             <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/30 backdrop-blur-[2px]">
               <motion.span
                 initial={false}
-                className="px-5 py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-sm font-bold rounded-full shadow-xl shadow-purple-500/30"
+                className={`px-5 py-2.5 text-white text-sm font-bold rounded-full shadow-xl ${
+                  isUpcoming
+                    ? "bg-gradient-to-r from-amber-500 to-orange-500 shadow-amber-500/30"
+                    : "bg-gradient-to-r from-purple-600 to-pink-600 shadow-purple-500/30"
+                }`}
               >
-                Join Now
+                {isUpcoming ? "Get Notified" : "Join Now"}
               </motion.span>
             </div>
           )}
@@ -113,8 +129,30 @@ export default function GiveawayCard({ giveaway, compact = false }) {
             </p>
           )}
 
-          {/* Countdown — Bold Glowing */}
-          {!ended && !hasWinner ? (
+          {/* Countdown */}
+          {isUpcoming ? (
+            <div className="flex items-center gap-2">
+              <FiClock className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
+              <span className="text-[10px] text-amber-400 font-semibold mr-0.5">Starts in</span>
+              <div className="flex gap-1.5">
+                {[
+                  { val: startCountdown.days, unit: "d", show: startCountdown.days > 0 },
+                  { val: startCountdown.hours, unit: "h", show: true },
+                  { val: startCountdown.minutes, unit: "m", show: true },
+                  { val: startCountdown.seconds, unit: "s", show: !compact },
+                ].filter(t => t.show).map((t) => (
+                  <motion.span
+                    key={t.unit}
+                    initial={t.unit === "s" ? { opacity: 0.5, scale: 0.9 } : false}
+                    animate={t.unit === "s" ? { opacity: 1, scale: 1 } : undefined}
+                    className="bg-gradient-to-b from-amber-500/15 to-amber-900/10 text-white px-2 py-1 rounded-lg font-mono font-black text-xs border border-amber-500/15 shadow-sm shadow-amber-500/5"
+                  >
+                    {String(t.val).padStart(2, "0")}{t.unit}
+                  </motion.span>
+                ))}
+              </div>
+            </div>
+          ) : !ended && !hasWinner ? (
             <div className="flex items-center gap-2">
               <FiClock className="w-3.5 h-3.5 text-purple-400 flex-shrink-0" />
               <div className="flex gap-1.5">
@@ -123,7 +161,7 @@ export default function GiveawayCard({ giveaway, compact = false }) {
                   { val: hours, unit: "h", show: true },
                   { val: minutes, unit: "m", show: true },
                   { val: seconds, unit: "s", show: !compact },
-                ].filter(t => t.show).map((t, i) => (
+                ].filter(t => t.show).map((t) => (
                   <motion.span
                     key={t.unit}
                     initial={t.unit === "s" ? { opacity: 0.5, scale: 0.9 } : false}
@@ -142,10 +180,10 @@ export default function GiveawayCard({ giveaway, compact = false }) {
           {/* CTA */}
           <div className="flex items-center justify-between pt-1 border-t border-white/5">
             <span className="text-xs text-gray-500 flex items-center gap-1">
-              <FiUsers className="w-3 h-3" /> {giveaway.mode === "task_gated" ? "Task-based" : "Free entry"}
+              <FiUsers className="w-3 h-3" /> {isUpcoming ? "Coming soon" : giveaway.mode === "task_gated" ? "Task-based" : "Free entry"}
             </span>
-            <span className="text-xs font-bold text-purple-400 group-hover:text-purple-300 transition flex items-center gap-1">
-              View <FiArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform duration-300" />
+            <span className={`text-xs font-bold group-hover:text-purple-300 transition flex items-center gap-1 ${isUpcoming ? "text-amber-400" : "text-purple-400"}`}>
+              {isUpcoming ? "Notify Me" : "View"} <FiArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform duration-300" />
             </span>
           </div>
         </div>

@@ -27,6 +27,7 @@ export default function AdminGiveaways() {
 
 const STATUS_COLORS = {
   draft: "bg-gray-100 text-gray-700",
+  upcoming: "bg-amber-100 text-amber-700",
   active: "bg-green-100 text-green-700",
   ended: "bg-amber-100 text-amber-700",
   winner_selected: "bg-purple-100 text-purple-700",
@@ -453,6 +454,7 @@ function GiveawaysContent() {
                 <select value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value }))}
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl">
                   <option value="draft">Draft</option>
+                  <option value="upcoming">Upcoming</option>
                   <option value="active">Active</option>
                   <option value="ended">Ended</option>
                 </select>
