@@ -22,9 +22,9 @@ export default async function handler(req, res) {
       }
     );
     
-    return res.redirect(`/payment/failed?txnId=${txnid}&reason=${encodeURIComponent(error_Message || "unknown")}`);
+    return res.redirect(`/payment-failed?txnId=${txnid}&reason=${encodeURIComponent(error_Message || "unknown")}`);
   } catch (error) {
     console.error("Payment failure handler error:", error);
-    return res.redirect("/payment/failed?reason=server_error");
+    return res.redirect("/payment-failed?reason=server_error");
   }
 }

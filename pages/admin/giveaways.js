@@ -66,6 +66,7 @@ function GiveawaysContent() {
     startDate: "", endDate: "", maxExtensions: 0, status: "draft",
     invitePointsEnabled: false, invitePointsCap: 10, invitePointsPerReferral: 1,
     winnerSelectionMode: "SYSTEM_RANDOM",
+    supportEnabled: true,
     sponsors: [],
   });
 
@@ -90,6 +91,7 @@ function GiveawaysContent() {
       startDate: "", endDate: "", maxExtensions: 0, status: "draft",
       invitePointsEnabled: false, invitePointsCap: 10, invitePointsPerReferral: 1,
       winnerSelectionMode: "SYSTEM_RANDOM",
+      supportEnabled: true,
       sponsors: [],
     });
     setEditingGiveaway(null);
@@ -112,6 +114,7 @@ function GiveawaysContent() {
       invitePointsCap: g.invitePointsCap || 10,
       invitePointsPerReferral: g.invitePointsPerReferral || 1,
       winnerSelectionMode: g.winnerSelectionMode || "SYSTEM_RANDOM",
+      supportEnabled: g.supportEnabled !== undefined ? g.supportEnabled : true,
       sponsors: g.sponsors || [],
     });
     setView("form");
@@ -458,6 +461,21 @@ function GiveawaysContent() {
                   <option value="active">Active</option>
                   <option value="ended">Ended</option>
                 </select>
+              </div>
+
+              {/* Support Section Toggle */}
+              <div className="flex items-center justify-between p-4 bg-pink-50 rounded-xl border border-pink-100">
+                <div>
+                  <label className="text-sm font-semibold text-gray-700 block">Support / Donation Section</label>
+                  <p className="text-xs text-gray-500 mt-0.5">Allow visitors to donate and support this giveaway</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setForm(f => ({ ...f, supportEnabled: !f.supportEnabled }))}
+                  className={`relative w-12 h-6 rounded-full transition-colors ${form.supportEnabled ? "bg-pink-500" : "bg-gray-300"}`}
+                >
+                  <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${form.supportEnabled ? "translate-x-6" : ""}`} />
+                </button>
               </div>
 
               {/* Actions */}

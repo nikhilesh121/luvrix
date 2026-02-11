@@ -684,7 +684,7 @@ export default function GiveawayDetailPage() {
               )}
 
               {/* Total Donations Sidebar Card */}
-              {supportData.total > 0 && (
+              {giveaway.supportEnabled !== false && supportData.total > 0 && (
                 <motion.div variants={fadeUp} className="bg-gradient-to-br from-green-900/20 to-emerald-900/10 rounded-2xl p-5 border border-green-500/10">
                   <h3 className="text-sm font-semibold text-gray-400 mb-2 flex items-center gap-1.5">
                     <FiDollarSign className="w-4 h-4 text-green-400" /> Donations
@@ -751,7 +751,7 @@ export default function GiveawayDetailPage() {
             {/* Main Content — appears SECOND on mobile, LEFT columns on desktop */}
             <div className="lg:col-span-2 order-2 lg:order-1 space-y-6">
               {/* Support Section (ISOLATED — PayU Direct Payment) — AT TOP */}
-              <motion.div variants={fadeUp} className="bg-[#12121a] rounded-2xl p-6 border-2 border-dashed border-white/10">
+              {(giveaway.supportEnabled !== false) && <motion.div variants={fadeUp} className="bg-[#12121a] rounded-2xl p-6 border-2 border-dashed border-white/10">
                 <div className="flex items-center gap-2 mb-2">
                   <FiHeart className="w-5 h-5 text-pink-400" />
                   <h2 className="font-bold text-white">Support This Giveaway</h2>
@@ -820,7 +820,7 @@ export default function GiveawayDetailPage() {
                 </div>
                 {supportError && <p className="text-xs text-red-400 mb-1">{supportError}</p>}
                 <p className="text-[10px] text-gray-600">Secured by PayU. You will be redirected to complete payment.</p>
-              </motion.div>
+              </motion.div>}
 
               {/* Prize */}
               <motion.div variants={fadeUp} className="bg-[#12121a] rounded-2xl p-6 border border-white/5">
@@ -1051,7 +1051,7 @@ export default function GiveawayDetailPage() {
               )}
 
               {/* Donors List + Total Donation */}
-              {supportData.count > 0 && (
+              {giveaway.supportEnabled !== false && supportData.count > 0 && (
                 <motion.div variants={fadeUp} className="bg-[#12121a] rounded-2xl p-6 border border-white/5">
                   <div className="flex items-center justify-between mb-4">
                     <h2 className="font-bold text-white flex items-center gap-2">

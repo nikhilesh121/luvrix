@@ -22,7 +22,7 @@ export default async function handler(req, res) {
     
     if (hash !== calculatedHash) {
       console.error("Hash mismatch");
-      return res.redirect("/payment/failed?reason=hash_mismatch");
+      return res.redirect("/payment-failed?reason=hash_mismatch");
     }
     
     // Update payment record
@@ -49,9 +49,9 @@ export default async function handler(req, res) {
       }
     }
     
-    return res.redirect(`/payment/success?txnId=${txnid}`);
+    return res.redirect(`/payment-success?txnId=${txnid}`);
   } catch (error) {
     console.error("Payment success handler error:", error);
-    return res.redirect("/payment/failed?reason=server_error");
+    return res.redirect("/payment-failed?reason=server_error");
   }
 }
