@@ -70,27 +70,27 @@ const nextConfig = {
     return [
       {
         source: '/sitemap.xml',
-        destination: '/api/sitemap',
+        destination: '/api/sitemap/',
       },
       {
         source: '/sitemap-pages.xml',
-        destination: '/api/sitemap/pages',
+        destination: '/api/sitemap/pages/',
       },
       {
         source: '/sitemap-posts.xml',
-        destination: '/api/sitemap/posts',
+        destination: '/api/sitemap/posts/',
       },
       {
         source: '/sitemap-manga.xml',
-        destination: '/api/sitemap/manga',
+        destination: '/api/sitemap/manga/',
       },
       {
         source: '/sitemap-categories.xml',
-        destination: '/api/sitemap/categories',
+        destination: '/api/sitemap/categories/',
       },
       {
         source: '/sitemap-giveaways.xml',
-        destination: '/api/sitemap/giveaways',
+        destination: '/api/sitemap/giveaways/',
       },
     ];
   },

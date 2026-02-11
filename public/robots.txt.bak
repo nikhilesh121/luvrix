@@ -20,6 +20,9 @@ Disallow: /_next/
 Disallow: /login/
 Disallow: /register/
 
+# Disallow internal chapter pages (chapters link directly to external sources)
+Disallow: /manga/*/chapter*
+
 # Disallow user-specific / transactional pages
 Disallow: /profile/
 Disallow: /favorites/
@@ -73,6 +76,4 @@ Sitemap: https://luvrix.com/sitemap.xml
 Sitemap: https://luvrix.com/sitemap-pages.xml
 Sitemap: https://luvrix.com/sitemap-posts.xml
 Sitemap: https://luvrix.com/sitemap-manga.xml
-Sitemap: https://luvrix.com/sitemap-chapters.xml
 Sitemap: https://luvrix.com/sitemap-categories.xml
-###
