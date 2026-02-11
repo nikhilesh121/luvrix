@@ -7,7 +7,8 @@ export default async function handler(req, res) {
     const db = await getDb();
 
     // Ping Google with the sitemap URL
-    const googlePingUrl = `https://www.google.com/ping?sitemap=${encodeURIComponent(SITE_URL + "/sitemap.xml")}`;
+    const sitemapUrl = `${SITE_URL}/api/sitemap/`;
+    const googlePingUrl = `https://www.google.com/ping?sitemap=${encodeURIComponent(sitemapUrl)}`;
     const response = await fetch(googlePingUrl);
 
     // Store last ping timestamp in settings
@@ -22,7 +23,7 @@ export default async function handler(req, res) {
       return res.status(200).json({
         success: true,
         message: "Google ping initiated successfully",
-        sitemapUrl: `${SITE_URL}/sitemap.xml`,
+        sitemapUrl,
         lastPing: now.toISOString(),
       });
     } else {

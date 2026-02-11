@@ -19,6 +19,15 @@ Allow: /policy/
 # Disallow admin and private pages
 Disallow: /admin/
 Disallow: /dashboard/
+
+# Allow sitemap API routes (must come before Disallow: /api/)
+Allow: /api/sitemap/
+Allow: /api/sitemap/pages/
+Allow: /api/sitemap/posts/
+Allow: /api/sitemap/manga/
+Allow: /api/sitemap/categories/
+Allow: /api/sitemap/giveaways/
+
 Disallow: /api/
 Disallow: /_next/
 Disallow: /login/
@@ -76,4 +85,4 @@ User-agent: AdsBot-Google-Mobile
 Allow: /
 
 # Sitemap
-Sitemap: https://luvrix.com/sitemap.xml
+Sitemap: https://luvrix.com/api/sitemap/

@@ -10,7 +10,9 @@ function toISO(d) {
 
 export default async function handler(req, res) {
   res.setHeader("Content-Type", "application/xml; charset=utf-8");
-  res.setHeader("Cache-Control", "private, no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0, s-maxage=0");
+  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0, s-maxage=0");
+  res.setHeader("CDN-Cache-Control", "no-store");
+  res.setHeader("Cloudflare-CDN-Cache-Control", "no-store");
   res.setHeader("Pragma", "no-cache");
   res.setHeader("Expires", "0");
   res.setHeader("Surrogate-Control", "no-store");
@@ -40,20 +42,20 @@ export default async function handler(req, res) {
 
     // Always include pages
     sitemaps.push(`  <sitemap>
-    <loc>${SITE_URL}/sitemap-pages.xml</loc>
+    <loc>${SITE_URL}/api/sitemap/pages/</loc>
     <lastmod>${new Date().toISOString()}</lastmod>
   </sitemap>`);
 
     // Posts (blogs)
     sitemaps.push(`  <sitemap>
-    <loc>${SITE_URL}/sitemap-posts.xml</loc>
+    <loc>${SITE_URL}/api/sitemap/posts/</loc>
     <lastmod>${toISO(latestBlog[0]?.updatedAt)}</lastmod>
   </sitemap>`);
 
     // Manga
     if (includeManga) {
       sitemaps.push(`  <sitemap>
-    <loc>${SITE_URL}/sitemap-manga.xml</loc>
+    <loc>${SITE_URL}/api/sitemap/manga/</loc>
     <lastmod>${toISO(latestManga[0]?.updatedAt)}</lastmod>
   </sitemap>`);
     }
@@ -61,7 +63,7 @@ export default async function handler(req, res) {
     // Categories
     if (includeCategories) {
       sitemaps.push(`  <sitemap>
-    <loc>${SITE_URL}/sitemap-categories.xml</loc>
+    <loc>${SITE_URL}/api/sitemap/categories/</loc>
     <lastmod>${toISO(latestBlog[0]?.updatedAt)}</lastmod>
   </sitemap>`);
     }
@@ -69,7 +71,7 @@ export default async function handler(req, res) {
     // Giveaways
     if (includeGiveaways) {
       sitemaps.push(`  <sitemap>
-    <loc>${SITE_URL}/sitemap-giveaways.xml</loc>
+    <loc>${SITE_URL}/api/sitemap/giveaways/</loc>
     <lastmod>${toISO(latestGiveaway[0]?.updatedAt)}</lastmod>
   </sitemap>`);
     }

@@ -21,7 +21,9 @@ const nextConfig = {
       {
         source: '/sitemap:path*.xml',
         headers: [
-          { key: 'Cache-Control', value: 'private, no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0, s-maxage=0' },
+          { key: 'Cache-Control', value: 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0, s-maxage=0' },
+          { key: 'CDN-Cache-Control', value: 'no-store' },
+          { key: 'Cloudflare-CDN-Cache-Control', value: 'no-store' },
           { key: 'Pragma', value: 'no-cache' },
           { key: 'Expires', value: '0' },
           { key: 'Surrogate-Control', value: 'no-store' },
@@ -31,7 +33,9 @@ const nextConfig = {
       {
         source: '/api/sitemap/:path*',
         headers: [
-          { key: 'Cache-Control', value: 'private, no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0, s-maxage=0' },
+          { key: 'Cache-Control', value: 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0, s-maxage=0' },
+          { key: 'CDN-Cache-Control', value: 'no-store' },
+          { key: 'Cloudflare-CDN-Cache-Control', value: 'no-store' },
           { key: 'Pragma', value: 'no-cache' },
           { key: 'Expires', value: '0' },
           { key: 'Surrogate-Control', value: 'no-store' },
@@ -65,33 +69,15 @@ const nextConfig = {
       },
     ];
   },
-  // Sitemap rewrites
-  async rewrites() {
+  // All sitemap .xml URLs redirect to API routes (prevents CDN caching of stale XML)
+  async redirects() {
     return [
-      {
-        source: '/sitemap.xml',
-        destination: '/api/sitemap/',
-      },
-      {
-        source: '/sitemap-pages.xml',
-        destination: '/api/sitemap/pages/',
-      },
-      {
-        source: '/sitemap-posts.xml',
-        destination: '/api/sitemap/posts/',
-      },
-      {
-        source: '/sitemap-manga.xml',
-        destination: '/api/sitemap/manga/',
-      },
-      {
-        source: '/sitemap-categories.xml',
-        destination: '/api/sitemap/categories/',
-      },
-      {
-        source: '/sitemap-giveaways.xml',
-        destination: '/api/sitemap/giveaways/',
-      },
+      { source: '/sitemap.xml', destination: '/api/sitemap/', permanent: true },
+      { source: '/sitemap-pages.xml', destination: '/api/sitemap/pages/', permanent: true },
+      { source: '/sitemap-posts.xml', destination: '/api/sitemap/posts/', permanent: true },
+      { source: '/sitemap-manga.xml', destination: '/api/sitemap/manga/', permanent: true },
+      { source: '/sitemap-categories.xml', destination: '/api/sitemap/categories/', permanent: true },
+      { source: '/sitemap-giveaways.xml', destination: '/api/sitemap/giveaways/', permanent: true },
     ];
   },
 };
