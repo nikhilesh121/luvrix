@@ -824,84 +824,97 @@ export default function GiveawayDetailPage() {
 
             {/* Sidebar */}
             <div className="space-y-6">
-              {/* Countdown */}
-              <motion.div variants={fadeUp} className="relative bg-[#12121a] rounded-2xl p-6 border border-white/5 overflow-hidden">
-                {/* Animated glow behind timer */}
+              {/* Countdown — Premium Glowing Timer */}
+              <motion.div variants={fadeUp} className="relative rounded-2xl overflow-hidden">
+                {/* Animated gradient border */}
                 {((!countdown.ended || isUnlimited) && !hasWinner) && (
-                  <motion.div
-                    animate={{ opacity: [0.15, 0.3, 0.15] }}
-                    transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                    className="absolute -top-10 -right-10 w-40 h-40 bg-purple-500 rounded-full blur-3xl pointer-events-none"
-                  />
+                  <div className="absolute inset-0 bg-gradient-to-r from-purple-500 via-pink-500 to-cyan-500 animate-[shimmer_3s_linear_infinite] bg-[length:200%_auto] rounded-2xl" />
                 )}
-                <div className="relative z-10">
-                  <h3 className="text-sm font-bold text-gray-300 mb-4 flex items-center gap-2">
-                    <FiClock className="w-4 h-4" />
-                    {hasWinner ? "Completed" : (countdown.ended && !isUnlimited) ? "Ended" : isUnlimited && countdown.ended ? "Open-Ended" : "Time Left"}
-                    {((!countdown.ended || isUnlimited) && !hasWinner) && (
-                      <motion.span
-                        animate={{ scale: [1, 1.4, 1], opacity: [1, 0.5, 1] }}
-                        transition={{ duration: 1.5, repeat: Infinity }}
-                        className="w-2 h-2 bg-green-400 rounded-full ml-auto"
+                <div className={`relative ${((!countdown.ended || isUnlimited) && !hasWinner) ? "m-[1.5px]" : ""} bg-[#0c0c14] rounded-[15px] p-6 overflow-hidden`}>
+                  {/* Glow orbs */}
+                  {((!countdown.ended || isUnlimited) && !hasWinner) && (
+                    <>
+                      <motion.div
+                        animate={{ opacity: [0.2, 0.5, 0.2], scale: [1, 1.3, 1] }}
+                        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                        className="absolute -top-16 -right-16 w-48 h-48 bg-purple-600 rounded-full blur-[80px] pointer-events-none"
                       />
-                    )}
-                  </h3>
-                  {isUnlimited && countdown.ended && !hasWinner ? (
-                    <div className="text-center py-4">
                       <motion.div
-                        animate={{ scale: [1, 1.1, 1], opacity: [0.7, 1, 0.7] }}
-                        transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
-                        className="text-5xl font-black bg-gradient-to-r from-purple-400 via-pink-400 to-purple-400 bg-clip-text text-transparent mb-2"
-                      >
-                        ♾
-                      </motion.div>
-                      <p className="text-sm font-semibold text-purple-300">No Time Limit</p>
-                      <p className="text-xs text-gray-500 mt-1">Open until all participants join</p>
-                    </div>
-                  ) : !countdown.ended && !hasWinner ? (
-                    <div className="grid grid-cols-4 gap-2 text-center">
-                      {[
-                        { value: countdown.days, label: "Days", color: "from-purple-500/20 to-purple-600/10" },
-                        { value: countdown.hours, label: "Hours", color: "from-blue-500/20 to-blue-600/10" },
-                        { value: countdown.minutes, label: "Min", color: "from-pink-500/20 to-pink-600/10" },
-                        { value: countdown.seconds, label: "Sec", color: "from-amber-500/20 to-amber-600/10" },
-                      ].map((t, i) => (
-                        <motion.div
-                          key={t.label}
-                          initial={{ opacity: 0, scale: 0.8 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          transition={{ delay: i * 0.1 }}
-                          className={`bg-gradient-to-b ${t.color} rounded-xl p-3 border border-white/10`}
-                        >
-                          <motion.p
-                            key={t.value}
-                            initial={{ opacity: 0.5, scale: 0.9 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                            className="text-2xl sm:text-3xl font-black text-white font-mono tracking-tight"
-                          >
-                            {String(t.value).padStart(2, "0")}
-                          </motion.p>
-                          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mt-1">{t.label}</p>
-                        </motion.div>
-                      ))}
-                    </div>
-                  ) : hasWinner ? (
-                    <div className="text-center py-2">
-                      <motion.div
-                        animate={{ rotate: [0, 10, -10, 0] }}
-                        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                      >
-                        <FiAward className="w-10 h-10 text-yellow-400 mx-auto mb-2" />
-                      </motion.div>
-                      <p className="text-sm font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">Winner Announced!</p>
-                    </div>
-                  ) : (
-                    <div className="text-center py-2">
-                      <p className="text-red-400 font-semibold">Giveaway has ended</p>
-                      <p className="text-xs text-gray-600 mt-1">Winner will be announced soon</p>
-                    </div>
+                        animate={{ opacity: [0.15, 0.35, 0.15] }}
+                        transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+                        className="absolute -bottom-10 -left-10 w-36 h-36 bg-pink-600 rounded-full blur-[60px] pointer-events-none"
+                      />
+                    </>
                   )}
+                  <div className="relative z-10">
+                    <h3 className="text-sm font-bold text-gray-300 mb-5 flex items-center gap-2">
+                      <FiClock className="w-4 h-4 text-purple-400" />
+                      {hasWinner ? "Completed" : (countdown.ended && !isUnlimited) ? "Ended" : isUnlimited && countdown.ended ? "Open-Ended" : "Time Left"}
+                      {((!countdown.ended || isUnlimited) && !hasWinner) && (
+                        <motion.span
+                          animate={{ scale: [1, 1.5, 1], opacity: [1, 0.4, 1] }}
+                          transition={{ duration: 1.2, repeat: Infinity }}
+                          className="w-2.5 h-2.5 bg-green-400 rounded-full ml-auto shadow-lg shadow-green-400/50"
+                        />
+                      )}
+                    </h3>
+                    {isUnlimited && countdown.ended && !hasWinner ? (
+                      <div className="text-center py-4">
+                        <motion.div
+                          animate={{ scale: [1, 1.1, 1], opacity: [0.7, 1, 0.7] }}
+                          transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+                          className="text-5xl font-black bg-gradient-to-r from-purple-400 via-pink-400 to-purple-400 bg-clip-text text-transparent mb-2"
+                        >
+                          ♾
+                        </motion.div>
+                        <p className="text-sm font-semibold text-purple-300">No Time Limit</p>
+                        <p className="text-xs text-gray-500 mt-1">Open until all participants join</p>
+                      </div>
+                    ) : !countdown.ended && !hasWinner ? (
+                      <div className="grid grid-cols-4 gap-2.5 text-center">
+                        {[
+                          { value: countdown.days, label: "Days", grad: "from-purple-600/30 via-purple-500/10 to-purple-900/20", border: "border-purple-500/20", glow: "shadow-purple-500/10" },
+                          { value: countdown.hours, label: "Hours", grad: "from-blue-600/30 via-blue-500/10 to-blue-900/20", border: "border-blue-500/20", glow: "shadow-blue-500/10" },
+                          { value: countdown.minutes, label: "Min", grad: "from-pink-600/30 via-pink-500/10 to-pink-900/20", border: "border-pink-500/20", glow: "shadow-pink-500/10" },
+                          { value: countdown.seconds, label: "Sec", grad: "from-amber-600/30 via-amber-500/10 to-amber-900/20", border: "border-amber-500/20", glow: "shadow-amber-500/10" },
+                        ].map((t, i) => (
+                          <motion.div
+                            key={t.label}
+                            initial={{ opacity: 0, scale: 0.7, y: 10 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            transition={{ delay: i * 0.1, type: "spring", stiffness: 200 }}
+                            className={`bg-gradient-to-b ${t.grad} rounded-xl p-3 border ${t.border} shadow-lg ${t.glow} backdrop-blur-sm`}
+                          >
+                            <motion.p
+                              key={t.value}
+                              initial={{ opacity: 0.6, scale: 0.85 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              transition={{ type: "spring", stiffness: 400, damping: 15 }}
+                              className="text-3xl sm:text-4xl font-black text-white font-mono tracking-tighter drop-shadow-[0_0_12px_rgba(168,85,247,0.4)]"
+                            >
+                              {String(t.value).padStart(2, "0")}
+                            </motion.p>
+                            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-[0.2em] mt-1.5">{t.label}</p>
+                          </motion.div>
+                        ))}
+                      </div>
+                    ) : hasWinner ? (
+                      <div className="text-center py-3">
+                        <motion.div
+                          animate={{ rotate: [0, 10, -10, 0], scale: [1, 1.1, 1] }}
+                          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                        >
+                          <FiAward className="w-12 h-12 text-yellow-400 mx-auto mb-3 drop-shadow-[0_0_15px_rgba(250,204,21,0.5)]" />
+                        </motion.div>
+                        <p className="text-base font-black bg-gradient-to-r from-yellow-300 via-purple-400 to-pink-400 bg-clip-text text-transparent">Winner Announced!</p>
+                      </div>
+                    ) : (
+                      <div className="text-center py-3">
+                        <p className="text-red-400 font-bold text-base">Giveaway has ended</p>
+                        <p className="text-xs text-gray-600 mt-1">Winner will be announced soon</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </motion.div>
 

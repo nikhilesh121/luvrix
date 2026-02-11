@@ -816,31 +816,46 @@ function GiveawaysSection() {
   if (loaded && giveaways.length === 0) return null;
 
   return (
-    <section className="relative py-20 bg-gradient-to-b from-purple-50/50 to-white dark:from-gray-800/50 dark:to-gray-900 overflow-hidden">
-      {/* Floating decorative orbs */}
+    <section className="relative py-24 bg-[#0a0a14] overflow-hidden">
+      {/* Animated gradient orbs */}
       <motion.div
-        className="absolute top-10 left-[8%] w-32 h-32 rounded-full bg-purple-300/10 blur-3xl"
-        animate={{ y: [0, -25, 0], scale: [1, 1.1, 1] }}
-        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute top-0 left-[10%] w-72 h-72 rounded-full bg-purple-600/8 blur-[100px]"
+        animate={{ y: [0, -30, 0], scale: [1, 1.2, 1] }}
+        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
       />
       <motion.div
-        className="absolute bottom-10 right-[5%] w-24 h-24 rounded-full bg-pink-300/10 blur-3xl"
-        animate={{ y: [0, 20, 0] }}
-        transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1.5 }}
+        className="absolute bottom-0 right-[5%] w-60 h-60 rounded-full bg-pink-600/8 blur-[80px]"
+        animate={{ y: [0, 25, 0], scale: [1, 1.15, 1] }}
+        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+      />
+      <motion.div
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full bg-purple-500/5 blur-[120px]"
+        animate={{ opacity: [0.3, 0.6, 0.3] }}
+        transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
       />
 
+      {/* Subtle grid pattern */}
+      <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAwIDEwIEwgNDAgMTAgTSAxMCAwIEwgMTAgNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0icmdiYSgyNTUsMjU1LDI1NSwwLjAyKSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')] opacity-50" />
+
       <div className="max-w-7xl mx-auto px-4 relative z-10">
-        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }} className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 px-4 py-1.5 rounded-full text-sm font-semibold mb-4">
+        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }} className="text-center mb-14">
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            whileInView={{ scale: 1, opacity: 1 }}
+            viewport={{ once: true }}
+            className="inline-flex items-center gap-2 bg-purple-500/10 text-purple-300 px-5 py-2 rounded-full text-sm font-bold mb-5 border border-purple-500/20 shadow-lg shadow-purple-500/5"
+          >
             <FiGift className="w-4 h-4" /> Giveaways
-          </div>
-          <h2 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-3">Win Amazing Prizes</h2>
-          <p className="text-gray-500 dark:text-gray-400 max-w-lg mx-auto">Join for free, complete tasks, and win physical prizes. No purchase required.</p>
+          </motion.div>
+          <h2 className="text-4xl md:text-5xl font-black text-white mb-4 tracking-tight">
+            Win <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-purple-400 bg-clip-text text-transparent">Amazing Prizes</span>
+          </h2>
+          <p className="text-gray-400 max-w-lg mx-auto text-lg">Join for free, complete tasks, and win physical prizes. No purchase required.</p>
         </motion.div>
 
         {!loaded ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[1, 2, 3].map(i => <div key={i} className="bg-white dark:bg-gray-800 rounded-2xl h-72 animate-pulse" />)}
+            {[1, 2, 3].map(i => <div key={i} className="bg-[#0e0e18] rounded-2xl h-80 animate-pulse border border-white/5" />)}
           </div>
         ) : (
           <motion.div variants={staggerGrid} initial="hidden" whileInView="visible" viewport={{ once: true }}
@@ -853,8 +868,8 @@ function GiveawaysSection() {
           </motion.div>
         )}
 
-        <motion.div initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.3 }} className="text-center mt-10">
-          <Link href="/giveaway" className="group inline-flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-xl font-semibold hover:bg-purple-700 transition shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30">
+        <motion.div initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.3 }} className="text-center mt-12">
+          <Link href="/giveaway" className="group inline-flex items-center gap-2.5 px-7 py-3.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-bold hover:from-purple-700 hover:to-pink-700 transition-all shadow-xl shadow-purple-500/20 hover:shadow-purple-500/30 hover:-translate-y-0.5">
             View All Giveaways <FiArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </Link>
         </motion.div>
