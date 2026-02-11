@@ -85,4 +85,4 @@ User-agent: AdsBot-Google-Mobile
 Allow: /
 
 # Sitemap
-Sitemap: https://luvrix.com/api/sitemap/
+Sitemap: https://luvrix.com/sitemaps/

@@ -19,9 +19,25 @@ const PAGINATION_REGEX = /\/page\/\d+/;
 // Feed pattern
 const FEED_REGEX = /\/feed\/?$/;
 
+// Sitemap .xml → /sitemaps/ SSR pages (302 redirect, never cached by CDN)
+const SITEMAP_REDIRECTS = {
+  '/sitemap.xml': '/sitemaps/',
+  '/sitemap-pages.xml': '/sitemaps/pages/',
+  '/sitemap-posts.xml': '/sitemaps/posts/',
+  '/sitemap-manga.xml': '/sitemaps/manga/',
+  '/sitemap-categories.xml': '/sitemaps/categories/',
+  '/sitemap-giveaways.xml': '/sitemaps/giveaways/',
+};
+
 export function middleware(request) {
   const url = request.nextUrl.clone();
   const { pathname, searchParams } = url;
+
+  // 0. Old .xml sitemap URLs → 302 redirect to /sitemaps/ SSR pages
+  const sitemapDest = SITEMAP_REDIRECTS[pathname];
+  if (sitemapDest) {
+    return NextResponse.redirect(new URL(sitemapDest, request.url), 302);
+  }
 
   // 1. Strip spam query parameters and redirect to clean URL
   let hasSpamParam = false;

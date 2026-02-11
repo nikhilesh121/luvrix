@@ -69,17 +69,7 @@ const nextConfig = {
       },
     ];
   },
-  // All sitemap .xml URLs redirect to API routes (prevents CDN caching of stale XML)
-  async redirects() {
-    return [
-      { source: '/sitemap.xml', destination: '/api/sitemap/', permanent: true },
-      { source: '/sitemap-pages.xml', destination: '/api/sitemap/pages/', permanent: true },
-      { source: '/sitemap-posts.xml', destination: '/api/sitemap/posts/', permanent: true },
-      { source: '/sitemap-manga.xml', destination: '/api/sitemap/manga/', permanent: true },
-      { source: '/sitemap-categories.xml', destination: '/api/sitemap/categories/', permanent: true },
-      { source: '/sitemap-giveaways.xml', destination: '/api/sitemap/giveaways/', permanent: true },
-    ];
-  },
+  // Sitemap .xml URLs are handled by middleware (rewrites to /api/sitemap/* with cache-busting)
 };
 
 module.exports = nextConfig;

@@ -42,20 +42,20 @@ export default async function handler(req, res) {
 
     // Always include pages
     sitemaps.push(`  <sitemap>
-    <loc>${SITE_URL}/api/sitemap/pages/</loc>
+    <loc>${SITE_URL}/sitemap-pages.xml</loc>
     <lastmod>${new Date().toISOString()}</lastmod>
   </sitemap>`);
 
     // Posts (blogs)
     sitemaps.push(`  <sitemap>
-    <loc>${SITE_URL}/api/sitemap/posts/</loc>
+    <loc>${SITE_URL}/sitemap-posts.xml</loc>
     <lastmod>${toISO(latestBlog[0]?.updatedAt)}</lastmod>
   </sitemap>`);
 
     // Manga
     if (includeManga) {
       sitemaps.push(`  <sitemap>
-    <loc>${SITE_URL}/api/sitemap/manga/</loc>
+    <loc>${SITE_URL}/sitemap-manga.xml</loc>
     <lastmod>${toISO(latestManga[0]?.updatedAt)}</lastmod>
   </sitemap>`);
     }
@@ -63,7 +63,7 @@ export default async function handler(req, res) {
     // Categories
     if (includeCategories) {
       sitemaps.push(`  <sitemap>
-    <loc>${SITE_URL}/api/sitemap/categories/</loc>
+    <loc>${SITE_URL}/sitemap-categories.xml</loc>
     <lastmod>${toISO(latestBlog[0]?.updatedAt)}</lastmod>
   </sitemap>`);
     }
@@ -71,7 +71,7 @@ export default async function handler(req, res) {
     // Giveaways
     if (includeGiveaways) {
       sitemaps.push(`  <sitemap>
-    <loc>${SITE_URL}/api/sitemap/giveaways/</loc>
+    <loc>${SITE_URL}/sitemap-giveaways.xml</loc>
     <lastmod>${toISO(latestGiveaway[0]?.updatedAt)}</lastmod>
   </sitemap>`);
     }
