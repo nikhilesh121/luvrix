@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import Head from "next/head";
@@ -15,8 +15,7 @@ import BlogContentRenderer from "../components/BlogContentRenderer";
 import AdRenderer from "../components/AdRenderer";
 import { shouldShowBlogAds, getBlogAdPlacements } from "../lib/ads";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  FiCalendar, FiUser, FiArrowLeft, FiEye, FiShare2, 
+import { FiUser, FiArrowLeft, FiEye, FiShare2, 
   FiClock, FiBookmark, FiHeart, FiChevronUp,
   FiTwitter, FiFacebook, FiLinkedin, FiCopy, FiCheck,
   FiUserPlus, FiUserCheck
@@ -25,7 +24,7 @@ import {
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://luvrix.com";
 
 // Helper to serialize timestamps for SSR
-const serializeData = (obj) => {
+const _serializeData = (obj) => {
   if (!obj) return null;
   const serialized = { ...obj };
   for (const key in serialized) {
@@ -54,7 +53,7 @@ export default function BlogPage({ initialBlog, initialAuthor, initialSettings }
   const [readingProgress, setReadingProgress] = useState(0);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [isBookmarked, setIsBookmarked] = useState(false);
+  const [_isBookmarked, _setIsBookmarked] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
   const [viewCount, setViewCount] = useState(0);
@@ -70,19 +69,19 @@ export default function BlogPage({ initialBlog, initialAuthor, initialSettings }
       setViewCount(blog.views || 0);
 
       // Subscribe to real-time view updates
-      const unsubscribeViews = subscribe('blog:viewUpdate', (data) => {
+      const unsubscribeViews = subscribe("blog:viewUpdate", (data) => {
         if (data.blogId === blog.id) {
           setViewCount(data.views);
         }
       });
 
       // Subscribe to real-time like updates
-      const unsubscribeLikes = subscribe('blog:likeUpdate', (data) => {
+      const unsubscribeLikes = subscribe("blog:likeUpdate", (data) => {
         if (data.blogId === blog.id) {
           setLikeCount(data.likes);
           // Update own like status if it was our action
           if (data.userId === user?.uid) {
-            setIsLiked(data.action === 'like');
+            setIsLiked(data.action === "like");
           }
         }
       });
@@ -129,7 +128,7 @@ export default function BlogPage({ initialBlog, initialAuthor, initialSettings }
         await followUser(user.uid, blog.authorId);
         setIsFollowingAuthor(true);
         // Emit real-time follow notification
-        emitFollow(user.uid, user.displayName || 'Someone', blog.authorId);
+        emitFollow(user.uid, user.displayName || "Someone", blog.authorId);
       }
     } catch (error) {
       console.error("Error toggling follow:", error);
@@ -151,14 +150,14 @@ export default function BlogPage({ initialBlog, initialAuthor, initialSettings }
         setIsLiked(false);
         setLikeCount(newLikeCount);
         // Emit real-time like update
-        emitBlogLike(blog.id, newLikeCount, user.uid, 'unlike');
+        emitBlogLike(blog.id, newLikeCount, user.uid, "unlike");
       } else {
         await likeBlog(user.uid, blog.id);
         const newLikeCount = likeCount + 1;
         setIsLiked(true);
         setLikeCount(newLikeCount);
         // Emit real-time like update
-        emitBlogLike(blog.id, newLikeCount, user.uid, 'like');
+        emitBlogLike(blog.id, newLikeCount, user.uid, "like");
       }
     } catch (error) {
       console.error("Error toggling like:", error);
@@ -299,19 +298,19 @@ export default function BlogPage({ initialBlog, initialAuthor, initialSettings }
       linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`,
     };
 
-    if (platform === 'copy') {
+    if (platform === "copy") {
       await navigator.clipboard.writeText(url);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    } else if (platform === 'native' && navigator.share) {
+    } else if (platform === "native" && navigator.share) {
       navigator.share({ title, text: blog.seoDescription, url });
     } else if (shareUrls[platform]) {
-      window.open(shareUrls[platform], '_blank', 'width=600,height=400');
+      window.open(shareUrls[platform], "_blank", "width=600,height=400");
     }
   };
 
   const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   if (loading) {
@@ -416,22 +415,22 @@ export default function BlogPage({ initialBlog, initialAuthor, initialSettings }
       {/* Inject admin blog color + spacing settings as CSS custom properties */}
       <style jsx global>{`
         :root {
-          ${settings?.blogTextColorLight ? `--blog-text-color: ${settings.blogTextColorLight};` : ''}
-          ${settings?.blogTextColorDark ? `--blog-text-color-dark: ${settings.blogTextColorDark};` : ''}
-          ${settings?.blogHeadingColorLight ? `--blog-heading-color: ${settings.blogHeadingColorLight};` : ''}
-          ${settings?.blogHeadingColorDark ? `--blog-heading-color-dark: ${settings.blogHeadingColorDark};` : ''}
-          ${settings?.blogLinkColorLight ? `--blog-link-color: ${settings.blogLinkColorLight};` : ''}
-          ${settings?.blogLinkColorDark ? `--blog-link-color-dark: ${settings.blogLinkColorDark};` : ''}
-          ${settings?.blogH1MarginTop ? `--blog-h1-mt: ${settings.blogH1MarginTop};` : ''}
-          ${settings?.blogH1MarginBottom ? `--blog-h1-mb: ${settings.blogH1MarginBottom};` : ''}
-          ${settings?.blogH2MarginTop ? `--blog-h2-mt: ${settings.blogH2MarginTop};` : ''}
-          ${settings?.blogH2MarginBottom ? `--blog-h2-mb: ${settings.blogH2MarginBottom};` : ''}
-          ${settings?.blogH3MarginTop ? `--blog-h3-mt: ${settings.blogH3MarginTop};` : ''}
-          ${settings?.blogH3MarginBottom ? `--blog-h3-mb: ${settings.blogH3MarginBottom};` : ''}
-          ${settings?.blogParagraphMarginBottom ? `--blog-p-mb: ${settings.blogParagraphMarginBottom};` : ''}
-          ${settings?.blogLineHeight ? `--blog-line-height: ${settings.blogLineHeight};` : ''}
-          ${settings?.blogLetterSpacing ? `--blog-letter-spacing: ${settings.blogLetterSpacing};` : ''}
-          ${settings?.blogWordSpacing ? `--blog-word-spacing: ${settings.blogWordSpacing};` : ''}
+          ${settings?.blogTextColorLight ? `--blog-text-color: ${settings.blogTextColorLight};` : ""}
+          ${settings?.blogTextColorDark ? `--blog-text-color-dark: ${settings.blogTextColorDark};` : ""}
+          ${settings?.blogHeadingColorLight ? `--blog-heading-color: ${settings.blogHeadingColorLight};` : ""}
+          ${settings?.blogHeadingColorDark ? `--blog-heading-color-dark: ${settings.blogHeadingColorDark};` : ""}
+          ${settings?.blogLinkColorLight ? `--blog-link-color: ${settings.blogLinkColorLight};` : ""}
+          ${settings?.blogLinkColorDark ? `--blog-link-color-dark: ${settings.blogLinkColorDark};` : ""}
+          ${settings?.blogH1MarginTop ? `--blog-h1-mt: ${settings.blogH1MarginTop};` : ""}
+          ${settings?.blogH1MarginBottom ? `--blog-h1-mb: ${settings.blogH1MarginBottom};` : ""}
+          ${settings?.blogH2MarginTop ? `--blog-h2-mt: ${settings.blogH2MarginTop};` : ""}
+          ${settings?.blogH2MarginBottom ? `--blog-h2-mb: ${settings.blogH2MarginBottom};` : ""}
+          ${settings?.blogH3MarginTop ? `--blog-h3-mt: ${settings.blogH3MarginTop};` : ""}
+          ${settings?.blogH3MarginBottom ? `--blog-h3-mb: ${settings.blogH3MarginBottom};` : ""}
+          ${settings?.blogParagraphMarginBottom ? `--blog-p-mb: ${settings.blogParagraphMarginBottom};` : ""}
+          ${settings?.blogLineHeight ? `--blog-line-height: ${settings.blogLineHeight};` : ""}
+          ${settings?.blogLetterSpacing ? `--blog-letter-spacing: ${settings.blogLetterSpacing};` : ""}
+          ${settings?.blogWordSpacing ? `--blog-word-spacing: ${settings.blogWordSpacing};` : ""}
         }
       `}</style>
 
@@ -451,10 +450,10 @@ export default function BlogPage({ initialBlog, initialAuthor, initialSettings }
          ═══════════════════════════════════════════════ */}
       <div className="hidden xl:flex fixed left-6 top-1/2 -translate-y-1/2 flex-col gap-2.5 z-40">
         {[
-          { fn: () => handleShare('twitter'),  icon: <FiTwitter className="w-4 h-4" />,  hover: 'hover:text-[#1DA1F2]' },
-          { fn: () => handleShare('facebook'), icon: <FiFacebook className="w-4 h-4" />, hover: 'hover:text-[#4267B2]' },
-          { fn: () => handleShare('linkedin'), icon: <FiLinkedin className="w-4 h-4" />, hover: 'hover:text-[#0077B5]' },
-          { fn: () => handleShare('copy'),     icon: copied ? <FiCheck className="w-4 h-4 text-green-500" /> : <FiCopy className="w-4 h-4" />, hover: 'hover:text-primary' },
+          { fn: () => handleShare("twitter"),  icon: <FiTwitter className="w-4 h-4" />,  hover: "hover:text-[#1DA1F2]" },
+          { fn: () => handleShare("facebook"), icon: <FiFacebook className="w-4 h-4" />, hover: "hover:text-[#4267B2]" },
+          { fn: () => handleShare("linkedin"), icon: <FiLinkedin className="w-4 h-4" />, hover: "hover:text-[#0077B5]" },
+          { fn: () => handleShare("copy"),     icon: copied ? <FiCheck className="w-4 h-4 text-green-500" /> : <FiCopy className="w-4 h-4" />, hover: "hover:text-primary" },
         ].map((btn, i) => (
           <motion.button
             key={i}
@@ -628,10 +627,10 @@ export default function BlogPage({ initialBlog, initialAuthor, initialSettings }
           {/* Share buttons — all devices */}
           <div className="flex items-center gap-1.5 sm:gap-2">
             {[
-              { fn: () => handleShare('twitter'),  icon: <FiTwitter className="w-4 h-4" />,  label: 'Twitter' },
-              { fn: () => handleShare('facebook'), icon: <FiFacebook className="w-4 h-4" />, label: 'Facebook' },
-              { fn: () => handleShare('linkedin'), icon: <FiLinkedin className="w-4 h-4" />, label: 'LinkedIn' },
-              { fn: () => handleShare('copy'),     icon: copied ? <FiCheck className="w-4 h-4 text-green-500" /> : <FiCopy className="w-4 h-4" />, label: 'Copy' },
+              { fn: () => handleShare("twitter"),  icon: <FiTwitter className="w-4 h-4" />,  label: "Twitter" },
+              { fn: () => handleShare("facebook"), icon: <FiFacebook className="w-4 h-4" />, label: "Facebook" },
+              { fn: () => handleShare("linkedin"), icon: <FiLinkedin className="w-4 h-4" />, label: "LinkedIn" },
+              { fn: () => handleShare("copy"),     icon: copied ? <FiCheck className="w-4 h-4 text-green-500" /> : <FiCopy className="w-4 h-4" />, label: "Copy" },
             ].map((btn) => (
               <button
                 key={btn.label}
@@ -643,9 +642,9 @@ export default function BlogPage({ initialBlog, initialAuthor, initialSettings }
               </button>
             ))}
             {/* Native share on mobile */}
-            {typeof navigator !== 'undefined' && navigator.share && (
+            {typeof navigator !== "undefined" && navigator.share && (
               <button
-                onClick={() => handleShare('native')}
+                onClick={() => handleShare("native")}
                 className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white sm:hidden min-h-[44px] min-w-[44px]"
               >
                 <FiShare2 className="w-4 h-4" />
@@ -867,7 +866,7 @@ export async function getServerSideProps(context) {
           serialized[key] = new Date(value.seconds * 1000).toISOString();
         }
         // Handle MongoDB ObjectId
-        else if (value && typeof value === 'object' && value.constructor?.name === 'ObjectId') {
+        else if (value && typeof value === "object" && value.constructor?.name === "ObjectId") {
           serialized[key] = value.toString();
         }
         // Handle Date objects

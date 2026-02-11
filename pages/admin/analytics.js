@@ -6,10 +6,9 @@ import { auth } from "../../lib/local-auth";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSocket } from "../../context/SocketContext";
 import { 
-  FiSave, FiBarChart2, FiToggleLeft, FiToggleRight, FiUsers, FiEye, 
+  FiSave, FiBarChart2, FiToggleLeft, FiToggleRight, FiEye, 
   FiTrendingUp, FiActivity, FiGlobe, FiClock, FiZap, FiRefreshCw,
-  FiBookOpen, FiFileText, FiHeart, FiMessageCircle, FiAlertCircle, FiRadio,
-  FiCalendar
+  FiBookOpen, FiFileText, FiHeart, FiAlertCircle, FiRadio
 } from "react-icons/fi";
 
 export default function AdminAnalytics() {
@@ -25,7 +24,7 @@ function AnalyticsContent() {
     analyticsEnabled: false,
     analyticsId: "",
   });
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -67,7 +66,7 @@ function AnalyticsContent() {
         setPageviewData(data);
       }
     } catch (error) {
-      console.error('Error fetching pageview analytics:', error);
+      console.error("Error fetching pageview analytics:", error);
     }
   };
 
@@ -76,7 +75,7 @@ function AnalyticsContent() {
     if (isConnected) {
       joinAdminAnalytics();
       
-      const unsubscribe = subscribe('analytics:update', (data) => {
+      const unsubscribe = subscribe("analytics:update", (data) => {
         setLiveStats(prev => ({ ...prev, ...data }));
       });
       
@@ -87,13 +86,13 @@ function AnalyticsContent() {
   // Fetch live stats periodically
   const fetchLiveStats = async () => {
     try {
-      const res = await fetch('/api/socket?analytics=true');
+      const res = await fetch("/api/socket?analytics=true");
       if (res.ok) {
         const data = await res.json();
         setLiveStats(data);
       }
     } catch (error) {
-      console.error('Error fetching live stats:', error);
+      console.error("Error fetching live stats:", error);
     }
   };
 
@@ -394,7 +393,7 @@ function AnalyticsContent() {
                             const maxViews = Math.max(...pageviewData.dailyViews.map(d => d.views), 1);
                             return pageviewData.dailyViews.map((day, i) => {
                               const height = Math.max((day.views / maxViews) * 100, 2);
-                              const dateStr = new Date(day.date + 'T00:00:00').toLocaleDateString('en', { month: 'short', day: 'numeric' });
+                              const dateStr = new Date(day.date + "T00:00:00").toLocaleDateString("en", { month: "short", day: "numeric" });
                               return (
                                 <div key={i} className="flex-1 flex flex-col items-center justify-end gap-1 group relative">
                                   <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap z-10">
@@ -430,7 +429,7 @@ function AnalyticsContent() {
                     <div className="p-5 border-b border-gray-100 bg-gradient-to-r from-cyan-50 to-white">
                       <h3 className="font-bold text-gray-800 flex items-center gap-2">
                         <FiTrendingUp className="text-cyan-500" />
-                        Most Viewed Pages ({dateRange === '1d' ? 'Today' : dateRange === '7d' ? 'Last 7 Days' : 'Last 30 Days'})
+                        Most Viewed Pages ({dateRange === "1d" ? "Today" : dateRange === "7d" ? "Last 7 Days" : "Last 30 Days"})
                       </h3>
                     </div>
                     <div className="divide-y divide-gray-50">
@@ -478,7 +477,7 @@ function AnalyticsContent() {
                             <span className="font-medium text-gray-700 truncate max-w-md">{page}</span>
                           </div>
                           <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-bold">
-                            {count} {count === 1 ? 'viewer' : 'viewers'}
+                            {count} {count === 1 ? "viewer" : "viewers"}
                           </span>
                         </div>
                       ))}
@@ -503,7 +502,7 @@ function AnalyticsContent() {
                       </p>
                       {settings.analyticsId && (
                         <a
-                          href={`https://analytics.google.com/analytics/web/?pli=1#/realtime/overview`}
+                          href={"https://analytics.google.com/analytics/web/?pli=1#/realtime/overview"}
                           target="_blank"
                           rel="noreferrer"
                           className="inline-flex items-center gap-2 px-4 py-2 bg-white text-purple-600 rounded-lg font-semibold text-sm hover:bg-white/90 transition"

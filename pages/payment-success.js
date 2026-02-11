@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Layout from "../components/Layout";
-import { getUser, updatePayment, addExtraPosts } from "../lib/api-client";
+import { updatePayment, addExtraPosts } from "../lib/api-client";
 
 
 import { motion } from "framer-motion";
@@ -19,7 +19,7 @@ export default function PaymentSuccess() {
 
   useEffect(() => {
     // Wait for auth state to be determined
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, (_user) => {
       setAuthChecked(true);
     });
     return () => unsubscribe();

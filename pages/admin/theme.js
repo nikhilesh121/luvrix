@@ -3,11 +3,11 @@ import AdminGuard from "../../components/AdminGuard";
 import AdminSidebar from "../../components/AdminSidebar";
 import { getSettings, updateSettings, createLog } from "../../lib/api-client";
 import { auth } from "../../lib/local-auth";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { 
-  FiSave, FiImage, FiDroplet, FiLayout, FiType, FiHome, FiBook, FiFileText,
-  FiMail, FiChevronRight, FiCheck, FiZap, FiHeart, FiStar, FiTrendingUp, 
-  FiGrid, FiLayers, FiEye, FiEdit3, FiSun, FiMoon
+  FiSave, FiDroplet, FiLayout, FiType, FiHome, FiBook, FiFileText,
+  FiMail, FiCheck, FiZap, FiHeart, FiStar, FiTrendingUp, 
+  FiGrid, FiLayers, FiEye, FiSun, FiMoon
 } from "react-icons/fi";
 
 const presetColors = [

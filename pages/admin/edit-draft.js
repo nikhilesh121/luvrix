@@ -82,9 +82,9 @@ function EditDraftContent() {
     const title = e.target.value;
     const slug = title
       .toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-')
+      .replace(/[^a-z0-9\s-]/g, "")
+      .replace(/\s+/g, "-")
+      .replace(/-+/g, "-")
       .substring(0, 100);
     setDraft(prev => ({ ...prev, title, slug }));
     setSaved(false);

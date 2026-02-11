@@ -1,19 +1,19 @@
-import { approveBlog } from '../../../../lib/db';
-import { withCSRFProtection } from '../../../../lib/csrf';
+import { approveBlog } from "../../../../lib/db";
+import { withCSRFProtection } from "../../../../lib/csrf";
 
 async function handler(req, res) {
   const { id } = req.query;
   
   try {
-    if (req.method === 'POST') {
+    if (req.method === "POST") {
       await approveBlog(id);
       return res.status(200).json({ success: true });
     }
     
-    return res.status(405).json({ error: 'Method not allowed' });
+    return res.status(405).json({ error: "Method not allowed" });
   } catch (error) {
-    console.error('Approve blog API error:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    console.error("Approve blog API error:", error);
+    return res.status(500).json({ error: "Internal server error" });
   }
 }
 

@@ -2,12 +2,12 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import AdminGuard from "../../components/AdminGuard";
 import AdminSidebar from "../../components/AdminSidebar";
-import { getBlogDrafts, deleteBlogDraft, publishBlogDraft, updateBlogDraft } from "../../lib/api-client";
+import { getBlogDrafts, deleteBlogDraft, publishBlogDraft } from "../../lib/api-client";
 import { auth } from "../../lib/local-auth";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FiFileText, FiEdit3, FiTrash2, FiSend, FiEye, FiClock, FiTag,
-  FiCheck, FiX, FiSearch, FiFilter, FiImage, FiRefreshCw, FiZap
+  FiX, FiSearch, FiFilter, FiImage, FiRefreshCw, FiZap
 } from "react-icons/fi";
 
 export default function AdminDrafts() {

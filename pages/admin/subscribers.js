@@ -4,7 +4,7 @@ import AdminSidebar from "../../components/AdminSidebar";
 import { getAllSubscribers, deleteSubscriber, updateSubscriberStatus } from "../../lib/api-client";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  FiMail, FiTrash2, FiDownload, FiSearch, FiCheck, FiX, 
+  FiMail, FiTrash2, FiDownload, FiSearch, 
   FiUsers, FiCalendar, FiCopy, FiCheckCircle, FiAlertCircle
 } from "react-icons/fi";
 

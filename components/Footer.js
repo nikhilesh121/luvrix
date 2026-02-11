@@ -4,8 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { getSettings, addSubscriber } from "../lib/api-client";
 import { 
   FiMail, FiTwitter, FiFacebook, FiInstagram, FiYoutube,
-  FiArrowRight, FiHeart, FiZap, FiSend, FiCheck, FiAlertCircle,
-  FiGlobe, FiBookOpen, FiUsers, FiAward
+  FiArrowRight, FiHeart, FiZap, FiSend, FiCheck, FiAlertCircle
 } from "react-icons/fi";
 
 export default function Footer() {

@@ -4,7 +4,7 @@ import AdminSidebar from "../../components/AdminSidebar";
 import { auth } from "../../lib/local-auth";
 import { motion } from "framer-motion";
 import {
-  FiShield, FiSearch, FiFilter, FiRefreshCw, FiChevronLeft, FiChevronRight,
+  FiShield, FiSearch, FiRefreshCw, FiChevronLeft, FiChevronRight,
   FiAlertTriangle, FiInfo, FiAlertCircle, FiXCircle, FiClock, FiUser
 } from "react-icons/fi";
 

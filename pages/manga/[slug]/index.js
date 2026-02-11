@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import Head from "next/head";
@@ -12,12 +12,12 @@ import AdRenderer from "../../../components/AdRenderer";
 import CommentSection from "../../../components/CommentSection";
 import { trackMangaView, trackEngagement } from "../../../lib/analytics";
 import { motion } from "framer-motion";
-import { FiArrowLeft, FiBook, FiExternalLink, FiStar, FiClock, FiUser, FiBookOpen, FiHeart, FiShare2, FiChevronRight, FiArrowUp, FiArrowDown, FiEye } from "react-icons/fi";
+import { FiArrowLeft, FiBook, FiExternalLink, FiStar, FiClock, FiUser, FiBookOpen, FiHeart, FiShare2, FiArrowUp, FiArrowDown } from "react-icons/fi";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://luvrix.com";
 
 // Helper to serialize timestamps for SSR
-const serializeData = (obj) => {
+const _serializeData = (obj) => {
   if (!obj) return null;
   const serialized = { ...obj };
   for (const key in serialized) {
@@ -44,7 +44,7 @@ const getAltNames = (data) => {
     const match = data.description.match(/(?:also known as|alternative names?|other names?)[:\s]+([^.\n]+)/i);
     if (match) return match[1].trim();
   }
-  return '';
+  return "";
 };
 
 // Helper to apply SEO template
@@ -52,14 +52,14 @@ const applyTemplate = (template, data) => {
   if (!template) return null;
   const altNames = getAltNames(data);
   let result = template
-    .replace(/{title}/g, data?.title || '')
+    .replace(/{title}/g, data?.title || "")
     .replace(/{altNames}/g, altNames)
-    .replace(/{chapters}/g, data?.totalChapters || '')
-    .replace(/{status}/g, data?.status || 'Ongoing')
-    .replace(/{author}/g, data?.author || '')
-    .replace(/{genre}/g, data?.genre || '');
+    .replace(/{chapters}/g, data?.totalChapters || "")
+    .replace(/{status}/g, data?.status || "Ongoing")
+    .replace(/{author}/g, data?.author || "")
+    .replace(/{genre}/g, data?.genre || "");
   // Clean up empty alt names artifacts (e.g., "Also known as ." when no alt names)
-  result = result.replace(/Also known as\s*\.\s*/gi, '').replace(/\s{2,}/g, ' ').trim();
+  result = result.replace(/Also known as\s*\.\s*/gi, "").replace(/\s{2,}/g, " ").trim();
   return result;
 };
 
@@ -76,7 +76,7 @@ export default function MangaDetail({ initialManga, initialSettings }) {
   const [sortOrder, setSortOrder] = useState("desc");
   const [isFavorited, setIsFavorited] = useState(false);
   const [favoriteLoading, setFavoriteLoading] = useState(false);
-  const [liveViews, setLiveViews] = useState(null);
+  const [_liveViews, setLiveViews] = useState(null);
   const [liveFavorites, setLiveFavorites] = useState(null);
 
   // Format slug to readable title for SEO (from URL)
@@ -94,12 +94,12 @@ export default function MangaDetail({ initialManga, initialSettings }) {
     const total = manga?.totalChapters;
     const altNames = getAltNames(manga);
     const genre = manga?.genre;
-    const status = manga?.status || 'Ongoing';
+    const status = manga?.status || "Ongoing";
     let desc = `Read ${name} manga online.`;
     if (altNames) desc += ` Also known as ${altNames}.`;
     if (total) desc += ` Chapters 1 to ${total} available.`;
     if (genre) desc += ` ${genre} manga, ${status}.`;
-    desc += ` Updated regularly on Luvrix.`;
+    desc += " Updated regularly on Luvrix.";
     return desc;
   };
   const seoDescription = generateMangaDescription();
@@ -125,13 +125,13 @@ export default function MangaDetail({ initialManga, initialSettings }) {
   useEffect(() => {
     if (!isConnected || !manga?.id) return;
 
-    const unsubViews = subscribe('manga:viewUpdate', (data) => {
+    const unsubViews = subscribe("manga:viewUpdate", (data) => {
       if (data.mangaId === manga.id) {
         setLiveViews(data.views);
       }
     });
 
-    const unsubFavorites = subscribe('manga:favoriteUpdate', (data) => {
+    const unsubFavorites = subscribe("manga:favoriteUpdate", (data) => {
       if (data.mangaId === manga.id) {
         setLiveFavorites(data.favorites);
       }
@@ -208,7 +208,7 @@ export default function MangaDetail({ initialManga, initialSettings }) {
 
   const handleFavorite = async () => {
     if (!user) {
-      router.push('/login?redirect=' + encodeURIComponent(router.asPath));
+      router.push("/login?redirect=" + encodeURIComponent(router.asPath));
       return;
     }
     
@@ -221,20 +221,20 @@ export default function MangaDetail({ initialManga, initialSettings }) {
         // Emit socket event for real-time update
         const newFavorites = result?.favorites ?? (liveFavorites || manga.favorites || 0) - 1;
         setLiveFavorites(newFavorites);
-        emitMangaFavorite(manga.id, newFavorites, user.uid, 'unfavorite');
-        trackEngagement('favorite', manga.id, manga.title);
+        emitMangaFavorite(manga.id, newFavorites, user.uid, "unfavorite");
+        trackEngagement("favorite", manga.id, manga.title);
       } else {
-        await addToFavorites(user.uid, manga.id, 'manga');
+        await addToFavorites(user.uid, manga.id, "manga");
         const result = await incrementMangaFavorites(manga.id);
         setIsFavorited(true);
         // Emit socket event for real-time update
         const newFavorites = result?.favorites ?? (liveFavorites || manga.favorites || 0) + 1;
         setLiveFavorites(newFavorites);
-        emitMangaFavorite(manga.id, newFavorites, user.uid, 'favorite');
-        trackEngagement('favorite', manga.id, manga.title);
+        emitMangaFavorite(manga.id, newFavorites, user.uid, "favorite");
+        trackEngagement("favorite", manga.id, manga.title);
       }
     } catch (error) {
-      console.error('Error toggling favorite:', error);
+      console.error("Error toggling favorite:", error);
     } finally {
       setFavoriteLoading(false);
     }
@@ -252,17 +252,17 @@ export default function MangaDetail({ initialManga, initialSettings }) {
         await navigator.share(shareData);
       } else {
         await navigator.clipboard.writeText(window.location.href);
-        alert('Link copied to clipboard!');
+        alert("Link copied to clipboard!");
       }
     } catch (error) {
-      console.error('Error sharing:', error);
+      console.error("Error sharing:", error);
     }
   };
 
   const formatNumber = (num) => {
-    if (!num) return '0';
-    if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
-    if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+    if (!num) return "0";
+    if (num >= 1000000) return (num / 1000000).toFixed(1) + "M";
+    if (num >= 1000) return (num / 1000).toFixed(1) + "K";
     return num.toString();
   };
 
@@ -483,7 +483,7 @@ export default function MangaDetail({ initialManga, initialSettings }) {
                     className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/10"
                   >
                     <FiClock className="w-6 h-6 text-blue-400 mb-2" />
-                    <p className="text-2xl font-bold">{manga.status === 'Completed' ? 'Done' : 'Weekly'}</p>
+                    <p className="text-2xl font-bold">{manga.status === "Completed" ? "Done" : "Weekly"}</p>
                     <p className="text-white/50 text-sm">Updates</p>
                   </motion.div>
                 </div>
@@ -492,7 +492,7 @@ export default function MangaDetail({ initialManga, initialSettings }) {
                 <div className="flex flex-wrap gap-4">
                   <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                     <a
-                      href={chapters[0]?.url || generateChapterUrl(manga, 1) || '#'}
+                      href={chapters[0]?.url || generateChapterUrl(manga, 1) || "#"}
                       target="_blank"
                       rel="nofollow noopener"
                       className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-bold text-lg shadow-lg shadow-purple-500/30 hover:shadow-xl hover:shadow-purple-500/40 transition-all"
@@ -508,16 +508,16 @@ export default function MangaDetail({ initialManga, initialSettings }) {
                     disabled={favoriteLoading}
                     className={`px-6 py-4 backdrop-blur-sm rounded-xl font-semibold border transition-all flex items-center gap-2 ${
                       isFavorited 
-                        ? 'bg-red-500/30 text-red-200 border-red-500/30 hover:bg-red-500/40' 
-                        : 'bg-white/10 text-white border-white/20 hover:bg-white/20'
+                        ? "bg-red-500/30 text-red-200 border-red-500/30 hover:bg-red-500/40" 
+                        : "bg-white/10 text-white border-white/20 hover:bg-white/20"
                     }`}
                   >
                     {favoriteLoading ? (
                       <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
                     ) : (
-                      <FiHeart className={`w-5 h-5 ${isFavorited ? 'fill-current' : ''}`} />
+                      <FiHeart className={`w-5 h-5 ${isFavorited ? "fill-current" : ""}`} />
                     )}
-                    {isFavorited ? 'Favorited' : 'Add to Favorites'}
+                    {isFavorited ? "Favorited" : "Add to Favorites"}
                   </motion.button>
                   <motion.button
                     whileHover={{ scale: 1.05 }}
@@ -585,7 +585,7 @@ export default function MangaDetail({ initialManga, initialSettings }) {
             {(sortOrder === "desc" ? [...chapters].reverse() : chapters).slice(0, visibleChapters).map((chapter) => (
               <a
                 key={chapter.number}
-                href={chapter.url || '#'}
+                href={chapter.url || "#"}
                 target="_blank"
                 rel="nofollow noopener"
                 className="p-4 bg-white border rounded-lg hover:border-primary hover:shadow-md transition text-center group"

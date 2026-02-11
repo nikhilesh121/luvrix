@@ -11,12 +11,11 @@ import {
 } from "../../lib/api-client";
 import { useAuth } from "../../context/AuthContext";
 import { 
-  FiUser, FiUsers, FiEye, FiHeart, FiBookOpen, FiCalendar, 
-  FiGrid, FiList, FiFolder, FiArrowLeft, FiUserPlus, FiUserCheck,
-  FiTrendingUp, FiAward, FiEdit3, FiExternalLink, FiBookmark
+  FiUser, FiEye, FiHeart, FiBookOpen, FiCalendar, 
+  FiGrid, FiList, FiFolder, FiArrowLeft, FiUserPlus, FiUserCheck, FiEdit3, FiExternalLink
 } from "react-icons/fi";
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://luvrix.com";
+const _SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://luvrix.com";
 
 export default function UserProfile() {
   const router = useRouter();

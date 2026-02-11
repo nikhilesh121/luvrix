@@ -4,18 +4,18 @@ import Link from "next/link";
 import Layout from "../components/Layout";
 import BlogCard from "../components/BlogCard";
 import { useAuth } from "../context/AuthContext";
-import { getUserFavorites, getBlog, getMangaBySlug } from "../lib/api-client";
+import { getUserFavorites, getBlog } from "../lib/api-client";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   FiHeart, FiBookOpen, FiGrid, FiSearch, 
-  FiX, FiArrowRight, FiGift, FiClock
+  FiX, FiArrowRight, FiGift
 } from "react-icons/fi";
 
 export default function Favorites() {
   const router = useRouter();
   const { user, isLoggedIn, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(true);
-  const [favorites, setFavorites] = useState([]);
+  const [_favorites, setFavorites] = useState([]);
   const [blogs, setBlogs] = useState([]);
   const [giveaways, setGiveaways] = useState([]);
   const [filter, setFilter] = useState("all");

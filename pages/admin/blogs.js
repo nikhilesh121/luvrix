@@ -5,7 +5,7 @@ import AdminSidebar from "../../components/AdminSidebar";
 import { getAllBlogs, approveBlog, rejectBlog, deleteBlog, createLog, getUser } from "../../lib/api-client";
 import { auth } from "../../lib/local-auth";
 import { motion } from "framer-motion";
-import { FiCheck, FiX, FiTrash2, FiEye, FiSearch, FiFilter, FiUser, FiFileText, FiClock, FiCheckCircle, FiAlertCircle, FiPlus, FiEdit3 } from "react-icons/fi";
+import { FiCheck, FiX, FiTrash2, FiEye, FiSearch, FiFileText, FiClock, FiCheckCircle, FiAlertCircle, FiPlus, FiEdit3 } from "react-icons/fi";
 import Link from "next/link";
 
 export default function AdminBlogs() {

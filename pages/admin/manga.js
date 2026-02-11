@@ -5,7 +5,7 @@ import { getAllManga, createManga, updateManga, deleteManga, createLog, getSetti
 import { auth } from "../../lib/local-auth";
 import { slugify } from "../../utils/slugify";
 import { motion } from "framer-motion";
-import { FiPlus, FiEdit2, FiTrash2, FiX, FiSave, FiGlobe, FiSmartphone, FiMonitor, FiBook, FiSearch, FiCheckCircle, FiClock, FiExternalLink, FiEye, FiGrid, FiList, FiTable, FiLayout, FiSettings } from "react-icons/fi";
+import { FiPlus, FiEdit2, FiTrash2, FiX, FiSave, FiGlobe, FiSmartphone, FiMonitor, FiBook, FiSearch, FiCheckCircle, FiClock, FiExternalLink, FiEye, FiGrid, FiList, FiTable, FiLayout } from "react-icons/fi";
 
 export default function AdminManga() {
   return (
@@ -377,13 +377,13 @@ function MangaContent() {
                           </td>
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-1">
-                              <div className={`w-6 h-6 rounded flex items-center justify-center ${item.showOnWeb !== false ? 'bg-blue-100 text-blue-600' : 'bg-slate-100 text-slate-400'}`}>
+                              <div className={`w-6 h-6 rounded flex items-center justify-center ${item.showOnWeb !== false ? "bg-blue-100 text-blue-600" : "bg-slate-100 text-slate-400"}`}>
                                 <FiMonitor className="w-3 h-3" />
                               </div>
-                              <div className={`w-6 h-6 rounded flex items-center justify-center ${item.showOnAndroid !== false ? 'bg-green-100 text-green-600' : 'bg-slate-100 text-slate-400'}`}>
+                              <div className={`w-6 h-6 rounded flex items-center justify-center ${item.showOnAndroid !== false ? "bg-green-100 text-green-600" : "bg-slate-100 text-slate-400"}`}>
                                 <FiSmartphone className="w-3 h-3" />
                               </div>
-                              <div className={`w-6 h-6 rounded flex items-center justify-center ${item.showOnIOS !== false ? 'bg-gray-200 text-gray-600' : 'bg-slate-100 text-slate-400'}`}>
+                              <div className={`w-6 h-6 rounded flex items-center justify-center ${item.showOnIOS !== false ? "bg-gray-200 text-gray-600" : "bg-slate-100 text-slate-400"}`}>
                                 <FiGlobe className="w-3 h-3" />
                               </div>
                             </div>
@@ -398,7 +398,7 @@ function MangaContent() {
                                 <FiEdit2 className="w-4 h-4" />
                               </button>
                               <button
-                                onClick={() => window.open(`/manga/${item.slug}`, '_blank')}
+                                onClick={() => window.open(`/manga/${item.slug}`, "_blank")}
                                 className="p-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
                                 title="Preview"
                               >
@@ -454,7 +454,7 @@ function MangaContent() {
                       <button onClick={() => openModal(item)} className="p-2 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200">
                         <FiEdit2 className="w-4 h-4" />
                       </button>
-                      <button onClick={() => window.open(`/manga/${item.slug}`, '_blank')} className="p-2 bg-purple-100 text-purple-600 rounded-lg hover:bg-purple-200">
+                      <button onClick={() => window.open(`/manga/${item.slug}`, "_blank")} className="p-2 bg-purple-100 text-purple-600 rounded-lg hover:bg-purple-200">
                         <FiEye className="w-4 h-4" />
                       </button>
                       <button onClick={() => handleDelete(item.id)} className="p-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200">
@@ -515,13 +515,13 @@ function MangaContent() {
 
                     {/* Platform Visibility */}
                     <div className="flex items-center gap-2 mb-4">
-                      <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${item.showOnWeb !== false ? 'bg-blue-100 text-blue-600' : 'bg-slate-100 text-slate-400'}`}>
+                      <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${item.showOnWeb !== false ? "bg-blue-100 text-blue-600" : "bg-slate-100 text-slate-400"}`}>
                         <FiMonitor className="w-3.5 h-3.5" />
                       </div>
-                      <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${item.showOnAndroid !== false ? 'bg-green-100 text-green-600' : 'bg-slate-100 text-slate-400'}`}>
+                      <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${item.showOnAndroid !== false ? "bg-green-100 text-green-600" : "bg-slate-100 text-slate-400"}`}>
                         <FiSmartphone className="w-3.5 h-3.5" />
                       </div>
-                      <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${item.showOnIOS !== false ? 'bg-gray-100 text-gray-600' : 'bg-slate-100 text-slate-400'}`}>
+                      <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${item.showOnIOS !== false ? "bg-gray-100 text-gray-600" : "bg-slate-100 text-slate-400"}`}>
                         <FiGlobe className="w-3.5 h-3.5" />
                       </div>
                     </div>
@@ -539,7 +539,7 @@ function MangaContent() {
                       <motion.button
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
-                        onClick={() => window.open(`/manga/${item.slug}`, '_blank')}
+                        onClick={() => window.open(`/manga/${item.slug}`, "_blank")}
                         className="py-2.5 px-4 bg-purple-100 text-purple-600 rounded-xl hover:bg-purple-200 transition-colors"
                         title="Preview"
                       >
@@ -818,19 +818,19 @@ function MangaContent() {
                     onClick={() => setFormData({ ...formData, showOnWeb: !formData.showOnWeb })}
                     className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
                       formData.showOnWeb 
-                        ? 'border-green-500 bg-green-50' 
-                        : 'border-gray-200 bg-gray-50'
+                        ? "border-green-500 bg-green-50" 
+                        : "border-gray-200 bg-gray-50"
                     }`}
                   >
                     <div className="flex items-center gap-3">
                       <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                        formData.showOnWeb ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-500'
+                        formData.showOnWeb ? "bg-green-500 text-white" : "bg-gray-200 text-gray-500"
                       }`}>
                         <FiGlobe className="w-5 h-5" />
                       </div>
                       <div>
                         <p className="font-medium text-gray-800">Web</p>
-                        <p className="text-xs text-gray-500">{formData.showOnWeb ? 'Visible' : 'Hidden'}</p>
+                        <p className="text-xs text-gray-500">{formData.showOnWeb ? "Visible" : "Hidden"}</p>
                       </div>
                     </div>
                   </div>
@@ -840,19 +840,19 @@ function MangaContent() {
                     onClick={() => setFormData({ ...formData, showOnAndroid: !formData.showOnAndroid })}
                     className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
                       formData.showOnAndroid 
-                        ? 'border-green-500 bg-green-50' 
-                        : 'border-gray-200 bg-gray-50'
+                        ? "border-green-500 bg-green-50" 
+                        : "border-gray-200 bg-gray-50"
                     }`}
                   >
                     <div className="flex items-center gap-3">
                       <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                        formData.showOnAndroid ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-500'
+                        formData.showOnAndroid ? "bg-green-500 text-white" : "bg-gray-200 text-gray-500"
                       }`}>
                         <FiSmartphone className="w-5 h-5" />
                       </div>
                       <div>
                         <p className="font-medium text-gray-800">Android</p>
-                        <p className="text-xs text-gray-500">{formData.showOnAndroid ? 'Visible' : 'Hidden'}</p>
+                        <p className="text-xs text-gray-500">{formData.showOnAndroid ? "Visible" : "Hidden"}</p>
                       </div>
                     </div>
                   </div>
@@ -862,19 +862,19 @@ function MangaContent() {
                     onClick={() => setFormData({ ...formData, showOnIOS: !formData.showOnIOS })}
                     className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
                       formData.showOnIOS 
-                        ? 'border-green-500 bg-green-50' 
-                        : 'border-gray-200 bg-gray-50'
+                        ? "border-green-500 bg-green-50" 
+                        : "border-gray-200 bg-gray-50"
                     }`}
                   >
                     <div className="flex items-center gap-3">
                       <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                        formData.showOnIOS ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-500'
+                        formData.showOnIOS ? "bg-green-500 text-white" : "bg-gray-200 text-gray-500"
                       }`}>
                         <FiMonitor className="w-5 h-5" />
                       </div>
                       <div>
                         <p className="font-medium text-gray-800">iOS</p>
-                        <p className="text-xs text-gray-500">{formData.showOnIOS ? 'Visible' : 'Hidden'}</p>
+                        <p className="text-xs text-gray-500">{formData.showOnIOS ? "Visible" : "Hidden"}</p>
                       </div>
                     </div>
                   </div>
@@ -891,18 +891,18 @@ function MangaContent() {
                   <div 
                     onClick={() => setFormData({ ...formData, autoRedirect: !formData.autoRedirect })}
                     className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                      formData.autoRedirect ? 'border-orange-500 bg-orange-50' : 'border-gray-200 bg-gray-50'
+                      formData.autoRedirect ? "border-orange-500 bg-orange-50" : "border-gray-200 bg-gray-50"
                     }`}
                   >
                     <div className="flex items-center gap-3">
                       <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                        formData.autoRedirect ? 'bg-orange-500 text-white' : 'bg-gray-200 text-gray-500'
+                        formData.autoRedirect ? "bg-orange-500 text-white" : "bg-gray-200 text-gray-500"
                       }`}>
                         <FiExternalLink className="w-5 h-5" />
                       </div>
                       <div>
                         <p className="font-medium text-gray-800">Auto Redirect</p>
-                        <p className="text-xs text-gray-500">{formData.autoRedirect ? 'Enabled — redirects after delay' : 'Disabled — manual click only'}</p>
+                        <p className="text-xs text-gray-500">{formData.autoRedirect ? "Enabled — redirects after delay" : "Disabled — manual click only"}</p>
                       </div>
                     </div>
                   </div>

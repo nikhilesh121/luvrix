@@ -22,7 +22,7 @@ export default function Layout({ children, title, description, keywords, image, 
       setSettings(data);
       // Initialize Google Analytics with the settings ID
       const gaId = (data?.analyticsEnabled && data?.analyticsId) ? data.analyticsId : process.env.NEXT_PUBLIC_GA_ID;
-      if (gaId && gaId.startsWith('G-')) {
+      if (gaId && gaId.startsWith("G-")) {
         initGA(gaId);
       }
     });
@@ -32,13 +32,13 @@ export default function Layout({ children, title, description, keywords, image, 
   useEffect(() => {
     const analyticsId = (settings?.analyticsEnabled && settings?.analyticsId) ? settings.analyticsId : process.env.NEXT_PUBLIC_GA_ID;
     if (analyticsId) {
-      trackPageView(router.asPath, title || 'Luvrix');
+      trackPageView(router.asPath, title || "Luvrix");
     }
     // Log page view to our own analytics
-    if (typeof window !== 'undefined' && router.asPath) {
-      fetch('/api/analytics/pageviews', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+    if (typeof window !== "undefined" && router.asPath) {
+      fetch("/api/analytics/pageviews", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ path: router.asPath, referrer: document.referrer }),
       }).catch(() => {});
     }
@@ -46,9 +46,9 @@ export default function Layout({ children, title, description, keywords, image, 
 
   // Track unique visitor for platform stats
   useEffect(() => {
-    if (typeof window !== 'undefined' && !sessionStorage.getItem('_lv_tracked')) {
-      fetch('/api/stats/platform', { method: 'POST' }).catch(() => {});
-      sessionStorage.setItem('_lv_tracked', '1');
+    if (typeof window !== "undefined" && !sessionStorage.getItem("_lv_tracked")) {
+      fetch("/api/stats/platform", { method: "POST" }).catch(() => {});
+      sessionStorage.setItem("_lv_tracked", "1");
     }
   }, []);
 
@@ -109,7 +109,7 @@ export default function Layout({ children, title, description, keywords, image, 
         
         {/* AdSense Meta Verification */}
         {settings?.adsEnabled && settings?.adsenseMeta && (
-          <meta name="google-adsense-account" content={settings.adsensePublisherId || ''} />
+          <meta name="google-adsense-account" content={settings.adsensePublisherId || ""} />
         )}
         
         {/* Google Search Console Verification */}
@@ -136,8 +136,8 @@ export default function Layout({ children, title, description, keywords, image, 
 
       {/* Auto Ads — admin-controlled, route-excluded, CLS-safe */}
       {settings?.adsEnabled && settings?.enableAutoAds && settings?.adsensePublisherId && (() => {
-        const raw = settings?.autoAdsExcludedRoutes || '/admin,/login,/register,/error,/create-blog,/edit-blog,/preview-blog,/dashboard';
-        const excludedRoutes = typeof raw === 'string' ? raw.split(',').map(r => r.trim()).filter(Boolean) : raw;
+        const raw = settings?.autoAdsExcludedRoutes || "/admin,/login,/register,/error,/create-blog,/edit-blog,/preview-blog,/dashboard";
+        const excludedRoutes = typeof raw === "string" ? raw.split(",").map(r => r.trim()).filter(Boolean) : raw;
         const isExcluded = excludedRoutes.some(r => router.asPath.startsWith(r));
         if (isExcluded) return null;
         return (
@@ -148,13 +148,13 @@ export default function Layout({ children, title, description, keywords, image, 
       })()}
 
       {/* Google Analytics - Using Next.js Script for optimal loading */}
-      {analyticsId && analyticsId.startsWith('G-') && (
+      {analyticsId && analyticsId.startsWith("G-") && (
         <>
           <Script
             src={`https://www.googletagmanager.com/gtag/js?id=${analyticsId}`}
             strategy="afterInteractive"
             onError={(e) => {
-              console.error('GA script failed to load:', e);
+              console.error("GA script failed to load:", e);
             }}
           />
           <Script id="google-analytics" strategy="afterInteractive">

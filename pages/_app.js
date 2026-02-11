@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import "../styles/globals.css";
 import "react-quill/dist/quill.snow.css";
@@ -8,10 +8,10 @@ import { SocketProvider, useSocket } from "../context/SocketContext";
 import { ThemeProvider } from "../context/ThemeContext";
 import { trackPageView, initGA } from "../lib/analytics";
 import { getSettings } from "../lib/api-client";
-import dynamic from 'next/dynamic';
-import ErrorBoundary from '../components/ErrorBoundary';
+import dynamic from "next/dynamic";
+import ErrorBoundary from "../components/ErrorBoundary";
 
-const CookieConsent = dynamic(() => import('../components/CookieConsent'), { ssr: false });
+const CookieConsent = dynamic(() => import("../components/CookieConsent"), { ssr: false });
 
 // Initialize GA on app load
 let gaInitialized = false;
@@ -20,12 +20,12 @@ const initializeGA = async () => {
   try {
     const settings = await getSettings();
     const gaId = (settings?.analyticsEnabled && settings?.analyticsId) ? settings.analyticsId : process.env.NEXT_PUBLIC_GA_ID;
-    if (gaId && gaId.startsWith('G-')) {
+    if (gaId && gaId.startsWith("G-")) {
       initGA(gaId);
       gaInitialized = true;
     }
   } catch (error) {
-    console.error('Failed to initialize GA:', error);
+    console.error("Failed to initialize GA:", error);
   }
 };
 

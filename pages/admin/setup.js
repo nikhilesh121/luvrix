@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import { useAuth } from "../../context/AuthContext";
-import { getUser, updateUser, getAllUsers } from "../../lib/api-client";
+import { getAllUsers } from "../../lib/api-client";
 import { FiShield, FiCheck, FiAlertCircle } from "react-icons/fi";
 
 export default function AdminSetup() {
@@ -39,9 +38,9 @@ export default function AdminSetup() {
 
     try {
       // Try to register new admin account via API
-      const response = await fetch('/api/auth/setup-admin', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/auth/setup-admin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: adminEmail, password: adminPassword }),
       });
 

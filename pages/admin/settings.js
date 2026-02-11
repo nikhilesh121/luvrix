@@ -11,7 +11,7 @@ import { FiSave, FiDollarSign, FiSettings, FiAlertTriangle, FiCheck, FiShield, F
 function CookieSettings() {
   const [cookieSettings, setCookieSettings] = useState({
     enabled: true,
-    message: 'We use cookies to enhance your browsing experience, analyze site traffic, and personalize content.',
+    message: "We use cookies to enhance your browsing experience, analyze site traffic, and personalize content.",
   });
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -22,31 +22,31 @@ function CookieSettings() {
 
   const fetchCookieSettings = async () => {
     try {
-      const res = await fetch('/api/settings/cookies/');
+      const res = await fetch("/api/settings/cookies/");
       const data = await res.json();
       if (data) {
         setCookieSettings({
           enabled: data.enabled ?? true,
-          message: data.message || 'We use cookies to enhance your browsing experience.',
+          message: data.message || "We use cookies to enhance your browsing experience.",
         });
       }
     } catch (err) {
-      console.error('Error fetching cookie settings:', err);
+      console.error("Error fetching cookie settings:", err);
     }
   };
 
   const saveCookieSettings = async () => {
     setSaving(true);
     try {
-      await fetch('/api/settings/cookies/', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+      await fetch("/api/settings/cookies/", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(cookieSettings),
       });
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     } catch (err) {
-      console.error('Error saving cookie settings:', err);
+      console.error("Error saving cookie settings:", err);
     }
     setSaving(false);
   };
@@ -64,9 +64,9 @@ function CookieSettings() {
           </div>
           <button
             onClick={() => setCookieSettings(s => ({ ...s, enabled: !s.enabled }))}
-            className={`relative w-14 h-7 rounded-full transition-colors ${cookieSettings.enabled ? 'bg-green-500' : 'bg-gray-300'}`}
+            className={`relative w-14 h-7 rounded-full transition-colors ${cookieSettings.enabled ? "bg-green-500" : "bg-gray-300"}`}
           >
-            <div className={`absolute top-1 left-1 w-5 h-5 bg-white rounded-full transition-transform ${cookieSettings.enabled ? 'translate-x-7' : ''}`} />
+            <div className={`absolute top-1 left-1 w-5 h-5 bg-white rounded-full transition-transform ${cookieSettings.enabled ? "translate-x-7" : ""}`} />
           </button>
         </div>
         <div>
@@ -101,15 +101,15 @@ function CacheManagement() {
     setClearing(true);
     setResult(null);
     try {
-      const res = await fetch('/api/admin/cache/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/admin/cache/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action }),
       });
       const data = await res.json();
-      setResult({ success: true, message: data.results?.join(', ') || 'Cache cleared' });
+      setResult({ success: true, message: data.results?.join(", ") || "Cache cleared" });
     } catch (err) {
-      setResult({ success: false, message: 'Failed to clear cache' });
+      setResult({ success: false, message: "Failed to clear cache" });
     }
     setClearing(false);
     setTimeout(() => setResult(null), 5000);
@@ -122,21 +122,21 @@ function CacheManagement() {
       </h2>
       <p className="text-sm text-gray-500 mb-4">Clear various caches to free up space or fix issues.</p>
       {result && (
-        <div className={`mb-4 p-3 rounded-lg ${result.success ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+        <div className={`mb-4 p-3 rounded-lg ${result.success ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}>
           {result.message}
         </div>
       )}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <button
-          onClick={() => clearCache('all')}
+          onClick={() => clearCache("all")}
           disabled={clearing}
           className="p-4 bg-red-50 hover:bg-red-100 rounded-xl text-center transition-colors border border-red-200"
         >
-          <FiRefreshCw className={`w-6 h-6 mx-auto mb-2 text-red-500 ${clearing ? 'animate-spin' : ''}`} />
+          <FiRefreshCw className={`w-6 h-6 mx-auto mb-2 text-red-500 ${clearing ? "animate-spin" : ""}`} />
           <p className="font-medium text-red-700 text-sm">Clear All</p>
         </button>
         <button
-          onClick={() => clearCache('next')}
+          onClick={() => clearCache("next")}
           disabled={clearing}
           className="p-4 bg-blue-50 hover:bg-blue-100 rounded-xl text-center transition-colors border border-blue-200"
         >
@@ -144,7 +144,7 @@ function CacheManagement() {
           <p className="font-medium text-blue-700 text-sm">Next.js Cache</p>
         </button>
         <button
-          onClick={() => clearCache('api')}
+          onClick={() => clearCache("api")}
           disabled={clearing}
           className="p-4 bg-purple-50 hover:bg-purple-100 rounded-xl text-center transition-colors border border-purple-200"
         >
@@ -152,7 +152,7 @@ function CacheManagement() {
           <p className="font-medium text-purple-700 text-sm">API Cache</p>
         </button>
         <button
-          onClick={() => clearCache('sessions')}
+          onClick={() => clearCache("sessions")}
           disabled={clearing}
           className="p-4 bg-amber-50 hover:bg-amber-100 rounded-xl text-center transition-colors border border-amber-200"
         >
@@ -312,11 +312,11 @@ function SettingsContent() {
                     <button
                       onClick={() => setSettings({ ...settings, autoApproval: !settings.autoApproval })}
                       className={`relative w-14 h-8 rounded-full transition-colors ${
-                        settings.autoApproval ? 'bg-green-500' : 'bg-gray-300'
+                        settings.autoApproval ? "bg-green-500" : "bg-gray-300"
                       }`}
                     >
                       <span className={`absolute top-1 w-6 h-6 bg-white rounded-full shadow transition-transform ${
-                        settings.autoApproval ? 'left-7' : 'left-1'
+                        settings.autoApproval ? "left-7" : "left-1"
                       }`} />
                     </button>
                   </div>
@@ -388,7 +388,7 @@ function SettingsContent() {
                   <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
                     <div className="flex items-center gap-3">
                       <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                        settings.mangaVisibility?.web ? 'bg-gradient-to-br from-blue-500 to-blue-600' : 'bg-gray-300'
+                        settings.mangaVisibility?.web ? "bg-gradient-to-br from-blue-500 to-blue-600" : "bg-gray-300"
                       }`}>
                         <FiMonitor className="w-6 h-6 text-white" />
                       </div>
@@ -403,11 +403,11 @@ function SettingsContent() {
                         mangaVisibility: { ...settings.mangaVisibility, web: !settings.mangaVisibility?.web }
                       })}
                       className={`relative w-14 h-8 rounded-full transition-colors ${
-                        settings.mangaVisibility?.web ? 'bg-blue-500' : 'bg-gray-300'
+                        settings.mangaVisibility?.web ? "bg-blue-500" : "bg-gray-300"
                       }`}
                     >
                       <span className={`absolute top-1 w-6 h-6 bg-white rounded-full shadow transition-transform ${
-                        settings.mangaVisibility?.web ? 'left-7' : 'left-1'
+                        settings.mangaVisibility?.web ? "left-7" : "left-1"
                       }`} />
                     </button>
                   </div>
@@ -416,7 +416,7 @@ function SettingsContent() {
                   <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
                     <div className="flex items-center gap-3">
                       <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                        settings.mangaVisibility?.mobileWeb ? 'bg-gradient-to-br from-purple-500 to-purple-600' : 'bg-gray-300'
+                        settings.mangaVisibility?.mobileWeb ? "bg-gradient-to-br from-purple-500 to-purple-600" : "bg-gray-300"
                       }`}>
                         <FiGlobe className="w-6 h-6 text-white" />
                       </div>
@@ -431,11 +431,11 @@ function SettingsContent() {
                         mangaVisibility: { ...settings.mangaVisibility, mobileWeb: !settings.mangaVisibility?.mobileWeb }
                       })}
                       className={`relative w-14 h-8 rounded-full transition-colors ${
-                        settings.mangaVisibility?.mobileWeb ? 'bg-purple-500' : 'bg-gray-300'
+                        settings.mangaVisibility?.mobileWeb ? "bg-purple-500" : "bg-gray-300"
                       }`}
                     >
                       <span className={`absolute top-1 w-6 h-6 bg-white rounded-full shadow transition-transform ${
-                        settings.mangaVisibility?.mobileWeb ? 'left-7' : 'left-1'
+                        settings.mangaVisibility?.mobileWeb ? "left-7" : "left-1"
                       }`} />
                     </button>
                   </div>
@@ -444,7 +444,7 @@ function SettingsContent() {
                   <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
                     <div className="flex items-center gap-3">
                       <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                        settings.mangaVisibility?.android ? 'bg-gradient-to-br from-green-500 to-green-600' : 'bg-gray-300'
+                        settings.mangaVisibility?.android ? "bg-gradient-to-br from-green-500 to-green-600" : "bg-gray-300"
                       }`}>
                         <FiSmartphone className="w-6 h-6 text-white" />
                       </div>
@@ -459,11 +459,11 @@ function SettingsContent() {
                         mangaVisibility: { ...settings.mangaVisibility, android: !settings.mangaVisibility?.android }
                       })}
                       className={`relative w-14 h-8 rounded-full transition-colors ${
-                        settings.mangaVisibility?.android ? 'bg-green-500' : 'bg-gray-300'
+                        settings.mangaVisibility?.android ? "bg-green-500" : "bg-gray-300"
                       }`}
                     >
                       <span className={`absolute top-1 w-6 h-6 bg-white rounded-full shadow transition-transform ${
-                        settings.mangaVisibility?.android ? 'left-7' : 'left-1'
+                        settings.mangaVisibility?.android ? "left-7" : "left-1"
                       }`} />
                     </button>
                   </div>
@@ -472,7 +472,7 @@ function SettingsContent() {
                   <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
                     <div className="flex items-center gap-3">
                       <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                        settings.mangaVisibility?.ios ? 'bg-gradient-to-br from-gray-700 to-gray-900' : 'bg-gray-300'
+                        settings.mangaVisibility?.ios ? "bg-gradient-to-br from-gray-700 to-gray-900" : "bg-gray-300"
                       }`}>
                         <FiTablet className="w-6 h-6 text-white" />
                       </div>
@@ -487,11 +487,11 @@ function SettingsContent() {
                         mangaVisibility: { ...settings.mangaVisibility, ios: !settings.mangaVisibility?.ios }
                       })}
                       className={`relative w-14 h-8 rounded-full transition-colors ${
-                        settings.mangaVisibility?.ios ? 'bg-gray-700' : 'bg-gray-300'
+                        settings.mangaVisibility?.ios ? "bg-gray-700" : "bg-gray-300"
                       }`}
                     >
                       <span className={`absolute top-1 w-6 h-6 bg-white rounded-full shadow transition-transform ${
-                        settings.mangaVisibility?.ios ? 'left-7' : 'left-1'
+                        settings.mangaVisibility?.ios ? "left-7" : "left-1"
                       }`} />
                     </button>
                   </div>
@@ -501,17 +501,17 @@ function SettingsContent() {
                 <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-xl">
                   <p className="text-sm text-blue-800 font-medium mb-2">Current Status:</p>
                   <div className="flex flex-wrap gap-2">
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${settings.mangaVisibility?.web ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                      Desktop: {settings.mangaVisibility?.web ? 'Visible' : 'Hidden'}
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${settings.mangaVisibility?.web ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+                      Desktop: {settings.mangaVisibility?.web ? "Visible" : "Hidden"}
                     </span>
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${settings.mangaVisibility?.mobileWeb ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                      Mobile Web: {settings.mangaVisibility?.mobileWeb ? 'Visible' : 'Hidden'}
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${settings.mangaVisibility?.mobileWeb ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+                      Mobile Web: {settings.mangaVisibility?.mobileWeb ? "Visible" : "Hidden"}
                     </span>
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${settings.mangaVisibility?.android ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                      Android: {settings.mangaVisibility?.android ? 'Visible' : 'Hidden'}
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${settings.mangaVisibility?.android ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+                      Android: {settings.mangaVisibility?.android ? "Visible" : "Hidden"}
                     </span>
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${settings.mangaVisibility?.ios ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                      iOS: {settings.mangaVisibility?.ios ? 'Visible' : 'Hidden'}
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${settings.mangaVisibility?.ios ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+                      iOS: {settings.mangaVisibility?.ios ? "Visible" : "Hidden"}
                     </span>
                   </div>
                 </div>

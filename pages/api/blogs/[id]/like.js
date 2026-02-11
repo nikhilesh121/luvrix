@@ -1,13 +1,13 @@
-import { likeBlog, getBlog } from '../../../../lib/db';
-import { getDb } from '../../../../lib/mongodb';
-import { withCSRFProtection } from '../../../../lib/csrf';
-import { notifyBlogLiked } from '../../../../lib/notifications';
+import { likeBlog, getBlog } from "../../../../lib/db";
+import { getDb } from "../../../../lib/mongodb";
+import { withCSRFProtection } from "../../../../lib/csrf";
+import { notifyBlogLiked } from "../../../../lib/notifications";
 
 async function handler(req, res) {
   const { id } = req.query;
   
   try {
-    if (req.method === 'POST') {
+    if (req.method === "POST") {
       const { userId } = req.body;
       await likeBlog(id, userId);
       const blog = await getBlog(id);
@@ -15,13 +15,13 @@ async function handler(req, res) {
       // Send notification to blog author
       if (blog && blog.authorId && blog.authorId !== userId) {
         const db = await getDb();
-        const liker = await db.collection('users').findOne({ _id: userId });
+        const liker = await db.collection("users").findOne({ _id: userId });
         notifyBlogLiked({
           blogId: id,
           blogTitle: blog.title,
           blogAuthorId: blog.authorId,
           likerId: userId,
-          likerName: liker?.name || 'Someone',
+          likerName: liker?.name || "Someone",
         }).catch(console.error);
       }
 
@@ -32,10 +32,10 @@ async function handler(req, res) {
       });
     }
     
-    return res.status(405).json({ error: 'Method not allowed' });
+    return res.status(405).json({ error: "Method not allowed" });
   } catch (error) {
-    console.error('Like blog API error:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    console.error("Like blog API error:", error);
+    return res.status(500).json({ error: "Internal server error" });
   }
 }
 

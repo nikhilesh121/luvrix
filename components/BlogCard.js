@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { FiClock, FiUser, FiArrowUpRight, FiEye, FiHeart } from "react-icons/fi";
+import { FiArrowUpRight, FiEye } from "react-icons/fi";
 
 const DEFAULT_IMAGE = "/default-blog.svg";
 

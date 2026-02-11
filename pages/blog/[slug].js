@@ -30,7 +30,7 @@ export async function getServerSideProps(context) {
           serialized[key] = value.toDate().toISOString();
         } else if (value?.seconds) {
           serialized[key] = new Date(value.seconds * 1000).toISOString();
-        } else if (value && typeof value === 'object' && value.constructor?.name === 'ObjectId') {
+        } else if (value && typeof value === "object" && value.constructor?.name === "ObjectId") {
           serialized[key] = value.toString();
         } else if (value instanceof Date) {
           serialized[key] = value.toISOString();

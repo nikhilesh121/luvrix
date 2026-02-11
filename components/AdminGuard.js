@@ -4,7 +4,7 @@ import { useAuth } from "../context/AuthContext";
 
 export default function AdminGuard({ children }) {
   const router = useRouter();
-  const { isLoggedIn, isAdmin, loading, userData } = useAuth();
+  const { isLoggedIn, isAdmin, loading, userData: _userData } = useAuth();
 
   useEffect(() => {
     if (!loading) {

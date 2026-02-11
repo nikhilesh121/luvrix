@@ -8,17 +8,17 @@ import Link from "next/link";
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://luvrix.com";
 
 function formatNumber(num) {
-  if (!num || num < 0) return '0';
+  if (!num || num < 0) return "0";
   if (num < 1000) return `${num}`;
   if (num < 1000000) return `${Math.floor(num / 1000)}K+`;
-  return `${(num / 1000000).toFixed(1).replace(/\.0$/, '')}M+`;
+  return `${(num / 1000000).toFixed(1).replace(/\.0$/, "")}M+`;
 }
 
 export default function About() {
   const [platformStats, setPlatformStats] = useState({ readers: 0, writers: 0, articles: 0, categories: 0 });
 
   useEffect(() => {
-    fetch('/api/stats/platform')
+    fetch("/api/stats/platform")
       .then(r => r.ok ? r.json() : null)
       .then(data => { if (data) setPlatformStats(data); })
       .catch(() => {});
@@ -83,8 +83,8 @@ export default function About() {
             className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-gradient-to-r from-blue-600/30 to-cyan-600/30 rounded-full blur-[120px]"
           />
           <div className="absolute inset-0 opacity-[0.03]" style={{
-            backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`,
-            backgroundSize: '40px 40px'
+            backgroundImage: "linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)",
+            backgroundSize: "40px 40px"
           }} />
         </div>
         

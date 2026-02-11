@@ -1,34 +1,34 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { FiBell, FiX, FiHeart, FiUserPlus, FiMessageCircle, FiCheck, FiFileText, FiBook, FiCheckCircle, FiSettings } from 'react-icons/fi';
-import { useSocket } from '../context/SocketContext';
-import { useAuth } from '../context/AuthContext';
-import Link from 'next/link';
+import { useState, useRef, useEffect, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { FiBell, FiHeart, FiUserPlus, FiMessageCircle, FiCheck, FiFileText, FiBook, FiCheckCircle } from "react-icons/fi";
+import { useSocket } from "../context/SocketContext";
+import { useAuth } from "../context/AuthContext";
+import Link from "next/link";
 
 const TABS = [
-  { id: 'all', label: 'All', icon: FiBell },
-  { id: 'blogs', label: 'Blogs', icon: FiFileText },
-  { id: 'likes', label: 'Likes', icon: FiHeart },
-  { id: 'follows', label: 'Follows', icon: FiUserPlus },
+  { id: "all", label: "All", icon: FiBell },
+  { id: "blogs", label: "Blogs", icon: FiFileText },
+  { id: "likes", label: "Likes", icon: FiHeart },
+  { id: "follows", label: "Follows", icon: FiUserPlus },
 ];
 
 const typeConfig = {
-  blog_liked: { icon: FiHeart, color: 'text-red-500', bg: 'bg-red-50' },
-  blog_published: { icon: FiFileText, color: 'text-purple-500', bg: 'bg-purple-50' },
-  new_follower: { icon: FiUserPlus, color: 'text-blue-500', bg: 'bg-blue-50' },
-  new_blog_from_following: { icon: FiBook, color: 'text-indigo-500', bg: 'bg-indigo-50' },
-  comment: { icon: FiMessageCircle, color: 'text-green-500', bg: 'bg-green-50' },
-  blog_approved: { icon: FiCheckCircle, color: 'text-emerald-500', bg: 'bg-emerald-50' },
-  follow: { icon: FiUserPlus, color: 'text-blue-500', bg: 'bg-blue-50' },
-  like: { icon: FiHeart, color: 'text-red-500', bg: 'bg-red-50' },
-  new_blog: { icon: FiFileText, color: 'text-purple-500', bg: 'bg-purple-50' },
+  blog_liked: { icon: FiHeart, color: "text-red-500", bg: "bg-red-50" },
+  blog_published: { icon: FiFileText, color: "text-purple-500", bg: "bg-purple-50" },
+  new_follower: { icon: FiUserPlus, color: "text-blue-500", bg: "bg-blue-50" },
+  new_blog_from_following: { icon: FiBook, color: "text-indigo-500", bg: "bg-indigo-50" },
+  comment: { icon: FiMessageCircle, color: "text-green-500", bg: "bg-green-50" },
+  blog_approved: { icon: FiCheckCircle, color: "text-emerald-500", bg: "bg-emerald-50" },
+  follow: { icon: FiUserPlus, color: "text-blue-500", bg: "bg-blue-50" },
+  like: { icon: FiHeart, color: "text-red-500", bg: "bg-red-50" },
+  new_blog: { icon: FiFileText, color: "text-purple-500", bg: "bg-purple-50" },
 };
 
 export default function NotificationBell() {
   const { notifications: realtimeNotifs, clearNotifications: clearRealtime, markNotificationRead: markRealtimeRead, isConnected } = useSocket();
   const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState('all');
+  const [activeTab, setActiveTab] = useState("all");
   const [dbNotifications, setDbNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [categoryCounts, setCategoryCounts] = useState({});
@@ -42,19 +42,19 @@ export default function NotificationBell() {
         setIsOpen(false);
       }
     };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   // Fetch notifications from DB when panel opens
-  const fetchNotifications = useCallback(async (category = 'all') => {
+  const fetchNotifications = useCallback(async (category = "all") => {
     if (!user) return;
     setLoading(true);
     try {
-      const token = localStorage.getItem('luvrix_auth_token');
-      const params = new URLSearchParams({ category, limit: '30' });
+      const token = localStorage.getItem("luvrix_auth_token");
+      const params = new URLSearchParams({ category, limit: "30" });
       const res = await fetch(`/api/notifications?${params}`, {
-        headers: { 'Authorization': `Bearer ${token}` },
+        headers: { "Authorization": `Bearer ${token}` },
       });
       if (res.ok) {
         const data = await res.json();
@@ -63,7 +63,7 @@ export default function NotificationBell() {
         setCategoryCounts(data.categoryCounts || {});
       }
     } catch (err) {
-      console.error('Failed to fetch notifications:', err);
+      console.error("Failed to fetch notifications:", err);
     } finally {
       setLoading(false);
     }
@@ -76,8 +76,8 @@ export default function NotificationBell() {
   // Refresh count periodically
   useEffect(() => {
     if (!user) return;
-    fetchNotifications('all');
-    const interval = setInterval(() => fetchNotifications('all'), 60000);
+    fetchNotifications("all");
+    const interval = setInterval(() => fetchNotifications("all"), 60000);
     return () => clearInterval(interval);
   }, [user, fetchNotifications]);
 
@@ -86,16 +86,16 @@ export default function NotificationBell() {
 
   const handleMarkAllRead = async () => {
     try {
-      const token = localStorage.getItem('luvrix_auth_token');
-      await fetch('/api/notifications', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      const token = localStorage.getItem("luvrix_auth_token");
+      await fetch("/api/notifications", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
         body: JSON.stringify({ category: activeTab }),
       });
       clearRealtime();
       fetchNotifications(activeTab);
     } catch (err) {
-      console.error('Mark all read error:', err);
+      console.error("Mark all read error:", err);
     }
   };
 
@@ -104,15 +104,15 @@ export default function NotificationBell() {
       markRealtimeRead(index);
     } else {
       try {
-        const token = localStorage.getItem('luvrix_auth_token');
+        const token = localStorage.getItem("luvrix_auth_token");
         await fetch(`/api/notifications/${notifId}`, {
-          method: 'PUT',
-          headers: { 'Authorization': `Bearer ${token}` },
+          method: "PUT",
+          headers: { "Authorization": `Bearer ${token}` },
         });
         setDbNotifications(prev => prev.map(n => n.id === notifId ? { ...n, read: true } : n));
         setUnreadCount(prev => Math.max(0, prev - 1));
       } catch (err) {
-        console.error('Mark read error:', err);
+        console.error("Mark read error:", err);
       }
     }
   };
@@ -121,11 +121,11 @@ export default function NotificationBell() {
     const date = new Date(timestamp);
     const now = new Date();
     const diff = now - date;
-    if (diff < 60000) return 'Just now';
+    if (diff < 60000) return "Just now";
     if (diff < 3600000) return `${Math.floor(diff / 60000)}m`;
     if (diff < 86400000) return `${Math.floor(diff / 3600000)}h`;
     if (diff < 604800000) return `${Math.floor(diff / 86400000)}d`;
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
   };
 
   // Merge realtime + DB notifications
@@ -135,7 +135,7 @@ export default function NotificationBell() {
   ];
 
   // Filter by tab
-  const filteredNotifications = activeTab === 'all' 
+  const filteredNotifications = activeTab === "all" 
     ? allNotifications 
     : allNotifications.filter(n => n.category === activeTab);
 
@@ -155,7 +155,7 @@ export default function NotificationBell() {
             animate={{ scale: 1 }}
             className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] rounded-full flex items-center justify-center font-bold shadow-sm"
           >
-            {totalUnread > 99 ? '99+' : totalUnread}
+            {totalUnread > 99 ? "99+" : totalUnread}
           </motion.span>
         )}
       </motion.button>
@@ -188,22 +188,22 @@ export default function NotificationBell() {
             <div className="flex border-b border-gray-100 px-2 pt-1">
               {TABS.map((tab) => {
                 const TabIcon = tab.icon;
-                const count = tab.id === 'all' ? totalUnread : (categoryCounts[tab.id] || 0);
+                const count = tab.id === "all" ? totalUnread : (categoryCounts[tab.id] || 0);
                 return (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
                     className={`flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-t-lg transition-all relative ${
                       activeTab === tab.id
-                        ? 'text-primary bg-primary/5'
-                        : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                        ? "text-primary bg-primary/5"
+                        : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
                     }`}
                   >
                     <TabIcon className="w-3.5 h-3.5" />
                     {tab.label}
                     {count > 0 && (
                       <span className={`min-w-[16px] h-4 px-1 rounded-full text-[9px] font-bold flex items-center justify-center ${
-                        activeTab === tab.id ? 'bg-primary text-white' : 'bg-gray-200 text-gray-600'
+                        activeTab === tab.id ? "bg-primary text-white" : "bg-gray-200 text-gray-600"
                       }`}>
                         {count}
                       </span>
@@ -227,15 +227,15 @@ export default function NotificationBell() {
                   <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
                     <FiBell className="w-5 h-5" />
                   </div>
-                  <p className="text-sm font-medium text-gray-500">No {activeTab === 'all' ? '' : activeTab + ' '}notifications</p>
+                  <p className="text-sm font-medium text-gray-500">No {activeTab === "all" ? "" : activeTab + " "}notifications</p>
                   <p className="text-xs mt-1">
-                    {isConnected ? 'You\'re all caught up!' : 'Connecting...'}
+                    {isConnected ? "You're all caught up!" : "Connecting..."}
                   </p>
                 </div>
               ) : (
                 <div>
                   {filteredNotifications.map((notification, index) => {
-                    const config = typeConfig[notification.type] || { icon: FiBell, color: 'text-gray-500', bg: 'bg-gray-50' };
+                    const config = typeConfig[notification.type] || { icon: FiBell, color: "text-gray-500", bg: "bg-gray-50" };
                     const NotifIcon = config.icon;
                     const isUnread = notification._isRealtime || !notification.read;
 
@@ -245,7 +245,7 @@ export default function NotificationBell() {
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: Math.min(index * 0.03, 0.3) }}
                         className={`px-4 py-3 flex items-start gap-3 transition-colors cursor-pointer ${
-                          isUnread ? 'bg-blue-50/40 hover:bg-blue-50/70' : 'hover:bg-gray-50'
+                          isUnread ? "bg-blue-50/40 hover:bg-blue-50/70" : "hover:bg-gray-50"
                         }`}
                       >
                         {notification.image ? (
@@ -256,7 +256,7 @@ export default function NotificationBell() {
                           </div>
                         )}
                         <div className="flex-1 min-w-0">
-                          <p className={`text-[13px] leading-snug ${isUnread ? 'text-gray-900 font-semibold' : 'text-gray-700'}`}>
+                          <p className={`text-[13px] leading-snug ${isUnread ? "text-gray-900 font-semibold" : "text-gray-700"}`}>
                             {notification.message}
                           </p>
                           <div className="flex items-center gap-2 mt-1">
@@ -298,7 +298,7 @@ export default function NotificationBell() {
             {/* Footer */}
             <div className="px-4 py-2.5 bg-gray-50 border-t flex items-center justify-between">
               <span className="text-[11px] text-gray-400">
-                {isConnected ? '● Live' : '○ Offline'}
+                {isConnected ? "● Live" : "○ Offline"}
               </span>
               <Link href="/notifications" onClick={() => setIsOpen(false)} className="text-xs text-primary font-semibold hover:text-primary/80">
                 View All →

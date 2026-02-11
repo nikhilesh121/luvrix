@@ -316,7 +316,7 @@ export default function GiveawayListPage() {
 
               <motion.div variants={stagger} initial="hidden" whileInView="visible" viewport={{ once: true }}
                 className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {winners.map((g, i) => (
+                {winners.map((g, _i) => (
                   <motion.div key={g.id} variants={fadeScale}>
                     <Link href={`/giveaway/${g.slug}`}
                       className="group block relative overflow-hidden rounded-2xl bg-gradient-to-br from-purple-900/30 to-pink-900/20 border border-purple-500/10 hover:border-purple-500/30 transition-all duration-300 hover:shadow-xl hover:shadow-purple-500/10">

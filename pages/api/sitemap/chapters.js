@@ -7,8 +7,8 @@
 // See: docs/SEO_MASTER_PLAYBOOK.md → "Manga Chapter Architecture (FINAL)"
 
 export default async function handler(req, res) {
-  res.setHeader('Content-Type', 'application/xml');
-  res.setHeader('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=86400');
+  res.setHeader("Content-Type", "application/xml");
+  res.setHeader("Cache-Control", "public, s-maxage=3600, stale-while-revalidate=86400");
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">

@@ -1,7 +1,6 @@
 import { useState } from "react";
 import AdminGuard from "../../components/AdminGuard";
 import AdminSidebar from "../../components/AdminSidebar";
-import { useAuth } from "../../context/AuthContext";
 import { createLog } from "../../lib/api-client";
 import { motion } from "framer-motion";
 import { FiSave, FiLock, FiEye, FiEyeOff, FiCheck, FiAlertCircle } from "react-icons/fi";
@@ -58,16 +57,16 @@ function ChangePasswordContent() {
         throw new Error(passwordError);
       }
 
-      const token = localStorage.getItem('luvrix_auth_token');
+      const token = localStorage.getItem("luvrix_auth_token");
       if (!token) {
         throw new Error("No user logged in");
       }
 
-      const response = await fetch('/api/auth/change-password', {
-        method: 'POST',
+      const response = await fetch("/api/auth/change-password", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
         },
         body: JSON.stringify({
           currentPassword: formData.currentPassword,

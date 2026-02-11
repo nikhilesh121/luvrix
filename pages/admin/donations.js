@@ -4,7 +4,7 @@ import AdminSidebar from "../../components/AdminSidebar";
 import { motion } from "framer-motion";
 import {
   FiHeart, FiDollarSign, FiSearch, FiUsers, FiMail,
-  FiArrowUp, FiGift, FiUser, FiCalendar,
+  FiArrowUp, FiUser,
 } from "react-icons/fi";
 
 export default function AdminDonations() {

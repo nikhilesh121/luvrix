@@ -158,13 +158,13 @@ function SitemapAdminContent() {
 
           {/* Refresh/Ping Results */}
           {pingResult && (
-            <div className={`mb-4 p-4 rounded-xl text-sm font-medium ${pingResult === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
-              {pingResult === 'success' ? '✓ Google pinged successfully! Sitemap submitted.' : '✗ Failed to ping Google. Try again.'}
+            <div className={`mb-4 p-4 rounded-xl text-sm font-medium ${pingResult === "success" ? "bg-green-50 text-green-700 border border-green-200" : "bg-red-50 text-red-700 border border-red-200"}`}>
+              {pingResult === "success" ? "✓ Google pinged successfully! Sitemap submitted." : "✗ Failed to ping Google. Try again."}
             </div>
           )}
           {refreshResult && (
-            <div className={`mb-4 p-4 rounded-xl text-sm font-medium ${refreshResult === 'success' ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-yellow-50 text-yellow-700 border border-yellow-200'}`}>
-              {refreshResult === 'success' ? (
+            <div className={`mb-4 p-4 rounded-xl text-sm font-medium ${refreshResult === "success" ? "bg-blue-50 text-blue-700 border border-blue-200" : "bg-yellow-50 text-yellow-700 border border-yellow-200"}`}>
+              {refreshResult === "success" ? (
                 <div>
                   <p className="font-bold mb-2">✓ All sitemaps refreshed successfully!</p>
                   <div className="flex flex-wrap gap-2">
@@ -173,7 +173,7 @@ function SitemapAdminContent() {
                     ))}
                   </div>
                 </div>
-              ) : '⚠ Some sitemaps had issues refreshing.'}
+              ) : "⚠ Some sitemaps had issues refreshing."}
             </div>
           )}
 

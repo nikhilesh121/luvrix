@@ -1,17 +1,17 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
 import { getSettings } from "../lib/api-client";
 import NotificationBell from "./NotificationBell";
 import { useTheme } from "../context/ThemeContext";
 import { 
   FiMenu, FiX, FiUser, FiLogOut, FiSettings, FiChevronDown, 
-  FiEdit3, FiGrid, FiBookOpen, FiTrendingUp, FiCpu, FiHeart,
+  FiEdit3, FiGrid, FiBookOpen, FiCpu, FiHeart,
   FiDollarSign, FiGlobe, FiActivity, FiCoffee, FiMapPin, FiBook,
-  FiFilm, FiMusic, FiCamera, FiStar, FiAward, FiTrophy, FiHome,
-  FiSearch, FiZap, FiLayers, FiBell, FiCommand, FiUsers,
+  FiFilm, FiMusic, FiCamera, FiStar, FiAward, FiHome,
+  FiSearch, FiZap, FiCommand, FiUsers,
   FiSun, FiMoon, FiGift
 } from "react-icons/fi";
 
@@ -63,7 +63,7 @@ const iconMap = {
   FiStar, FiGrid, FiFilm, FiMusic, FiCamera, FiAward, FiBookOpen, FiBook, FiGift,
 };
 
-const getIconComponent = (iconName) => {
+const _getIconComponent = (iconName) => {
   return iconMap[iconName] || FiStar;
 };
 
@@ -83,7 +83,7 @@ const convertSettingsMenuToMenuData = (settingsMenus) => {
 
 export default function Header() {
   const router = useRouter();
-  const { user, userData, logout, isLoggedIn } = useAuth();
+  const { user, userData, logout, isLoggedIn: _isLoggedIn } = useAuth();
   const { isDark, toggleTheme } = useTheme();
   const [settings, setSettings] = useState(null);
   const [menuData, setMenuData] = useState(defaultMenuData);
@@ -109,7 +109,7 @@ export default function Header() {
       const isMangaVisible = mangaVisibility.web || mangaVisibility.mobileWeb;
       
       if (s?.navigationMenus) {
-        let menus = convertSettingsMenuToMenuData(s.navigationMenus);
+        const menus = convertSettingsMenuToMenuData(s.navigationMenus);
         // Always append Manga and Giveaways links (controlled separately)
         if (isMangaVisible) {
           menus.push({ label: "Manga", href: "/manga", icon: FiBookOpen });
@@ -411,7 +411,7 @@ export default function Header() {
                           className="flex items-center gap-3 px-4 py-2.5 w-full text-gray-600 hover:text-primary hover:bg-gray-50 transition-colors"
                         >
                           {isDark ? <FiSun className="w-4 h-4" /> : <FiMoon className="w-4 h-4" />}
-                          <span>{isDark ? 'Light Mode' : 'Dark Mode'}</span>
+                          <span>{isDark ? "Light Mode" : "Dark Mode"}</span>
                         </button>
                       </div>
 
@@ -433,7 +433,7 @@ export default function Header() {
                 <button
                   onClick={toggleTheme}
                   className="hidden sm:flex p-2.5 text-gray-500 hover:text-primary hover:bg-primary/5 rounded-xl transition-all"
-                  title={`Switch to ${isDark ? 'light' : 'dark'} mode`}
+                  title={`Switch to ${isDark ? "light" : "dark"} mode`}
                 >
                   {isDark ? <FiSun className="w-5 h-5" /> : <FiMoon className="w-5 h-5" />}
                 </button>
@@ -544,7 +544,7 @@ export default function Header() {
                     className="flex items-center gap-3 w-full px-4 py-3 text-gray-700 hover:text-primary hover:bg-gray-50 rounded-lg transition-colors"
                   >
                     {isDark ? <FiSun className="w-4 h-4" /> : <FiMoon className="w-4 h-4" />}
-                    <span className="font-medium">{isDark ? 'Light Mode' : 'Dark Mode'}</span>
+                    <span className="font-medium">{isDark ? "Light Mode" : "Dark Mode"}</span>
                   </button>
                 </div>
               </div>

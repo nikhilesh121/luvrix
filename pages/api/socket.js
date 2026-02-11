@@ -1,4 +1,4 @@
-import { Server } from 'socket.io';
+import { Server } from "socket.io";
 
 // Global analytics store (persists across requests)
 if (!global.socketAnalytics) {
@@ -15,7 +15,7 @@ const analytics = global.socketAnalytics;
 
 const SocketHandler = (req, res) => {
   // Handle GET request for analytics data
-  if (req.method === 'GET' && req.query.analytics === 'true') {
+  if (req.method === "GET" && req.query.analytics === "true") {
     const liveUserCount = analytics.liveUsers.size;
     const pageBreakdown = {};
     
@@ -38,30 +38,30 @@ const SocketHandler = (req, res) => {
   }
 
   if (res.socket.server.io) {
-    console.log('Socket.io already running');
+    console.log("Socket.io already running");
     res.end();
     return;
   }
 
-  console.log('Setting up Socket.io server...');
+  console.log("Setting up Socket.io server...");
   
   const io = new Server(res.socket.server, {
-    path: '/api/socket',
+    path: "/api/socket",
     addTrailingSlash: false,
     cors: {
-      origin: process.env.NEXT_PUBLIC_SITE_URL || '*',
-      methods: ['GET', 'POST'],
+      origin: process.env.NEXT_PUBLIC_SITE_URL || "*",
+      methods: ["GET", "POST"],
     },
   });
 
   // Store connected users
   const connectedUsers = new Map();
 
-  io.on('connection', (socket) => {
-    console.log('Client connected:', socket.id);
+  io.on("connection", (socket) => {
+    console.log("Client connected:", socket.id);
 
     // User joins with their userId
-    socket.on('user:join', (userId) => {
+    socket.on("user:join", (userId) => {
       if (userId) {
         connectedUsers.set(socket.id, userId);
         socket.join(`user:${userId}`);
@@ -70,12 +70,12 @@ const SocketHandler = (req, res) => {
     });
 
     // Track page view for analytics
-    socket.on('analytics:pageView', (data) => {
+    socket.on("analytics:pageView", (data) => {
       const { page, userId } = data;
       
       // Update live users
       analytics.liveUsers.set(socket.id, {
-        userId: userId || 'anonymous',
+        userId: userId || "anonymous",
         page,
         joinedAt: Date.now(),
       });
@@ -93,13 +93,13 @@ const SocketHandler = (req, res) => {
       });
       
       // Broadcast live user count to admin
-      io.to('admin:analytics').emit('analytics:update', {
+      io.to("admin:analytics").emit("analytics:update", {
         liveUsers: analytics.liveUsers.size,
       });
     });
 
     // Track page leave
-    socket.on('analytics:pageLeave', (data) => {
+    socket.on("analytics:pageLeave", (data) => {
       const { page } = data;
       
       // Calculate watch time
@@ -121,38 +121,38 @@ const SocketHandler = (req, res) => {
     });
 
     // Admin joins analytics room
-    socket.on('admin:joinAnalytics', () => {
-      socket.join('admin:analytics');
+    socket.on("admin:joinAnalytics", () => {
+      socket.join("admin:analytics");
       // Send current stats
-      socket.emit('analytics:update', {
+      socket.emit("analytics:update", {
         liveUsers: analytics.liveUsers.size,
       });
     });
 
     // Join a specific room (blog, manga, etc.)
-    socket.on('room:join', (room) => {
+    socket.on("room:join", (room) => {
       socket.join(room);
       console.log(`Socket ${socket.id} joined room: ${room}`);
     });
 
     // Leave a room
-    socket.on('room:leave', (room) => {
+    socket.on("room:leave", (room) => {
       socket.leave(room);
       console.log(`Socket ${socket.id} left room: ${room}`);
     });
 
     // Blog events
-    socket.on('blog:view', (data) => {
+    socket.on("blog:view", (data) => {
       // Broadcast view count update to all users viewing this blog
-      io.to(`blog:${data.blogId}`).emit('blog:viewUpdate', {
+      io.to(`blog:${data.blogId}`).emit("blog:viewUpdate", {
         blogId: data.blogId,
         views: data.views,
       });
     });
 
-    socket.on('blog:like', (data) => {
+    socket.on("blog:like", (data) => {
       // Broadcast like update to all users viewing this blog
-      io.to(`blog:${data.blogId}`).emit('blog:likeUpdate', {
+      io.to(`blog:${data.blogId}`).emit("blog:likeUpdate", {
         blogId: data.blogId,
         likes: data.likes,
         userId: data.userId,
@@ -161,31 +161,31 @@ const SocketHandler = (req, res) => {
     });
 
     // Comment events
-    socket.on('comment:new', (data) => {
+    socket.on("comment:new", (data) => {
       // Broadcast new comment to all users viewing this content
-      io.to(`${data.targetType}:${data.targetId}`).emit('comment:added', data.comment);
+      io.to(`${data.targetType}:${data.targetId}`).emit("comment:added", data.comment);
     });
 
-    socket.on('comment:delete', (data) => {
+    socket.on("comment:delete", (data) => {
       // Broadcast comment deletion
-      io.to(`${data.targetType}:${data.targetId}`).emit('comment:removed', {
+      io.to(`${data.targetType}:${data.targetId}`).emit("comment:removed", {
         commentId: data.commentId,
       });
     });
 
-    socket.on('comment:like', (data) => {
+    socket.on("comment:like", (data) => {
       // Broadcast comment like update
-      io.to(`${data.targetType}:${data.targetId}`).emit('comment:likeUpdate', {
+      io.to(`${data.targetType}:${data.targetId}`).emit("comment:likeUpdate", {
         commentId: data.commentId,
         likes: data.likes,
       });
     });
 
     // Follow events
-    socket.on('user:follow', (data) => {
+    socket.on("user:follow", (data) => {
       // Notify the followed user
-      io.to(`user:${data.followedId}`).emit('notification:new', {
-        type: 'follow',
+      io.to(`user:${data.followedId}`).emit("notification:new", {
+        type: "follow",
         message: `${data.followerName} started following you`,
         userId: data.followerId,
         timestamp: new Date().toISOString(),
@@ -193,15 +193,15 @@ const SocketHandler = (req, res) => {
     });
 
     // Notification events
-    socket.on('notification:send', (data) => {
+    socket.on("notification:send", (data) => {
       // Send notification to specific user
-      io.to(`user:${data.userId}`).emit('notification:new', data.notification);
+      io.to(`user:${data.userId}`).emit("notification:new", data.notification);
     });
 
     // Broadcast notification to all users (for new blogs/manga)
-    socket.on('notification:broadcast', (data) => {
+    socket.on("notification:broadcast", (data) => {
       // Broadcast to all connected users
-      io.emit('notification:new', {
+      io.emit("notification:new", {
         type: data.type, // 'new_blog' or 'new_manga'
         title: data.title,
         message: data.message,
@@ -213,13 +213,13 @@ const SocketHandler = (req, res) => {
     });
 
     // Subscribe to content updates (for followers)
-    socket.on('content:subscribe', (authorId) => {
+    socket.on("content:subscribe", (authorId) => {
       socket.join(`author:${authorId}`);
     });
 
     // Notify followers of new content
-    socket.on('content:new', (data) => {
-      io.to(`author:${data.authorId}`).emit('notification:new', {
+    socket.on("content:new", (data) => {
+      io.to(`author:${data.authorId}`).emit("notification:new", {
         type: data.type,
         title: data.title,
         message: data.message,
@@ -231,15 +231,15 @@ const SocketHandler = (req, res) => {
     });
 
     // Manga events
-    socket.on('manga:view', (data) => {
-      io.to(`manga:${data.mangaId}`).emit('manga:viewUpdate', {
+    socket.on("manga:view", (data) => {
+      io.to(`manga:${data.mangaId}`).emit("manga:viewUpdate", {
         mangaId: data.mangaId,
         views: data.views,
       });
     });
 
-    socket.on('manga:favorite', (data) => {
-      io.to(`manga:${data.mangaId}`).emit('manga:favoriteUpdate', {
+    socket.on("manga:favorite", (data) => {
+      io.to(`manga:${data.mangaId}`).emit("manga:favoriteUpdate", {
         mangaId: data.mangaId,
         favorites: data.favorites,
         userId: data.userId,
@@ -248,8 +248,8 @@ const SocketHandler = (req, res) => {
     });
 
     // Typing indicator for comments
-    socket.on('comment:typing', (data) => {
-      socket.to(`${data.targetType}:${data.targetId}`).emit('comment:userTyping', {
+    socket.on("comment:typing", (data) => {
+      socket.to(`${data.targetType}:${data.targetId}`).emit("comment:userTyping", {
         userId: data.userId,
         userName: data.userName,
         isTyping: data.isTyping,
@@ -257,7 +257,7 @@ const SocketHandler = (req, res) => {
     });
 
     // Disconnect
-    socket.on('disconnect', () => {
+    socket.on("disconnect", () => {
       const userId = connectedUsers.get(socket.id);
       if (userId) {
         connectedUsers.delete(socket.id);
@@ -284,11 +284,11 @@ const SocketHandler = (req, res) => {
       });
       
       // Broadcast updated count to admin
-      io.to('admin:analytics').emit('analytics:update', {
+      io.to("admin:analytics").emit("analytics:update", {
         liveUsers: analytics.liveUsers.size,
       });
       
-      console.log('Client disconnected:', socket.id);
+      console.log("Client disconnected:", socket.id);
     });
   });
 

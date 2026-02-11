@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/router";
 import {
   FiTrendingUp, FiRefreshCw, FiZap, FiGlobe, FiExternalLink,
-  FiEdit3, FiLoader, FiCheck, FiX, FiChevronDown, FiChevronUp, FiPlus, FiType
+  FiEdit3, FiLoader, FiX, FiChevronDown, FiChevronUp, FiType
 } from "react-icons/fi";
 
 const COUNTRIES = [

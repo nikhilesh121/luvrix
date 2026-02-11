@@ -7,9 +7,9 @@ import { useCountdown } from "../../components/GiveawayCard";
 import ConfettiWinner from "../../components/ConfettiWinner";
 import AnimatedCTA from "../../components/AnimatedCTA";
 import { useAuth } from "../../context/AuthContext";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
-  FiGift, FiClock, FiUsers, FiCheck, FiCheckCircle, FiStar,
+  FiGift, FiClock, FiUsers, FiCheck, FiCheckCircle,
   FiArrowLeft, FiCopy, FiAward, FiTarget, FiShield,
   FiAlertCircle, FiHeart, FiSend, FiMapPin, FiPhone, FiUser,
   FiExternalLink, FiDollarSign,
@@ -60,7 +60,7 @@ export default function GiveawayDetailPage() {
     setLoading(true);
     try {
       const [gRes, tRes, cRes] = await Promise.all([
-        fetch(`/api/giveaways/${encodedSlug}`).then(r => r.ok ? r.json() : r.json().then(e => ({ error: e.error || 'Not found' }))).catch(() => ({ error: 'Network error' })),
+        fetch(`/api/giveaways/${encodedSlug}`).then(r => r.ok ? r.json() : r.json().then(e => ({ error: e.error || "Not found" }))).catch(() => ({ error: "Network error" })),
         fetch(`/api/giveaways/${encodedSlug}/tasks`).then(r => r.ok ? r.json() : []).catch(() => []),
         fetch(`/api/giveaways/${encodedSlug}/participants?countOnly=true`).then(r => r.ok ? r.json() : { count: 0 }).catch(() => ({ count: 0 })),
       ]);
@@ -213,7 +213,7 @@ export default function GiveawayDetailPage() {
     if (!isLoggedIn) { router.push("/login"); return; }
     setFavLoading(true);
     try {
-      const res = await fetch(`/api/favorites/toggle`, {
+      const res = await fetch("/api/favorites/toggle", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: user.uid, itemId: giveaway.id, itemType: "giveaway" }),

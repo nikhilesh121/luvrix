@@ -7,7 +7,7 @@ import { useSocket } from "../context/SocketContext";
 import Link from "next/link";
 
 export default function CommentSection({ targetId, targetType = "blog" }) {
-  const { user, userData, isLoggedIn } = useAuth();
+  const { user, userData, isLoggedIn: _isLoggedIn } = useAuth();
   const { joinRoom, leaveRoom, subscribe, emitNewComment, emitCommentDelete, emitCommentLike, emitTyping } = useSocket();
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
@@ -24,7 +24,7 @@ export default function CommentSection({ targetId, targetType = "blog" }) {
       joinRoom(room);
 
       // Subscribe to comment events
-      const unsubscribeAdd = subscribe('comment:added', (comment) => {
+      const unsubscribeAdd = subscribe("comment:added", (comment) => {
         setComments(prev => {
           if (comment.parentId) {
             // It's a reply - add to parent's replies
@@ -43,7 +43,7 @@ export default function CommentSection({ targetId, targetType = "blog" }) {
         });
       });
 
-      const unsubscribeRemove = subscribe('comment:removed', ({ commentId }) => {
+      const unsubscribeRemove = subscribe("comment:removed", ({ commentId }) => {
         setComments(prev => {
           // Check if it's a parent comment
           const isParent = prev.some(c => c.id === commentId);
@@ -58,7 +58,7 @@ export default function CommentSection({ targetId, targetType = "blog" }) {
         });
       });
 
-      const unsubscribeLike = subscribe('comment:likeUpdate', ({ commentId, likes }) => {
+      const unsubscribeLike = subscribe("comment:likeUpdate", ({ commentId, likes }) => {
         setComments(prev => prev.map(c => {
           if (c.id === commentId) {
             return { ...c, likes };
@@ -73,7 +73,7 @@ export default function CommentSection({ targetId, targetType = "blog" }) {
         }));
       });
 
-      const unsubscribeTyping = subscribe('comment:userTyping', ({ userId, userName, isTyping }) => {
+      const unsubscribeTyping = subscribe("comment:userTyping", ({ userId, userName, isTyping }) => {
         if (userId === user?.uid) return; // Ignore own typing
         setTypingUsers(prev => {
           if (isTyping) {
@@ -387,9 +387,9 @@ export default function CommentSection({ targetId, targetType = "blog" }) {
           className="mb-4 text-sm text-gray-500 flex items-center gap-2"
         >
           <div className="flex gap-1">
-            <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
-            <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
-            <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+            <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: "0ms" }}></span>
+            <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: "150ms" }}></span>
+            <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: "300ms" }}></span>
           </div>
           <span>
             {typingUsers.length === 1 

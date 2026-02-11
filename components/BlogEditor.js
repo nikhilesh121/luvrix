@@ -88,11 +88,11 @@ function cleanWordPaste(html) {
   if (typeof document === "undefined") return sanitized;
   const tmp = document.createElement("div");
   tmp.innerHTML = sanitized;
-  tmp.querySelectorAll('*').forEach(el => {
-    el.removeAttribute('class');
-    el.removeAttribute('style');
+  tmp.querySelectorAll("*").forEach(el => {
+    el.removeAttribute("class");
+    el.removeAttribute("style");
     Array.from(el.attributes).forEach(attr => {
-      if (attr.name.startsWith('data-') || attr.name.startsWith('mso')) {
+      if (attr.name.startsWith("data-") || attr.name.startsWith("mso")) {
         el.removeAttribute(attr.name);
       }
     });
@@ -160,20 +160,20 @@ export default function BlogEditor({ value, onChange, placeholder }) {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      const el = document.querySelector('.blog-editor .ql-editor');
+      const el = document.querySelector(".blog-editor .ql-editor");
       if (el) {
         // Remove any previously attached listener
         if (editorElRef.current) {
-          editorElRef.current.removeEventListener('paste', handlePaste);
+          editorElRef.current.removeEventListener("paste", handlePaste);
         }
         editorElRef.current = el;
-        el.addEventListener('paste', handlePaste);
+        el.addEventListener("paste", handlePaste);
       }
     }, 500);
     return () => {
       clearTimeout(timer);
       if (editorElRef.current) {
-        editorElRef.current.removeEventListener('paste', handlePaste);
+        editorElRef.current.removeEventListener("paste", handlePaste);
         editorElRef.current = null;
       }
     };

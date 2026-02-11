@@ -1,14 +1,14 @@
-import { verifyToken } from '../../../../lib/auth';
-import { getGiveaway, getParticipant, getTasksForGiveaway } from '../../../../lib/giveaway';
+import { verifyToken } from "../../../../lib/auth";
+import { getGiveaway, getParticipant, getTasksForGiveaway } from "../../../../lib/giveaway";
 
 export default async function handler(req, res) {
-  if (req.method !== 'GET') {
-    return res.status(405).json({ error: 'Method not allowed' });
+  if (req.method !== "GET") {
+    return res.status(405).json({ error: "Method not allowed" });
   }
 
   try {
     const { id } = req.query;
-    const token = req.headers.authorization?.replace('Bearer ', '');
+    const token = req.headers.authorization?.replace("Bearer ", "");
     if (!token) return res.status(200).json({ joined: false });
 
     const decoded = verifyToken(token);
@@ -37,7 +37,7 @@ export default async function handler(req, res) {
       ),
     });
   } catch (error) {
-    console.error('My status error:', error);
-    return res.status(500).json({ error: error.message || 'Internal server error' });
+    console.error("My status error:", error);
+    return res.status(500).json({ error: error.message || "Internal server error" });
   }
 }

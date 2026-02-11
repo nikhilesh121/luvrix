@@ -6,7 +6,6 @@ import Layout from "../components/Layout";
 import { getBlog, getUser } from "../lib/api-client";
 import { cleanContentForDisplay } from "../components/BlogEditor";
 import { useAuth } from "../context/AuthContext";
-import { motion } from "framer-motion";
 import { 
   FiArrowLeft, FiCalendar, FiUser, FiTag, FiEye, FiEdit2,
   FiClock, FiAlertCircle
@@ -162,8 +161,8 @@ export default function PreviewBlog() {
           <div className="mt-12 p-6 bg-slate-100 rounded-xl">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">SEO Information</h3>
             <div className="space-y-3 text-sm">
-              <div><span className="font-medium text-gray-700">SEO Score:</span> <span className={`font-bold ${blog.seoScore >= 80 ? 'text-green-600' : 'text-amber-600'}`}>{blog.seoScore || 0}%</span></div>
-              <div><span className="font-medium text-gray-700">Content Score:</span> <span className={`font-bold ${blog.contentScore >= 80 ? 'text-green-600' : 'text-amber-600'}`}>{blog.contentScore || 0}%</span></div>
+              <div><span className="font-medium text-gray-700">SEO Score:</span> <span className={`font-bold ${blog.seoScore >= 80 ? "text-green-600" : "text-amber-600"}`}>{blog.seoScore || 0}%</span></div>
+              <div><span className="font-medium text-gray-700">Content Score:</span> <span className={`font-bold ${blog.contentScore >= 80 ? "text-green-600" : "text-amber-600"}`}>{blog.contentScore || 0}%</span></div>
               {blog.seoDescription && <div><span className="font-medium text-gray-700">Meta Description:</span> <span className="text-gray-600">{blog.seoDescription}</span></div>}
             </div>
           </div>

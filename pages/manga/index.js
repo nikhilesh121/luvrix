@@ -6,9 +6,8 @@ import AdRenderer from "../../components/AdRenderer";
 import { getAllManga, getSettings } from "../../lib/api-client";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  FiBook, FiSearch, FiPlay, FiStar, FiEye, FiClock,
-  FiChevronRight, FiFilter, FiTrendingUp, FiHeart, FiBookOpen,
-  FiZap, FiArrowRight, FiGrid, FiList
+  FiBook, FiSearch, FiEye, FiClock,
+  FiChevronRight, FiTrendingUp, FiHeart, FiBookOpen
 } from "react-icons/fi";
 
 export default function MangaList() {
@@ -17,15 +16,15 @@ export default function MangaList() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
-  const [hoveredCard, setHoveredCard] = useState(null);
+  const [_hoveredCard, setHoveredCard] = useState(null);
   const [mangaDisabled, setMangaDisabled] = useState(false);
   const [layout, setLayout] = useState({ viewType: "grid", columns: 5, cardSize: "medium" });
   const [settings, setSettings] = useState(null);
 
   const formatNumber = (num) => {
-    if (!num) return '0';
-    if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
-    if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+    if (!num) return "0";
+    if (num >= 1000000) return (num / 1000000).toFixed(1) + "M";
+    if (num >= 1000) return (num / 1000).toFixed(1) + "K";
     return num.toString();
   };
 
@@ -157,8 +156,8 @@ export default function MangaList() {
 
           {/* Grid Pattern Overlay */}
           <div className="absolute inset-0 opacity-[0.03]" style={{
-            backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`,
-            backgroundSize: '60px 60px'
+            backgroundImage: "linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)",
+            backgroundSize: "60px 60px"
           }} />
 
           {/* Floating Elements */}

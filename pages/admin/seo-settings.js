@@ -132,27 +132,27 @@ function SeoSettingsContent() {
 
       // 2. Write files to disk (live sync)
       try {
-        const token = (typeof auth.currentUser?.getIdToken === 'function'
+        const token = (typeof auth.currentUser?.getIdToken === "function"
           ? await auth.currentUser.getIdToken()
-          : null) || (typeof window !== 'undefined' ? localStorage.getItem('luvrix_auth_token') : null);
+          : null) || (typeof window !== "undefined" ? localStorage.getItem("luvrix_auth_token") : null);
 
         if (!token) {
-          setWriteStatus({ type: 'error', message: 'Saved to DB but file write failed: No auth token available. Please re-login.' });
+          setWriteStatus({ type: "error", message: "Saved to DB but file write failed: No auth token available. Please re-login." });
         } else {
-          const writeRes = await fetch('/api/admin/write-system-files', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          const writeRes = await fetch("/api/admin/write-system-files", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
             body: JSON.stringify({ robotsTxt, adsTxt }),
           });
           const writeData = await writeRes.json();
           if (writeRes.ok && writeData.success) {
-            setWriteStatus({ type: 'success', message: 'robots.txt & ads.txt updated live on server' });
+            setWriteStatus({ type: "success", message: "robots.txt & ads.txt updated live on server" });
           } else {
-            setWriteStatus({ type: 'error', message: `Saved to DB but file write failed: ${writeData.errors?.join(', ') || writeData.error || 'Unknown error'}` });
+            setWriteStatus({ type: "error", message: `Saved to DB but file write failed: ${writeData.errors?.join(", ") || writeData.error || "Unknown error"}` });
           }
         }
       } catch (writeErr) {
-        setWriteStatus({ type: 'error', message: 'Saved to DB but could not write files to disk: ' + writeErr.message });
+        setWriteStatus({ type: "error", message: "Saved to DB but could not write files to disk: " + writeErr.message });
       }
 
       await createLog({
@@ -171,18 +171,18 @@ function SeoSettingsContent() {
   };
 
   const handleCopy = async (type) => {
-    const text = type === 'robots' ? robotsTxt : adsTxt;
+    const text = type === "robots" ? robotsTxt : adsTxt;
     await navigator.clipboard.writeText(text);
     setCopied({ ...copied, [type]: true });
     setTimeout(() => setCopied({ ...copied, [type]: false }), 2000);
   };
 
   const handleDownload = (type) => {
-    const text = type === 'robots' ? robotsTxt : adsTxt;
-    const filename = type === 'robots' ? 'robots.txt' : 'ads.txt';
-    const blob = new Blob([text], { type: 'text/plain' });
+    const text = type === "robots" ? robotsTxt : adsTxt;
+    const filename = type === "robots" ? "robots.txt" : "ads.txt";
+    const blob = new Blob([text], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
     a.download = filename;
     a.click();
@@ -190,7 +190,7 @@ function SeoSettingsContent() {
   };
 
   const handleReset = (type) => {
-    if (type === 'robots') {
+    if (type === "robots") {
       setRobotsTxt(DEFAULT_ROBOTS_TXT);
     } else {
       setAdsTxt(DEFAULT_ADS_TXT);
@@ -366,20 +366,20 @@ function SeoSettingsContent() {
                   </h2>
                   <div className="flex gap-2">
                     <button
-                      onClick={() => handleReset('robots')}
+                      onClick={() => handleReset("robots")}
                       className="px-3 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center gap-1"
                     >
                       <FiRefreshCw className="w-4 h-4" /> Reset
                     </button>
                     <button
-                      onClick={() => handleCopy('robots')}
+                      onClick={() => handleCopy("robots")}
                       className="px-3 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center gap-1"
                     >
                       {copied.robots ? <FiCheck className="w-4 h-4 text-green-500" /> : <FiCopy className="w-4 h-4" />}
-                      {copied.robots ? 'Copied!' : 'Copy'}
+                      {copied.robots ? "Copied!" : "Copy"}
                     </button>
                     <button
-                      onClick={() => handleDownload('robots')}
+                      onClick={() => handleDownload("robots")}
                       className="px-3 py-1.5 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded-lg flex items-center gap-1"
                     >
                       <FiDownload className="w-4 h-4" /> Download
@@ -413,20 +413,20 @@ function SeoSettingsContent() {
                   </h2>
                   <div className="flex gap-2">
                     <button
-                      onClick={() => handleReset('ads')}
+                      onClick={() => handleReset("ads")}
                       className="px-3 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center gap-1"
                     >
                       <FiRefreshCw className="w-4 h-4" /> Reset
                     </button>
                     <button
-                      onClick={() => handleCopy('ads')}
+                      onClick={() => handleCopy("ads")}
                       className="px-3 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center gap-1"
                     >
                       {copied.ads ? <FiCheck className="w-4 h-4 text-green-500" /> : <FiCopy className="w-4 h-4" />}
-                      {copied.ads ? 'Copied!' : 'Copy'}
+                      {copied.ads ? "Copied!" : "Copy"}
                     </button>
                     <button
-                      onClick={() => handleDownload('ads')}
+                      onClick={() => handleDownload("ads")}
                       className="px-3 py-1.5 text-sm bg-green-500 hover:bg-green-600 text-white rounded-lg flex items-center gap-1"
                     >
                       <FiDownload className="w-4 h-4" /> Download
@@ -455,16 +455,16 @@ function SeoSettingsContent() {
               {/* Live Sync Status */}
               {writeStatus && (
                 <div className={`p-4 rounded-xl border ${
-                  writeStatus.type === 'success' 
-                    ? 'bg-green-50 border-green-200' 
-                    : writeStatus.type === 'error'
-                    ? 'bg-red-50 border-red-200'
-                    : 'bg-yellow-50 border-yellow-200'
+                  writeStatus.type === "success" 
+                    ? "bg-green-50 border-green-200" 
+                    : writeStatus.type === "error"
+                    ? "bg-red-50 border-red-200"
+                    : "bg-yellow-50 border-yellow-200"
                 }`}>
                   <p className={`text-sm font-medium ${
-                    writeStatus.type === 'success' ? 'text-green-700' : writeStatus.type === 'error' ? 'text-red-700' : 'text-yellow-700'
+                    writeStatus.type === "success" ? "text-green-700" : writeStatus.type === "error" ? "text-red-700" : "text-yellow-700"
                   }`}>
-                    {writeStatus.type === 'success' ? '✓' : writeStatus.type === 'error' ? '✗' : '⚠'} {writeStatus.message}
+                    {writeStatus.type === "success" ? "✓" : writeStatus.type === "error" ? "✗" : "⚠"} {writeStatus.message}
                   </p>
                   <div className="mt-2 flex gap-3 text-xs">
                     <a href="https://luvrix.com/robots.txt" target="_blank" rel="noreferrer" className="text-blue-600 underline">Verify robots.txt</a>

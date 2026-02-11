@@ -1,5 +1,4 @@
 import { motion } from "framer-motion";
-import { FiGift } from "react-icons/fi";
 
 export default function AnimatedCTA({ children, onClick, disabled, variant = "join", className = "" }) {
   const variants = {

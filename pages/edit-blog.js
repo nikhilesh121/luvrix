@@ -12,7 +12,7 @@ import { calculateSeoScore, MIN_SEO_SCORE } from "../utils/seoScore";
 import { checkForSpam } from "../utils/spamFilter";
 import { canAutoApprove } from "../utils/contentValidator";
 import { motion, AnimatePresence } from "framer-motion";
-import { FiArrowLeft, FiSave, FiAlertCircle, FiCheck, FiImage, FiEdit3, FiVideo, FiPlay, FiRadio, FiPlus, FiTrash2, FiX } from "react-icons/fi";
+import { FiArrowLeft, FiSave, FiAlertCircle, FiCheck, FiImage, FiVideo, FiPlay, FiRadio, FiPlus, FiTrash2, FiX } from "react-icons/fi";
 import Link from "next/link";
 
 const BlogEditor = dynamic(() => import("../components/BlogEditor"), { ssr: false });
@@ -34,7 +34,7 @@ export default function EditBlog() {
 function EditBlogContent({ user }) {
   const router = useRouter();
   const { id, admin } = router.query;
-  const isAdminMode = admin === "true";
+  const _isAdminMode = admin === "true";
   const [originalBlog, setOriginalBlog] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -53,7 +53,7 @@ function EditBlogContent({ user }) {
     mediaItems: [],
   });
   const [showMediaModal, setShowMediaModal] = useState(false);
-  const [newMedia, setNewMedia] = useState({ type: 'image', url: '', caption: '', position: 1 });
+  const [newMedia, setNewMedia] = useState({ type: "image", url: "", caption: "", position: 1 });
 
   const [seoData, setSeoData] = useState({
     seoTitle: "",
@@ -394,7 +394,7 @@ function EditBlogContent({ user }) {
                     <button
                       type="button"
                       onClick={() => {
-                        setNewMedia({ type: 'image', url: '', caption: '', position: (blog.mediaItems?.length || 0) + 1 });
+                        setNewMedia({ type: "image", url: "", caption: "", position: (blog.mediaItems?.length || 0) + 1 });
                         setShowMediaModal(true);
                       }}
                       className="px-3 py-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 rounded-lg transition flex items-center gap-1"
@@ -407,11 +407,11 @@ function EditBlogContent({ user }) {
                       {blog.mediaItems.map((item, idx) => (
                         <div key={idx} className="flex items-center gap-2 p-2 bg-slate-50 dark:bg-gray-700 rounded-lg border border-slate-100 dark:border-gray-600">
                           <div className="shrink-0 w-7 h-7 rounded-md bg-slate-200 dark:bg-gray-600 flex items-center justify-center">
-                            {item.type === 'video' ? <FiVideo className="w-3.5 h-3.5 text-red-500" /> : <FiImage className="w-3.5 h-3.5 text-blue-500" />}
+                            {item.type === "video" ? <FiVideo className="w-3.5 h-3.5 text-red-500" /> : <FiImage className="w-3.5 h-3.5 text-blue-500" />}
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="text-xs text-slate-600 dark:text-gray-300 truncate">{item.url}</p>
-                            <p className="text-[10px] text-slate-400 dark:text-gray-500">After section {item.position}{item.caption ? ` · ${item.caption}` : ''}</p>
+                            <p className="text-[10px] text-slate-400 dark:text-gray-500">After section {item.position}{item.caption ? ` · ${item.caption}` : ""}</p>
                           </div>
                           <button
                             type="button"
@@ -439,13 +439,13 @@ function EditBlogContent({ user }) {
                           <div>
                             <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">Type</label>
                             <div className="flex gap-2">
-                              {[{ id: 'image', icon: <FiImage className="w-4 h-4" />, label: 'Image' }, { id: 'video', icon: <FiVideo className="w-4 h-4" />, label: 'Video' }].map(t => (
+                              {[{ id: "image", icon: <FiImage className="w-4 h-4" />, label: "Image" }, { id: "video", icon: <FiVideo className="w-4 h-4" />, label: "Video" }].map(t => (
                                 <button
                                   key={t.id}
                                   type="button"
                                   onClick={() => setNewMedia({ ...newMedia, type: t.id })}
                                   className={`flex-1 py-2.5 rounded-xl text-sm font-medium flex items-center justify-center gap-2 border-2 transition ${
-                                    newMedia.type === t.id ? 'border-blue-400 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300' : 'border-slate-200 dark:border-gray-600 text-slate-500 dark:text-gray-400'
+                                    newMedia.type === t.id ? "border-blue-400 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300" : "border-slate-200 dark:border-gray-600 text-slate-500 dark:text-gray-400"
                                   }`}
                                 >
                                   {t.icon} {t.label}
@@ -455,13 +455,13 @@ function EditBlogContent({ user }) {
                           </div>
                           <div>
                             <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-1">
-                              {newMedia.type === 'video' ? 'Video URL' : 'Image URL'}
+                              {newMedia.type === "video" ? "Video URL" : "Image URL"}
                             </label>
                             <input
                               type="url"
                               value={newMedia.url}
                               onChange={e => setNewMedia({ ...newMedia, url: e.target.value })}
-                              placeholder={newMedia.type === 'video' ? 'https://youtube.com/watch?v=...' : 'https://example.com/image.jpg'}
+                              placeholder={newMedia.type === "video" ? "https://youtube.com/watch?v=..." : "https://example.com/image.jpg"}
                               className="w-full px-4 py-2.5 border border-slate-200 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-blue-500 text-sm"
                             />
                           </div>
@@ -487,9 +487,9 @@ function EditBlogContent({ user }) {
                             />
                             <p className="text-[11px] text-slate-400 mt-1">Media appears after the Nth content section</p>
                           </div>
-                          {newMedia.url && newMedia.type === 'image' && (
+                          {newMedia.url && newMedia.type === "image" && (
                             <div className="rounded-xl overflow-hidden border border-slate-100">
-                              <img src={newMedia.url} alt="Preview" className="w-full h-32 object-cover" onError={e => e.target.style.display = 'none'} />
+                              <img src={newMedia.url} alt="Preview" className="w-full h-32 object-cover" onError={e => e.target.style.display = "none"} />
                             </div>
                           )}
                           <button

@@ -2,14 +2,13 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Head from "next/head";
 import Layout from "../components/Layout";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { getPublishers } from "../lib/api-client";
 import { useAuth } from "../context/AuthContext";
 import { followUser, unfollowUser, isFollowing } from "../lib/api-client";
 import { 
-  FiUsers, FiTrendingUp, FiEye, FiEdit3, FiUserPlus, FiUserCheck,
-  FiFilter, FiSearch, FiStar, FiAward, FiBookOpen, FiHeart,
-  FiMic, FiRadio, FiPenTool, FiCamera, FiFilm, FiMusic, FiCpu
+  FiUsers, FiUserPlus, FiUserCheck,
+  FiFilter, FiSearch, FiStar, FiBookOpen, FiHeart, FiRadio, FiPenTool, FiCamera, FiFilm, FiCpu
 } from "react-icons/fi";
 
 const PUBLISHER_CATEGORIES = [

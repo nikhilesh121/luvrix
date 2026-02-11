@@ -2,12 +2,12 @@ import { useState, useEffect } from "react";
 import Head from "next/head";
 import AdminGuard from "../../components/AdminGuard";
 import AdminSidebar from "../../components/AdminSidebar";
-import { getAllBlogs, getAllUsers, getAllManga, getAllPayments, getSettings } from "../../lib/api-client";
-import { motion, AnimatePresence } from "framer-motion";
+import { getAllBlogs, getAllUsers, getAllManga, getAllPayments } from "../../lib/api-client";
+import { motion } from "framer-motion";
 import { 
   FiFileText, FiUsers, FiBook, FiDollarSign, FiTrendingUp, FiClock,
-  FiArrowUpRight, FiArrowRight, FiActivity, FiEye, FiCheckCircle,
-  FiAlertCircle, FiBarChart2, FiPieChart, FiGift, FiHeart
+  FiArrowUpRight, FiArrowRight, FiActivity, FiCheckCircle,
+  FiAlertCircle, FiBarChart2, FiGift, FiHeart
 } from "react-icons/fi";
 import Link from "next/link";
 
@@ -34,7 +34,7 @@ function DashboardContent() {
     async function fetchStats() {
       try {
         const [blogs, users, manga, payments] = await Promise.all([
-          getAllBlogs('approved', true),
+          getAllBlogs("approved", true),
           getAllUsers(),
           getAllManga(),
           getAllPayments(),

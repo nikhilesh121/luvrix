@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, memo, useCallback } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
 import Head from "next/head";
 import dynamic from "next/dynamic";
@@ -21,20 +21,20 @@ const GiveawayCard = dynamic(() => import("../components/GiveawayCard"), {
   ssr: true,
 });
 import { 
-  FiArrowRight, FiEdit3, FiSearch, FiTag, FiClock, FiUsers, 
-  FiTrendingUp, FiZap, FiAward, FiBookOpen, FiGlobe, FiStar,
-  FiChevronRight, FiPlay, FiHeart, FiEye, FiCpu, FiFilm,
-  FiMusic, FiGrid, FiCode, FiCoffee, FiMapPin, FiGift
+  FiArrowRight, FiEdit3, FiSearch, FiTag, FiClock, 
+  FiTrendingUp, FiZap, FiAward, FiBookOpen, FiStar,
+  FiChevronRight, FiPlay, FiHeart, FiCpu, FiFilm,
+  FiMusic, FiGrid, FiCoffee, FiMapPin, FiGift
 } from "react-icons/fi";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://luvrix.com";
 
 // Compact number formatter: 999 → 999, 1000 → 1K+, 10500 → 10K+, 1000000 → 1M+
 function formatNumber(num) {
-  if (!num || num < 0) return '0';
+  if (!num || num < 0) return "0";
   if (num < 1000) return `${num}`;
   if (num < 1000000) return `${Math.floor(num / 1000)}K+`;
-  return `${(num / 1000000).toFixed(1).replace(/\.0$/, '')}M+`;
+  return `${(num / 1000000).toFixed(1).replace(/\.0$/, "")}M+`;
 }
 
 const categoryConfig = {
@@ -53,7 +53,7 @@ const categoryConfig = {
 };
 
 export default function Home() {
-  const { blogs: cachedBlogs, loading: blogsLoading, getLatestBlogs, getFeaturedBlog, refreshBlogs } = useBlogCache();
+  const { blogs: _cachedBlogs, loading: blogsLoading, getLatestBlogs, getFeaturedBlog, refreshBlogs } = useBlogCache();
   const { subscribe, isConnected } = useSocket();
   const [settings, setSettings] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -67,7 +67,7 @@ export default function Home() {
 
   // Fetch real platform stats
   useEffect(() => {
-    fetch('/api/stats/platform')
+    fetch("/api/stats/platform")
       .then(r => r.ok ? r.json() : null)
       .then(data => { if (data) setPlatformStats(data); })
       .catch(() => {});
@@ -78,7 +78,7 @@ export default function Home() {
     if (!isConnected) return;
 
     // Listen for view updates on any blog
-    const unsubViews = subscribe('blog:viewUpdate', (data) => {
+    const unsubViews = subscribe("blog:viewUpdate", (data) => {
       setLiveUpdates(prev => ({
         ...prev,
         [data.blogId]: { ...prev[data.blogId], views: data.views }
@@ -86,7 +86,7 @@ export default function Home() {
     });
 
     // Listen for like updates on any blog
-    const unsubLikes = subscribe('blog:likeUpdate', (data) => {
+    const unsubLikes = subscribe("blog:likeUpdate", (data) => {
       setLiveUpdates(prev => ({
         ...prev,
         [data.blogId]: { ...prev[data.blogId], likes: data.likes }
@@ -94,8 +94,8 @@ export default function Home() {
     });
 
     // Listen for new blog notifications
-    const unsubNewBlog = subscribe('notification:new', (data) => {
-      if (data.type === 'new_blog') {
+    const unsubNewBlog = subscribe("notification:new", (data) => {
+      if (data.type === "new_blog") {
         // Refresh blogs when new one is published
         refreshBlogs?.();
       }
@@ -109,7 +109,7 @@ export default function Home() {
   }, [isConnected, subscribe, refreshBlogs]);
 
   // Helper to get live count or fallback to original
-  const getLiveCount = useCallback((blogId, field, originalValue) => {
+  const _getLiveCount = useCallback((blogId, field, originalValue) => {
     return liveUpdates[blogId]?.[field] ?? originalValue;
   }, [liveUpdates]);
 
@@ -200,8 +200,8 @@ export default function Home() {
           
           {/* Grid Pattern */}
           <div className="absolute inset-0 opacity-[0.03]" style={{
-            backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`,
-            backgroundSize: '60px 60px'
+            backgroundImage: "linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)",
+            backgroundSize: "60px 60px"
           }} />
           
           {/* Floating Elements */}
@@ -437,7 +437,7 @@ export default function Home() {
               >
                 <div className="flex -space-x-2">
                   {[...Array(4)].map((_, i) => (
-                    <div key={i} className={`w-8 h-8 rounded-full bg-gradient-to-r ${['from-purple-500 to-pink-500', 'from-blue-500 to-cyan-500', 'from-orange-500 to-amber-500', 'from-green-500 to-emerald-500'][i]} border-2 border-[#0a0a0f]`} />
+                    <div key={i} className={`w-8 h-8 rounded-full bg-gradient-to-r ${["from-purple-500 to-pink-500", "from-blue-500 to-cyan-500", "from-orange-500 to-amber-500", "from-green-500 to-emerald-500"][i]} border-2 border-[#0a0a0f]`} />
                   ))}
                 </div>
                 <div>
@@ -684,12 +684,12 @@ export default function Home() {
                     className="group relative block overflow-hidden"
                   >
                     {/* Glow Effect */}
-                    <div className={`absolute -inset-1 bg-gradient-to-r ${config?.color || 'from-gray-500 to-gray-600'} rounded-2xl blur-lg opacity-0 group-hover:opacity-40 transition-opacity duration-500`} />
+                    <div className={`absolute -inset-1 bg-gradient-to-r ${config?.color || "from-gray-500 to-gray-600"} rounded-2xl blur-lg opacity-0 group-hover:opacity-40 transition-opacity duration-500`} />
                     
                     {/* Card */}
                     <div className="relative p-4 md:p-5 bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl group-hover:border-white/20 group-hover:bg-white/10 transition-all duration-300">
                       {/* Icon Container */}
-                      <div className={`w-12 h-12 md:w-14 md:h-14 bg-gradient-to-br ${config?.color || 'from-gray-500 to-gray-600'} rounded-xl flex items-center justify-center mb-3 md:mb-4 shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-300`}>
+                      <div className={`w-12 h-12 md:w-14 md:h-14 bg-gradient-to-br ${config?.color || "from-gray-500 to-gray-600"} rounded-xl flex items-center justify-center mb-3 md:mb-4 shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-300`}>
                         <Icon className="w-6 h-6 md:w-7 md:h-7 text-white" />
                       </div>
                       

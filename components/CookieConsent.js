@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { FiX, FiShield, FiCheck } from 'react-icons/fi';
-import Link from 'next/link';
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { FiShield, FiCheck } from "react-icons/fi";
+import Link from "next/link";
 
 export default function CookieConsent() {
   const [showBanner, setShowBanner] = useState(false);
@@ -9,7 +9,7 @@ export default function CookieConsent() {
 
   useEffect(() => {
     // Check if user already accepted cookies
-    const consent = localStorage.getItem('cookieConsent');
+    const consent = localStorage.getItem("cookieConsent");
     if (!consent) {
       // Fetch cookie settings from API
       fetchCookieSettings();
@@ -18,7 +18,7 @@ export default function CookieConsent() {
 
   const fetchCookieSettings = async () => {
     try {
-      const res = await fetch('/api/settings/cookies/');
+      const res = await fetch("/api/settings/cookies/");
       const data = await res.json();
       if (data.enabled !== false) {
         setCookieSettings(data);
@@ -26,21 +26,21 @@ export default function CookieConsent() {
       }
     } catch (err) {
       // Default to showing banner
-      setCookieSettings({ enabled: true, message: 'We use cookies to enhance your experience.' });
+      setCookieSettings({ enabled: true, message: "We use cookies to enhance your experience." });
       setShowBanner(true);
     }
   };
 
   const recordConsent = (accepted, analytics, marketing) => {
-    fetch('/api/consent', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    fetch("/api/consent", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ accepted, analytics, marketing }),
     }).catch(() => {});
   };
 
   const acceptCookies = () => {
-    localStorage.setItem('cookieConsent', JSON.stringify({
+    localStorage.setItem("cookieConsent", JSON.stringify({
       accepted: true,
       timestamp: new Date().toISOString(),
       analytics: true,
@@ -51,7 +51,7 @@ export default function CookieConsent() {
   };
 
   const declineCookies = () => {
-    localStorage.setItem('cookieConsent', JSON.stringify({
+    localStorage.setItem("cookieConsent", JSON.stringify({
       accepted: false,
       timestamp: new Date().toISOString(),
       analytics: false,

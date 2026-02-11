@@ -1,12 +1,12 @@
-import Head from 'next/head';
-import { useRouter } from 'next/router';
+import Head from "next/head";
+import { useRouter } from "next/router";
 
-const supportedLocales = ['en', 'es', 'ja'];
-const defaultLocale = 'en';
+const supportedLocales = ["en", "es", "ja"];
+const defaultLocale = "en";
 
-export default function HreflangTags({ baseUrl = 'https://luvrix.com' }) {
+export default function HreflangTags({ baseUrl = "https://luvrix.com" }) {
   const router = useRouter();
-  const currentPath = router.asPath.split('?')[0];
+  const currentPath = router.asPath.split("?")[0];
 
   return (
     <Head>
@@ -45,7 +45,7 @@ export default function HreflangTags({ baseUrl = 'https://luvrix.com' }) {
   );
 }
 
-export function generateHreflangLinks(path, baseUrl = 'https://luvrix.com') {
+export function generateHreflangLinks(path, baseUrl = "https://luvrix.com") {
   return supportedLocales.map((locale) => ({
     locale,
     url: `${baseUrl}/${locale}${path}`,

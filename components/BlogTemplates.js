@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { FiArrowLeft, FiPlay, FiRadio } from "react-icons/fi";
+import { FiArrowLeft, FiPlay } from "react-icons/fi";
 import { useState, useEffect } from "react";
 
 export const BLOG_TEMPLATES = [
@@ -318,26 +318,26 @@ function parseVideoUrl(url) {
   if (!url) return null;
   // YouTube
   const ytMatch = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|live\/)|youtu\.be\/)([\w-]{11})/);
-  if (ytMatch) return { type: 'youtube', id: ytMatch[1], embedUrl: `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=0&rel=0` };
+  if (ytMatch) return { type: "youtube", id: ytMatch[1], embedUrl: `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=0&rel=0` };
   // YouTube Live
   const ytLiveMatch = url.match(/youtube\.com\/live\/([\w-]{11})/);
-  if (ytLiveMatch) return { type: 'youtube_live', id: ytLiveMatch[1], embedUrl: `https://www.youtube.com/embed/${ytLiveMatch[1]}?autoplay=1&rel=0` };
+  if (ytLiveMatch) return { type: "youtube_live", id: ytLiveMatch[1], embedUrl: `https://www.youtube.com/embed/${ytLiveMatch[1]}?autoplay=1&rel=0` };
   // Vimeo
   const vimeoMatch = url.match(/vimeo\.com\/(\d+)/);
-  if (vimeoMatch) return { type: 'vimeo', id: vimeoMatch[1], embedUrl: `https://player.vimeo.com/video/${vimeoMatch[1]}` };
+  if (vimeoMatch) return { type: "vimeo", id: vimeoMatch[1], embedUrl: `https://player.vimeo.com/video/${vimeoMatch[1]}` };
   // Dailymotion
   const dmMatch = url.match(/dailymotion\.com\/video\/([\w]+)/);
-  if (dmMatch) return { type: 'dailymotion', id: dmMatch[1], embedUrl: `https://www.dailymotion.com/embed/video/${dmMatch[1]}` };
+  if (dmMatch) return { type: "dailymotion", id: dmMatch[1], embedUrl: `https://www.dailymotion.com/embed/video/${dmMatch[1]}` };
   // Twitch
   const twitchMatch = url.match(/twitch\.tv\/(\w+)/);
-  if (twitchMatch) return { type: 'twitch', id: twitchMatch[1], embedUrl: `https://player.twitch.tv/?channel=${twitchMatch[1]}&parent=${typeof window !== 'undefined' ? window.location.hostname : 'luvrix.com'}` };
+  if (twitchMatch) return { type: "twitch", id: twitchMatch[1], embedUrl: `https://player.twitch.tv/?channel=${twitchMatch[1]}&parent=${typeof window !== "undefined" ? window.location.hostname : "luvrix.com"}` };
   // Direct video URL
-  if (url.match(/\.(mp4|webm|ogg|m3u8)$/i)) return { type: 'direct', url };
+  if (url.match(/\.(mp4|webm|ogg|m3u8)$/i)) return { type: "direct", url };
   // Generic embed (iframe-compatible URL)
-  return { type: 'embed', embedUrl: url };
+  return { type: "embed", embedUrl: url };
 }
 
-function VideoPlayer({ videoUrl, isLive }) {
+function VideoPlayer({ videoUrl, isLive: _isLive }) {
   const video = parseVideoUrl(videoUrl);
   if (!video) return (
     <div className="aspect-video bg-gray-900 rounded-2xl flex items-center justify-center">
@@ -345,7 +345,7 @@ function VideoPlayer({ videoUrl, isLive }) {
     </div>
   );
 
-  if (video.type === 'direct') {
+  if (video.type === "direct") {
     return (
       <div className="relative aspect-video bg-black rounded-2xl overflow-hidden shadow-2xl ring-1 ring-white/10">
         <video src={video.url} controls className="w-full h-full" playsInline />
@@ -375,21 +375,21 @@ function LiveBadge() {
   }, []);
   return (
     <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-red-600 text-white rounded-full text-xs font-bold uppercase tracking-wider">
-      <span className={`w-2 h-2 rounded-full bg-white ${pulse ? 'opacity-100' : 'opacity-40'} transition-opacity`} />
+      <span className={`w-2 h-2 rounded-full bg-white ${pulse ? "opacity-100" : "opacity-40"} transition-opacity`} />
       LIVE
     </span>
   );
 }
 
-export function VideoHero({ blog, author, readingTime, viewCount }) {
-  const isLive = blog.isLive || blog.videoUrl?.includes('/live/') || blog.videoUrl?.includes('twitch.tv');
+export function VideoHero({ blog, author, readingTime: _readingTime, viewCount }) {
+  const isLive = blog.isLive || blog.videoUrl?.includes("/live/") || blog.videoUrl?.includes("twitch.tv");
 
   return (
     <div className="relative bg-gray-950">
       {/* Animated background */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-40 -right-40 w-[500px] h-[500px] bg-red-600/10 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute -bottom-40 -left-40 w-[400px] h-[400px] bg-orange-500/10 rounded-full blur-3xl" style={{ animationDelay: '1s' }} />
+        <div className="absolute -bottom-40 -left-40 w-[400px] h-[400px] bg-orange-500/10 rounded-full blur-3xl" style={{ animationDelay: "1s" }} />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-purple-600/5 rounded-full blur-3xl" />
       </div>
 

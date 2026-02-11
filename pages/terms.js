@@ -1,5 +1,5 @@
-import Link from 'next/link';
-import Layout from '../components/Layout';
+import Link from "next/link";
+import Layout from "../components/Layout";
 
 export default function TermsOfService() {
   return (
@@ -108,7 +108,7 @@ export default function TermsOfService() {
                 </h2>
                 <p className="text-gray-600 dark:text-gray-300 mb-4">
                   We respect intellectual property rights. If you believe content infringes your 
-                  copyright, please submit a DMCA notice to{' '}
+                  copyright, please submit a DMCA notice to{" "}
                   <a href="mailto:dmca@luvrix.com" className="text-purple-600 hover:underline">
                     dmca@luvrix.com
                   </a>
@@ -182,7 +182,7 @@ export default function TermsOfService() {
                   14. Contact
                 </h2>
                 <p className="text-gray-600 dark:text-gray-300">
-                  For questions about these terms, contact us at{' '}
+                  For questions about these terms, contact us at{" "}
                   <a href="mailto:legal@luvrix.com" className="text-purple-600 hover:underline">
                     legal@luvrix.com
                   </a>

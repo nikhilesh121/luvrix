@@ -53,7 +53,7 @@ export default function SeoForm({ blog, onChange, initialData }) {
         {seoResult && (
           <div className="flex items-center gap-2">
             <div
-              className={`w-3 h-3 rounded-full`}
+              className={"w-3 h-3 rounded-full"}
               style={{ backgroundColor: status?.color }}
             />
             <span className="font-semibold text-gray-900 dark:text-gray-100">{seoResult.score}/100</span>

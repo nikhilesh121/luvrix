@@ -3,11 +3,11 @@
  * View and query audit logs for compliance and security monitoring
  */
 
-import { withAdmin } from '../../../lib/auth';
-import { queryAuditLogs, getAuditStats } from '../../../lib/auditLog';
+import { withAdmin } from "../../../lib/auth";
+import { queryAuditLogs, getAuditStats } from "../../../lib/auditLog";
 
 async function handler(req, res) {
-  if (req.method === 'GET') {
+  if (req.method === "GET") {
     try {
       const {
         page = 1,
@@ -22,7 +22,7 @@ async function handler(req, res) {
       } = req.query;
       
       // If stats requested, return statistics
-      if (stats === 'true') {
+      if (stats === "true") {
         const statistics = await getAuditStats({
           startDate,
           endDate,
@@ -51,12 +51,12 @@ async function handler(req, res) {
         hasMore: logs.length === parseInt(limit),
       });
     } catch (error) {
-      console.error('Error fetching audit logs:', error);
-      return res.status(500).json({ error: 'Failed to fetch audit logs' });
+      console.error("Error fetching audit logs:", error);
+      return res.status(500).json({ error: "Failed to fetch audit logs" });
     }
   }
   
-  return res.status(405).json({ error: 'Method not allowed' });
+  return res.status(405).json({ error: "Method not allowed" });
 }
 
 export default withAdmin(handler);

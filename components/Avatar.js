@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { getInitials, getAvatarColors } from '../lib/avatar';
+import { useState } from "react";
+import { getInitials, getAvatarColors } from "../lib/avatar";
 
 export default function Avatar({ 
   user, 
@@ -7,14 +7,14 @@ export default function Avatar({
   email, 
   photoURL, 
   size = 40, 
-  className = '',
-  showFallback = true 
+  className = "",
+  showFallback: _showFallback = true 
 }) {
   const [imageError, setImageError] = useState(false);
   
   // Get user data from props or user object
-  const displayName = name || user?.name || user?.displayName || '';
-  const displayEmail = email || user?.email || '';
+  const displayName = name || user?.name || user?.displayName || "";
+  const displayEmail = email || user?.email || "";
   const photo = photoURL || user?.photoURL;
   
   // Get initials and colors
@@ -22,7 +22,7 @@ export default function Avatar({
   const [color1, color2] = getAvatarColors(displayName, displayEmail);
   
   // Check if we should show the image
-  const hasValidPhoto = photo && photo.trim() && photo !== 'null' && photo !== 'undefined' && !imageError;
+  const hasValidPhoto = photo && photo.trim() && photo !== "null" && photo !== "undefined" && !imageError;
   
   // Font size based on avatar size
   const fontSize = Math.round(size * 0.4);
@@ -35,7 +35,7 @@ export default function Avatar({
       >
         <img
           src={photo}
-          alt={displayName || 'User'}
+          alt={displayName || "User"}
           className="w-full h-full object-cover"
           onError={() => setImageError(true)}
         />
@@ -60,7 +60,7 @@ export default function Avatar({
 }
 
 // Smaller inline avatar for lists
-export function AvatarSmall({ user, name, email, photoURL, className = '' }) {
+export function AvatarSmall({ user, name, email, photoURL, className = "" }) {
   return (
     <Avatar 
       user={user} 
@@ -74,7 +74,7 @@ export function AvatarSmall({ user, name, email, photoURL, className = '' }) {
 }
 
 // Large avatar for profile pages
-export function AvatarLarge({ user, name, email, photoURL, className = '' }) {
+export function AvatarLarge({ user, name, email, photoURL, className = "" }) {
   return (
     <Avatar 
       user={user} 

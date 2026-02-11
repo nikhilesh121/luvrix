@@ -12,13 +12,13 @@ import {
 
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  FiUser, FiMail, FiPhone, FiEdit2, FiSave, FiX, FiImage,
+  FiUser, FiMail, FiEdit2, FiSave, FiX, FiImage,
   FiFileText, FiCreditCard, FiCalendar, FiCheck, FiShoppingBag,
-  FiGlobe, FiTwitter, FiInstagram, FiExternalLink, FiPlus,
-  FiTrendingUp, FiEye, FiAward, FiZap, FiChevronRight, FiUsers,
-  FiHeart, FiCopy, FiLink, FiStar, FiTarget, FiActivity, FiBookOpen,
-  FiShare2, FiSettings, FiGrid, FiTrash2, FiFolder, FiCheckCircle,
-  FiClock, FiXCircle, FiMoreVertical, FiEdit3, FiGift
+  FiGlobe, FiExternalLink, FiPlus,
+  FiTrendingUp, FiEye, FiAward, FiZap, FiUsers,
+  FiHeart, FiCopy, FiStar, FiBookOpen,
+  FiShare2, FiSettings, FiTrash2, FiFolder, FiCheckCircle,
+  FiClock, FiXCircle, FiEdit3, FiGift
 } from "react-icons/fi";
 import Link from "next/link";
 
@@ -285,12 +285,12 @@ function ProfileContent({ user, initialUserData }) {
 
   // Achievement badges based on stats
   const badges = [
-    { id: 'writer', label: 'Writer', icon: FiEdit2, unlocked: blogs.length >= 1, color: 'purple' },
-    { id: 'popular', label: 'Popular', icon: FiTrendingUp, unlocked: totalViews >= 100, color: 'blue' },
-    { id: 'loved', label: 'Loved', icon: FiHeart, unlocked: totalLikes >= 10, color: 'pink' },
-    { id: 'influencer', label: 'Influencer', icon: FiUsers, unlocked: followers.length >= 5, color: 'green' },
-    { id: 'veteran', label: 'Veteran', icon: FiAward, unlocked: accountAge >= 30, color: 'amber' },
-    { id: 'prolific', label: 'Prolific', icon: FiBookOpen, unlocked: blogs.length >= 10, color: 'cyan' },
+    { id: "writer", label: "Writer", icon: FiEdit2, unlocked: blogs.length >= 1, color: "purple" },
+    { id: "popular", label: "Popular", icon: FiTrendingUp, unlocked: totalViews >= 100, color: "blue" },
+    { id: "loved", label: "Loved", icon: FiHeart, unlocked: totalLikes >= 10, color: "pink" },
+    { id: "influencer", label: "Influencer", icon: FiUsers, unlocked: followers.length >= 5, color: "green" },
+    { id: "veteran", label: "Veteran", icon: FiAward, unlocked: accountAge >= 30, color: "amber" },
+    { id: "prolific", label: "Prolific", icon: FiBookOpen, unlocked: blogs.length >= 10, color: "cyan" },
   ];
 
   return (
@@ -377,14 +377,14 @@ function ProfileContent({ user, initialUserData }) {
                 </Link>
                 <button
                   onClick={() => {
-                    navigator.clipboard.writeText(`${typeof window !== 'undefined' ? window.location.origin : ''}/user/${userData?.uniqueId || user?.uid}`);
+                    navigator.clipboard.writeText(`${typeof window !== "undefined" ? window.location.origin : ""}/user/${userData?.uniqueId || user?.uid}`);
                     setCopiedId(true);
                     setTimeout(() => setCopiedId(false), 2000);
                   }}
                   className="flex items-center gap-2 px-4 py-2 bg-white/5 backdrop-blur-xl rounded-xl text-gray-400 hover:text-white hover:bg-white/10 transition-all border border-white/10"
                 >
                   {copiedId ? <FiCheck className="w-4 h-4 text-green-400" /> : <FiShare2 className="w-4 h-4" />}
-                  <span className="text-sm font-medium hidden sm:inline">{copiedId ? 'Copied!' : 'Share'}</span>
+                  <span className="text-sm font-medium hidden sm:inline">{copiedId ? "Copied!" : "Share"}</span>
                 </button>
               </div>
             </motion.div>
@@ -435,11 +435,11 @@ function ProfileContent({ user, initialUserData }) {
                 {/* Stats Grid */}
                 <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-6">
                   {[
-                    { label: 'Posts', value: blogs.length, icon: FiFileText, color: 'purple' },
-                    { label: 'Followers', value: followers.length, icon: FiUsers, color: 'pink' },
-                    { label: 'Following', value: following.length, icon: FiHeart, color: 'red' },
-                    { label: 'Views', value: totalViews.toLocaleString(), icon: FiEye, color: 'cyan' },
-                    { label: 'Likes', value: totalLikes.toLocaleString(), icon: FiZap, color: 'amber' },
+                    { label: "Posts", value: blogs.length, icon: FiFileText, color: "purple" },
+                    { label: "Followers", value: followers.length, icon: FiUsers, color: "pink" },
+                    { label: "Following", value: following.length, icon: FiHeart, color: "red" },
+                    { label: "Views", value: totalViews.toLocaleString(), icon: FiEye, color: "cyan" },
+                    { label: "Likes", value: totalLikes.toLocaleString(), icon: FiZap, color: "amber" },
                   ].map((stat, i) => (
                     <motion.div
                       key={stat.label}
@@ -468,12 +468,12 @@ function ProfileContent({ user, initialUserData }) {
                         initial={{ opacity: 0, scale: 0.8 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: 0.3 + i * 0.05 }}
-                        className={`relative group ${!badge.unlocked && 'opacity-40'}`}
+                        className={`relative group ${!badge.unlocked && "opacity-40"}`}
                       >
                         <div className={`flex items-center gap-2 px-3 py-2 rounded-xl border transition-all ${
                           badge.unlocked 
                             ? `bg-${badge.color}-500/10 border-${badge.color}-500/30 text-${badge.color}-400` 
-                            : 'bg-white/5 border-white/10 text-gray-500'
+                            : "bg-white/5 border-white/10 text-gray-500"
                         }`}>
                           <badge.icon className="w-4 h-4" />
                           <span className="text-xs font-semibold">{badge.label}</span>
@@ -1156,21 +1156,21 @@ function ProfileContent({ user, initialUserData }) {
                     <button
                       onClick={async () => {
                         try {
-                          const token = localStorage.getItem('token');
-                          const res = await fetch('/api/user/export-data', {
+                          const token = localStorage.getItem("token");
+                          const res = await fetch("/api/user/export-data", {
                             headers: { Authorization: `Bearer ${token}` },
                           });
-                          if (!res.ok) throw new Error('Export failed');
+                          if (!res.ok) throw new Error("Export failed");
                           const data = await res.json();
-                          const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                          const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
                           const url = URL.createObjectURL(blob);
-                          const a = document.createElement('a');
+                          const a = document.createElement("a");
                           a.href = url;
-                          a.download = `luvrix-data-export-${new Date().toISOString().split('T')[0]}.json`;
+                          a.download = `luvrix-data-export-${new Date().toISOString().split("T")[0]}.json`;
                           a.click();
                           URL.revokeObjectURL(url);
                         } catch (err) {
-                          alert('Failed to export data. Please try again.');
+                          alert("Failed to export data. Please try again.");
                         }
                       }}
                       className="flex items-center gap-3 w-full p-3 bg-blue-500/10 text-blue-400 rounded-xl hover:bg-blue-500/20 transition-all border border-blue-500/20"
@@ -1180,19 +1180,19 @@ function ProfileContent({ user, initialUserData }) {
                     </button>
                     <button
                       onClick={async () => {
-                        if (!confirm('Are you sure you want to permanently delete your account? This action cannot be undone.')) return;
-                        if (!confirm('This will delete ALL your data including blogs, comments, and profile. Type OK to confirm.')) return;
+                        if (!confirm("Are you sure you want to permanently delete your account? This action cannot be undone.")) return;
+                        if (!confirm("This will delete ALL your data including blogs, comments, and profile. Type OK to confirm.")) return;
                         try {
-                          const token = localStorage.getItem('token');
-                          const res = await fetch('/api/user/delete-account', {
-                            method: 'DELETE',
+                          const token = localStorage.getItem("token");
+                          const res = await fetch("/api/user/delete-account", {
+                            method: "DELETE",
                             headers: { Authorization: `Bearer ${token}` },
                           });
-                          if (!res.ok) throw new Error('Delete failed');
+                          if (!res.ok) throw new Error("Delete failed");
                           localStorage.clear();
-                          router.push('/');
+                          router.push("/");
                         } catch (err) {
-                          alert('Failed to delete account. Please try again.');
+                          alert("Failed to delete account. Please try again.");
                         }
                       }}
                       className="flex items-center gap-3 w-full p-3 bg-red-500/10 text-red-400 rounded-xl hover:bg-red-500/20 transition-all border border-red-500/20"
@@ -1228,7 +1228,7 @@ function ProfileContent({ user, initialUserData }) {
                   <div className="space-y-4">
                     <div className="flex items-center gap-3">
                       <div className="flex-1 bg-white/10 rounded-xl px-4 py-3 font-mono text-white border border-white/10">
-                        {`${typeof window !== 'undefined' ? window.location.origin : ''}/register?ref=${referralCode}`}
+                        {`${typeof window !== "undefined" ? window.location.origin : ""}/register?ref=${referralCode}`}
                       </div>
                       <button
                         onClick={copyReferralLink}

@@ -5,7 +5,7 @@ import Avatar from "../../components/Avatar";
 import { getAllUsers, updateUser, deleteUser, createLog, hideUserPosts, unhideUserPosts } from "../../lib/api-client";
 import { auth } from "../../lib/local-auth";
 import { motion } from "framer-motion";
-import { FiSearch, FiUserX, FiUserCheck, FiShield, FiUser, FiTrash2, FiLoader, FiUsers, FiCheckCircle, FiAlertCircle, FiEdit3, FiX, FiPlus, FiKey } from "react-icons/fi";
+import { FiSearch, FiUserX, FiUserCheck, FiShield, FiUser, FiTrash2, FiLoader, FiUsers, FiCheckCircle, FiAlertCircle, FiX, FiPlus, FiKey } from "react-icons/fi";
 
 export default function AdminUsers() {
   return (
@@ -145,16 +145,16 @@ function UsersContent() {
     if (!resetPasswordModal.user) return;
     setActionLoading(resetPasswordModal.user.id);
     try {
-      const token = localStorage.getItem('luvrix_auth_token');
+      const token = localStorage.getItem("luvrix_auth_token");
       const res = await fetch(`/api/admin/users/${resetPasswordModal.user.id}/reset-password`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
         }
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to reset password');
+      if (!res.ok) throw new Error(data.error || "Failed to reset password");
       setResetResult(data);
       setSuccessMessage(data.message);
       setTimeout(() => setSuccessMessage(""), 5000);
@@ -182,12 +182,12 @@ function UsersContent() {
 
     setActionLoading(editPointsModal.user.id);
     try {
-      const token = localStorage.getItem('luvrix_auth_token');
+      const token = localStorage.getItem("luvrix_auth_token");
       const res = await fetch(`/api/admin/users/${editPointsModal.user.id}/points`, {
-        method: 'PUT',
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
         },
         body: JSON.stringify({ points })
       });
@@ -202,7 +202,7 @@ function UsersContent() {
       }
       
       if (!res.ok) {
-        throw new Error(data.error || 'Failed to update points');
+        throw new Error(data.error || "Failed to update points");
       }
       
       await createLog({
@@ -522,8 +522,8 @@ function UsersContent() {
                     onClick={() => setNewPoints(val.toString())}
                     className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all ${
                       newPoints === val.toString() 
-                        ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/25' 
-                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                        ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/25" 
+                        : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                     }`}
                   >
                     +{val}

@@ -1,12 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/router";
 import dynamic from "next/dynamic";
 import AdminGuard from "../../components/AdminGuard";
 import AdminSidebar from "../../components/AdminSidebar";
-import { createBlog, createLog, getSettings } from "../../lib/api-client";
+import { createBlog, createLog } from "../../lib/api-client";
 import { auth } from "../../lib/local-auth";
 import { motion } from "framer-motion";
-import { FiSave, FiEye, FiImage, FiTag, FiFileText, FiCheckCircle, FiArrowLeft, FiVideo, FiPlus, FiTrash2, FiX } from "react-icons/fi";
+import { FiSave, FiImage, FiTag, FiFileText, FiCheckCircle, FiArrowLeft, FiVideo, FiPlus, FiTrash2, FiX } from "react-icons/fi";
 import Link from "next/link";
 import { slugify } from "../../utils/slugify";
 
@@ -46,7 +46,7 @@ function CreateBlogContent() {
     mediaItems: [], // [{type:'image'|'video', url:'', caption:'', position: number}]
   });
   const [showMediaModal, setShowMediaModal] = useState(false);
-  const [newMedia, setNewMedia] = useState({ type: 'image', url: '', caption: '', position: 1 });
+  const [newMedia, setNewMedia] = useState({ type: "image", url: "", caption: "", position: 1 });
 
   const handleTitleChange = (e) => {
     const title = e.target.value;
@@ -330,7 +330,7 @@ function CreateBlogContent() {
                       {formData.mediaItems.map((item, idx) => (
                         <div key={idx} className="flex items-start gap-2 p-2.5 bg-slate-50 rounded-xl border border-slate-100">
                           <div className="shrink-0 w-8 h-8 rounded-lg bg-slate-200 flex items-center justify-center">
-                            {item.type === 'video' ? (
+                            {item.type === "video" ? (
                               <FiVideo className="w-4 h-4 text-red-500" />
                             ) : (
                               <FiImage className="w-4 h-4 text-blue-500" />
@@ -360,7 +360,7 @@ function CreateBlogContent() {
                   <button
                     type="button"
                     onClick={() => {
-                      setNewMedia({ type: 'image', url: '', caption: '', position: formData.mediaItems.length + 1 });
+                      setNewMedia({ type: "image", url: "", caption: "", position: formData.mediaItems.length + 1 });
                       setShowMediaModal(true);
                     }}
                     className="w-full py-2.5 border-2 border-dashed border-slate-200 rounded-xl text-sm text-slate-500 hover:border-blue-300 hover:text-blue-600 hover:bg-blue-50/50 transition flex items-center justify-center gap-2"
@@ -384,15 +384,15 @@ function CreateBlogContent() {
                           <div>
                             <label className="block text-sm font-medium text-slate-700 mb-2">Type</label>
                             <div className="flex gap-2">
-                              {[{ id: 'image', icon: <FiImage className="w-4 h-4" />, label: 'Image' }, { id: 'video', icon: <FiVideo className="w-4 h-4" />, label: 'Video' }].map(t => (
+                              {[{ id: "image", icon: <FiImage className="w-4 h-4" />, label: "Image" }, { id: "video", icon: <FiVideo className="w-4 h-4" />, label: "Video" }].map(t => (
                                 <button
                                   key={t.id}
                                   type="button"
                                   onClick={() => setNewMedia({ ...newMedia, type: t.id })}
                                   className={`flex-1 py-2.5 rounded-xl text-sm font-medium flex items-center justify-center gap-2 border-2 transition ${
                                     newMedia.type === t.id
-                                      ? 'border-blue-400 bg-blue-50 text-blue-700'
-                                      : 'border-slate-200 text-slate-500 hover:border-slate-300'
+                                      ? "border-blue-400 bg-blue-50 text-blue-700"
+                                      : "border-slate-200 text-slate-500 hover:border-slate-300"
                                   }`}
                                 >
                                   {t.icon} {t.label}
@@ -404,13 +404,13 @@ function CreateBlogContent() {
                           {/* URL */}
                           <div>
                             <label className="block text-sm font-medium text-slate-700 mb-1">
-                              {newMedia.type === 'video' ? 'Video URL' : 'Image URL'}
+                              {newMedia.type === "video" ? "Video URL" : "Image URL"}
                             </label>
                             <input
                               type="url"
                               value={newMedia.url}
                               onChange={e => setNewMedia({ ...newMedia, url: e.target.value })}
-                              placeholder={newMedia.type === 'video' ? 'https://youtube.com/watch?v=... or https://vimeo.com/...' : 'https://example.com/image.jpg'}
+                              placeholder={newMedia.type === "video" ? "https://youtube.com/watch?v=... or https://vimeo.com/..." : "https://example.com/image.jpg"}
                               className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 text-sm"
                             />
                           </div>
@@ -442,9 +442,9 @@ function CreateBlogContent() {
                           </div>
 
                           {/* Preview */}
-                          {newMedia.url && newMedia.type === 'image' && (
+                          {newMedia.url && newMedia.type === "image" && (
                             <div className="rounded-xl overflow-hidden border border-slate-100">
-                              <img src={newMedia.url} alt="Preview" className="w-full h-32 object-cover" onError={e => e.target.style.display = 'none'} />
+                              <img src={newMedia.url} alt="Preview" className="w-full h-32 object-cover" onError={e => e.target.style.display = "none"} />
                             </div>
                           )}
 
@@ -486,9 +486,9 @@ function CreateBlogContent() {
                       <button
                         type="button"
                         onClick={() => setFormData({ ...formData, adsEnabled: !formData.adsEnabled })}
-                        className={`relative w-11 h-6 rounded-full transition-colors ${formData.adsEnabled ? 'bg-green-500' : 'bg-gray-300'}`}
+                        className={`relative w-11 h-6 rounded-full transition-colors ${formData.adsEnabled ? "bg-green-500" : "bg-gray-300"}`}
                       >
-                        <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${formData.adsEnabled ? 'translate-x-5' : ''}`} />
+                        <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${formData.adsEnabled ? "translate-x-5" : ""}`} />
                       </button>
                     </div>
                     {formData.adsEnabled && (
@@ -496,7 +496,7 @@ function CreateBlogContent() {
                         <div>
                           <p className="text-sm font-medium text-slate-700 mb-2">Ad Placements</p>
                           <div className="flex flex-wrap gap-2">
-                            {[{id: 'top', label: 'Top'}, {id: 'inContent', label: 'In-Content'}, {id: 'bottom', label: 'Bottom'}].map(p => (
+                            {[{id: "top", label: "Top"}, {id: "inContent", label: "In-Content"}, {id: "bottom", label: "Bottom"}].map(p => (
                               <button
                                 key={p.id}
                                 type="button"
@@ -509,11 +509,11 @@ function CreateBlogContent() {
                                 }}
                                 className={`px-3 py-1.5 rounded-lg text-xs font-medium border-2 transition ${
                                   (formData.adPlacements || []).includes(p.id)
-                                    ? 'border-green-400 bg-green-50 text-green-700'
-                                    : 'border-slate-200 text-slate-500'
+                                    ? "border-green-400 bg-green-50 text-green-700"
+                                    : "border-slate-200 text-slate-500"
                                 }`}
                               >
-                                {(formData.adPlacements || []).includes(p.id) ? '\u2713 ' : ''}{p.label}
+                                {(formData.adPlacements || []).includes(p.id) ? "\u2713 " : ""}{p.label}
                               </button>
                             ))}
                           </div>

@@ -8,10 +8,10 @@ import { motion } from "framer-motion";
 import { FiUser, FiMail, FiLock, FiAlertCircle, FiCheck, FiZap, FiArrowRight, FiGift, FiTrendingUp, FiAward } from "react-icons/fi";
 
 function formatNumber(num) {
-  if (!num || num < 0) return '0';
+  if (!num || num < 0) return "0";
   if (num < 1000) return `${num}`;
   if (num < 1000000) return `${Math.floor(num / 1000)}K+`;
-  return `${(num / 1000000).toFixed(1).replace(/\.0$/, '')}M+`;
+  return `${(num / 1000000).toFixed(1).replace(/\.0$/, "")}M+`;
 }
 
 export default function Register() {
@@ -22,7 +22,7 @@ export default function Register() {
   const [platformStats, setPlatformStats] = useState({ readers: 0, writers: 0, articles: 0 });
 
   useEffect(() => {
-    fetch('/api/stats/platform')
+    fetch("/api/stats/platform")
       .then(r => r.ok ? r.json() : null)
       .then(data => { if (data) setPlatformStats(data); })
       .catch(() => {});
@@ -277,8 +277,8 @@ export default function Register() {
               className="absolute top-0 left-0 w-[400px] h-[400px] bg-gradient-to-r from-cyan-600/30 to-blue-600/30 rounded-full blur-[100px]"
             />
             <div className="absolute inset-0 opacity-[0.03]" style={{
-              backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`,
-              backgroundSize: '40px 40px'
+              backgroundImage: "linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)",
+              backgroundSize: "40px 40px"
             }} />
           </div>
           

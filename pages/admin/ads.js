@@ -7,8 +7,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   FiSave, FiMonitor, FiToggleLeft, FiToggleRight, FiLayout, FiGrid,
   FiSquare, FiSidebar, FiMaximize, FiBox, FiImage, FiType, FiVideo,
-  FiCode, FiPlus, FiTrash2, FiEdit2, FiEye, FiCheck, FiX, FiChevronDown,
-  FiFileText, FiSmartphone, FiTablet, FiAlertCircle
+  FiCode, FiPlus, FiTrash2, FiEdit2, FiEye, FiCheck, FiX,
+  FiFileText
 } from "react-icons/fi";
 
 const AD_POSITIONS = [
@@ -79,7 +79,7 @@ function AdsContent() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [saveError, setSaveError] = useState("");
+  const [, setSaveError] = useState("");
   const [activeTab, setActiveTab] = useState("placements");
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingAd, setEditingAd] = useState(null);
@@ -128,12 +128,12 @@ function AdsContent() {
       // Also write ads.txt to disk
       try {
         const token = await auth.currentUser?.getIdToken();
-        await fetch('/api/admin/write-system-files', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        await fetch("/api/admin/write-system-files", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
           body: JSON.stringify({ adsTxt: settings.adsTxt }),
         });
-      } catch (e) { console.error('ads.txt write error:', e); }
+      } catch (e) { console.error("ads.txt write error:", e); }
 
       await createLog({
         adminId: auth.currentUser?.uid,
@@ -442,7 +442,7 @@ function AdsContent() {
                         onChange={(e) => setSettings({ ...settings, adsCode: e.target.value })}
                         className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-primary focus:outline-none font-mono text-sm"
                         rows={5}
-                        placeholder={`<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>`}
+                        placeholder={"<script async src=\"https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX\" crossorigin=\"anonymous\"></script>"}
                       />
                     </div>
 
@@ -454,7 +454,7 @@ function AdsContent() {
                         onChange={(e) => setSettings({ ...settings, adsenseMeta: e.target.value })}
                         className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-primary focus:outline-none font-mono text-sm"
                         rows={3}
-                        placeholder={`<meta name="google-adsense-account" content="ca-pub-9162211780712502">`}
+                        placeholder={"<meta name=\"google-adsense-account\" content=\"ca-pub-9162211780712502\">"}
                       />
                       <p className="text-xs text-gray-500 mt-1">Site verification meta tag from AdSense</p>
                     </div>
@@ -494,8 +494,8 @@ function AdsContent() {
                         onClick={() => setSettings({
                           ...settings,
                           adsensePublisherId: "ca-pub-9162211780712502",
-                          adsCode: `<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9162211780712502" crossorigin="anonymous"></script>`,
-                          adsenseMeta: `<meta name="google-adsense-account" content="ca-pub-9162211780712502">`,
+                          adsCode: "<script async src=\"https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9162211780712502\" crossorigin=\"anonymous\"></script>",
+                          adsenseMeta: "<meta name=\"google-adsense-account\" content=\"ca-pub-9162211780712502\">",
                         })}
                         className="w-full py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-xl font-semibold text-sm"
                       >
@@ -580,7 +580,7 @@ function AdsContent() {
                         onChange={(e) => setSettings({ ...settings, adsCode: e.target.value })}
                         className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-primary focus:outline-none font-mono text-sm"
                         rows={6}
-                        placeholder={`<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>`}
+                        placeholder={"<script async src=\"https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX\" crossorigin=\"anonymous\"></script>"}
                       />
                       <p className="text-sm text-gray-500 mt-2">
                         This code is loaded globally on all pages. Add your AdSense verification script here.

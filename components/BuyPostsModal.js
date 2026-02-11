@@ -14,7 +14,7 @@ const POST_PACKAGES = [
   { posts: 100, label: "100 Posts", discount: 25 },
 ];
 
-export default function BuyPostsModal({ isOpen, onClose, onSuccess, userData }) {
+export default function BuyPostsModal({ isOpen, onClose, onSuccess: _onSuccess, userData }) {
   const [settings, setSettings] = useState(null);
   const [selectedPackage, setSelectedPackage] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -100,7 +100,7 @@ export default function BuyPostsModal({ isOpen, onClose, onSuccess, userData }) 
     } catch (err) {
       console.error("Payment error:", err?.message || err);
       const errorMessage = err?.message || 
-        (typeof err === 'string' ? err : "Payment initialization failed. Please check PayU settings in admin panel.");
+        (typeof err === "string" ? err : "Payment initialization failed. Please check PayU settings in admin panel.");
       setError(errorMessage);
       setLoading(false);
     }

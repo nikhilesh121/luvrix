@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import Link from "next/link";
 import Layout from "../components/Layout";
 import BlogCard from "../components/BlogCard";
 import { getAllBlogs, getSettings } from "../lib/api-client";
@@ -8,11 +7,9 @@ import AdRenderer from "../components/AdRenderer";
 import { CollectionPageSchema, BreadcrumbSchema } from "../components/SEOHead";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  FiSearch, FiFilter, FiGrid, FiList, FiTrendingUp, 
-  FiBookOpen, FiCode, FiFilm, FiMusic, FiHeart, FiGlobe,
+  FiSearch, FiGrid, FiList, FiCode, FiFilm, FiHeart, FiGlobe,
   FiActivity, FiDollarSign, FiCoffee, FiMapPin, FiCpu,
-  FiStar, FiZap, FiLayers, FiArrowRight, FiClock, FiEye,
-  FiChevronRight, FiX
+  FiStar, FiZap, FiX
 } from "react-icons/fi";
 
 // Category configuration with icons, colors, and descriptions

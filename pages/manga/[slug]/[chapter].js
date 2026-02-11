@@ -6,13 +6,12 @@ import { motion, useInView } from "framer-motion";
 import { getMangaBySlug, getSettings } from "../../../lib/api-client";
 import { generateChapterUrl } from "../../../utils/mangaRedirectGenerator";
 import MangaRedirectBox from "../../../components/MangaRedirectBox";
-import { BreadcrumbSchema, ChapterSchema } from "../../../components/SEOHead";
 import AdRenderer from "../../../components/AdRenderer";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://luvrix.com";
 
 // Helper to serialize timestamps for SSR
-const serializeData = (obj) => {
+const _serializeData = (obj) => {
   if (!obj) return null;
   const serialized = { ...obj };
   for (const key in serialized) {
@@ -38,7 +37,7 @@ const getAltNames = (data) => {
     const match = data.description.match(/(?:also known as|alternative names?|other names?)[:\s]+([^.\n]+)/i);
     if (match) return match[1].trim();
   }
-  return '';
+  return "";
 };
 
 // Helper to apply SEO template with chapter-specific placeholders
@@ -46,14 +45,14 @@ const applyChapterTemplate = (template, data, chapNum) => {
   if (!template) return null;
   const altNames = getAltNames(data);
   let result = template
-    .replace(/{title}/g, data?.title || '')
+    .replace(/{title}/g, data?.title || "")
     .replace(/{altNames}/g, altNames)
-    .replace(/{chapter}/g, chapNum || '')
-    .replace(/{chapters}/g, data?.totalChapters || '')
-    .replace(/{status}/g, data?.status || 'Ongoing')
-    .replace(/{author}/g, data?.author || '')
-    .replace(/{genre}/g, data?.genre || '');
-  result = result.replace(/Also known as\s*\.\s*/gi, '').replace(/\s{2,}/g, ' ').trim();
+    .replace(/{chapter}/g, chapNum || "")
+    .replace(/{chapters}/g, data?.totalChapters || "")
+    .replace(/{status}/g, data?.status || "Ongoing")
+    .replace(/{author}/g, data?.author || "")
+    .replace(/{genre}/g, data?.genre || "");
+  result = result.replace(/Also known as\s*\.\s*/gi, "").replace(/\s{2,}/g, " ").trim();
   return result;
 };
 
@@ -401,7 +400,7 @@ function ChapterContent({ mangaTitle, chapterNumber, genre, author, status, tota
           {sections.map((sec, i) => (
             <React.Fragment key={i}>
               <AnimatedSection delay={i * 0.08}>
-                <div className={`relative rounded-xl border border-gray-200 bg-white p-6 md:p-8 shadow-sm hover:shadow-md transition-shadow duration-300`}>
+                <div className={"relative rounded-xl border border-gray-200 bg-white p-6 md:p-8 shadow-sm hover:shadow-md transition-shadow duration-300"}>
                   <div className="flex items-center gap-3 mb-4">
                     <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-lg ${sec.iconBg}`}>
                       {sec.icon}

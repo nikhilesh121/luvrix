@@ -3,7 +3,7 @@
  * View and manage background job queue
  */
 
-import { withAdmin } from '../../../lib/auth';
+import { withAdmin } from "../../../lib/auth";
 import { 
   getQueueStats, 
   getJobsByStatus, 
@@ -11,15 +11,15 @@ import {
   retryJob, 
   removeJob,
   JOB_STATUS 
-} from '../../../lib/jobQueue';
+} from "../../../lib/jobQueue";
 
 async function handler(req, res) {
-  if (req.method === 'GET') {
+  if (req.method === "GET") {
     try {
       const { status, jobId, stats } = req.query;
       
       // Get queue statistics
-      if (stats === 'true') {
+      if (stats === "true") {
         return res.status(200).json(getQueueStats());
       }
       
@@ -27,7 +27,7 @@ async function handler(req, res) {
       if (jobId) {
         const job = getJob(jobId);
         if (!job) {
-          return res.status(404).json({ error: 'Job not found' });
+          return res.status(404).json({ error: "Job not found" });
         }
         return res.status(200).json(job);
       }
@@ -41,51 +41,51 @@ async function handler(req, res) {
       // Default: return stats
       return res.status(200).json(getQueueStats());
     } catch (error) {
-      console.error('Error fetching job queue:', error);
-      return res.status(500).json({ error: 'Failed to fetch job queue' });
+      console.error("Error fetching job queue:", error);
+      return res.status(500).json({ error: "Failed to fetch job queue" });
     }
   }
   
-  if (req.method === 'POST') {
+  if (req.method === "POST") {
     try {
       const { action, jobId } = req.body;
       
-      if (action === 'retry' && jobId) {
+      if (action === "retry" && jobId) {
         const job = retryJob(jobId);
         if (!job) {
-          return res.status(404).json({ error: 'Job not found or not failed' });
+          return res.status(404).json({ error: "Job not found or not failed" });
         }
         return res.status(200).json({ success: true, job });
       }
       
-      return res.status(400).json({ error: 'Invalid action' });
+      return res.status(400).json({ error: "Invalid action" });
     } catch (error) {
-      console.error('Error processing job action:', error);
-      return res.status(500).json({ error: 'Failed to process action' });
+      console.error("Error processing job action:", error);
+      return res.status(500).json({ error: "Failed to process action" });
     }
   }
   
-  if (req.method === 'DELETE') {
+  if (req.method === "DELETE") {
     try {
       const { jobId } = req.query;
       
       if (!jobId) {
-        return res.status(400).json({ error: 'Job ID required' });
+        return res.status(400).json({ error: "Job ID required" });
       }
       
       const success = removeJob(jobId);
       if (!success) {
-        return res.status(404).json({ error: 'Job not found' });
+        return res.status(404).json({ error: "Job not found" });
       }
       
       return res.status(200).json({ success: true });
     } catch (error) {
-      console.error('Error removing job:', error);
-      return res.status(500).json({ error: 'Failed to remove job' });
+      console.error("Error removing job:", error);
+      return res.status(500).json({ error: "Failed to remove job" });
     }
   }
   
-  return res.status(405).json({ error: 'Method not allowed' });
+  return res.status(405).json({ error: "Method not allowed" });
 }
 
 export default withAdmin(handler);

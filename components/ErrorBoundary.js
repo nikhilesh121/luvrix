@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -11,17 +11,17 @@ class ErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    console.error('[ErrorBoundary] Caught error:', error, errorInfo);
+    console.error("[ErrorBoundary] Caught error:", error, errorInfo);
     // Report to error tracking (Sentry when configured)
     try {
-      fetch('/api/error-log', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      fetch("/api/error-log", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          message: error?.message || 'Unknown error',
-          stack: error?.stack || '',
-          componentStack: errorInfo?.componentStack || '',
-          url: typeof window !== 'undefined' ? window.location.href : '',
+          message: error?.message || "Unknown error",
+          stack: error?.stack || "",
+          componentStack: errorInfo?.componentStack || "",
+          url: typeof window !== "undefined" ? window.location.href : "",
           timestamp: new Date().toISOString(),
         }),
       }).catch(() => {});

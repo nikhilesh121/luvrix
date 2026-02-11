@@ -5,7 +5,7 @@ import { getSettings, updateSettings } from "../../lib/api-client";
 import { motion } from "framer-motion";
 import { 
   FiMenu, FiPlus, FiTrash2, FiSave, FiChevronDown, FiChevronUp,
-  FiEdit2, FiX, FiLoader, FiCheck
+  FiEdit2, FiX, FiLoader
 } from "react-icons/fi";
 
 export default function AdminMenus() {

@@ -5,6 +5,6 @@
  * GET /api/csrf-token - Returns a fresh CSRF token
  */
 
-import { getCSRFTokenHandler } from '../../lib/csrf';
+import { getCSRFTokenHandler } from "../../lib/csrf";
 
 export default getCSRFTokenHandler;

@@ -1,5 +1,5 @@
-import Link from 'next/link';
-import Layout from '../components/Layout';
+import Link from "next/link";
+import Layout from "../components/Layout";
 
 export default function PrivacyPolicy() {
   return (
@@ -116,7 +116,7 @@ export default function PrivacyPolicy() {
                   <li><strong>Objection:</strong> Object to certain processing</li>
                 </ul>
                 <p className="text-gray-600 dark:text-gray-300">
-                  To exercise these rights, contact us at{' '}
+                  To exercise these rights, contact us at{" "}
                   <a href="mailto:privacy@luvrix.com" className="text-purple-600 hover:underline">
                     privacy@luvrix.com
                   </a>

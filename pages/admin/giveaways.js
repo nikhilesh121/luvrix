@@ -10,11 +10,11 @@ import {
 import { auth } from "../../lib/local-auth";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  FiPlus, FiEdit3, FiTrash2, FiSave, FiX, FiGift, FiUsers, FiAward,
-  FiSearch, FiFilter, FiClock, FiCheckCircle, FiAlertCircle, FiImage,
-  FiStar, FiLink, FiCopy, FiCheck, FiChevronDown, FiEye, FiLock,
-  FiShuffle, FiTarget, FiList, FiSettings, FiMapPin, FiHeart,
-  FiDollarSign, FiMail, FiPhone,
+  FiPlus, FiEdit3, FiTrash2, FiSave, FiGift, FiUsers, FiAward,
+  FiSearch, FiCheckCircle, FiAlertCircle, FiImage,
+  FiLink, FiEye, FiLock,
+  FiShuffle, FiTarget, FiList, FiMapPin, FiHeart,
+  FiPhone,
 } from "react-icons/fi";
 
 export default function AdminGiveaways() {
@@ -513,7 +513,7 @@ function GiveawayDetail({ giveaway, onRefresh }) {
   const [taskForm, setTaskForm] = useState({ type: "custom", title: "", description: "", points: 1, required: false, url: "" });
 
   // Winner
-  const [winnerMode, setWinnerMode] = useState("SYSTEM_RANDOM");
+  // winnerMode is always SYSTEM_RANDOM for now
   const [winnerLoading, setWinnerLoading] = useState(false);
   const [winnerError, setWinnerError] = useState("");
   const [winnerInfo, setWinnerInfo] = useState(null);

@@ -1,21 +1,21 @@
-import { verifyToken } from '../../../lib/auth';
-import { getDb } from '../../../lib/mongodb';
-import { createGiveaway, listGiveaways } from '../../../lib/giveaway';
-import { createAuditLog, AUDIT_CATEGORIES, SEVERITY } from '../../../lib/auditLog';
+import { verifyToken } from "../../../lib/auth";
+import { getDb } from "../../../lib/mongodb";
+import { createGiveaway, listGiveaways } from "../../../lib/giveaway";
+import { createAuditLog, AUDIT_CATEGORIES, SEVERITY } from "../../../lib/auditLog";
 
 export default async function handler(req, res) {
   try {
-    if (req.method === 'GET') {
+    if (req.method === "GET") {
       // Public: list active giveaways; Admin: list all
-      const token = req.headers.authorization?.replace('Bearer ', '');
+      const token = req.headers.authorization?.replace("Bearer ", "");
       let isAdmin = false;
 
       if (token) {
         const decoded = verifyToken(token);
         if (decoded) {
           const db = await getDb();
-          const user = await db.collection('users').findOne({ _id: decoded.uid });
-          if (user?.role === 'ADMIN') isAdmin = true;
+          const user = await db.collection("users").findOne({ _id: decoded.uid });
+          if (user?.role === "ADMIN") isAdmin = true;
         }
       }
 
@@ -24,30 +24,30 @@ export default async function handler(req, res) {
         if (req.query.status) filter.status = req.query.status;
       } else {
         // Public: show active, ended, and winner_selected (not draft)
-        filter.status = { $in: ['active', 'ended', 'winner_selected'] };
+        filter.status = { $in: ["active", "ended", "winner_selected"] };
       }
 
       const giveaways = await listGiveaways(filter);
       return res.status(200).json(giveaways);
     }
 
-    if (req.method === 'POST') {
+    if (req.method === "POST") {
       // Admin only: create giveaway
-      const token = req.headers.authorization?.replace('Bearer ', '');
-      if (!token) return res.status(401).json({ error: 'Unauthorized' });
+      const token = req.headers.authorization?.replace("Bearer ", "");
+      if (!token) return res.status(401).json({ error: "Unauthorized" });
 
       const decoded = verifyToken(token);
-      if (!decoded) return res.status(401).json({ error: 'Invalid token' });
+      if (!decoded) return res.status(401).json({ error: "Invalid token" });
 
       const db = await getDb();
-      const user = await db.collection('users').findOne({ _id: decoded.uid });
-      if (!user || user.role !== 'ADMIN') {
-        return res.status(403).json({ error: 'Admin access required' });
+      const user = await db.collection("users").findOne({ _id: decoded.uid });
+      if (!user || user.role !== "ADMIN") {
+        return res.status(403).json({ error: "Admin access required" });
       }
 
       const { title, imageUrl } = req.body;
       if (!title || !imageUrl) {
-        return res.status(400).json({ error: 'Title and image are required' });
+        return res.status(400).json({ error: "Title and image are required" });
       }
 
       const giveaway = await createGiveaway({
@@ -58,10 +58,10 @@ export default async function handler(req, res) {
       await createAuditLog({
         userId: decoded.uid,
         userEmail: user.email,
-        userRole: 'ADMIN',
-        action: 'giveaway_create',
+        userRole: "ADMIN",
+        action: "giveaway_create",
         category: AUDIT_CATEGORIES.CONTENT_MANAGEMENT,
-        resourceType: 'giveaway',
+        resourceType: "giveaway",
         resourceId: giveaway.id,
         details: { title: giveaway.title, slug: giveaway.slug },
         severity: SEVERITY.INFO,
@@ -70,9 +70,9 @@ export default async function handler(req, res) {
       return res.status(201).json(giveaway);
     }
 
-    return res.status(405).json({ error: 'Method not allowed' });
+    return res.status(405).json({ error: "Method not allowed" });
   } catch (error) {
-    console.error('Giveaways API error:', error);
-    return res.status(500).json({ error: error.message || 'Internal server error' });
+    console.error("Giveaways API error:", error);
+    return res.status(500).json({ error: error.message || "Internal server error" });
   }
 }

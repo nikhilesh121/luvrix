@@ -1,6 +1,6 @@
-import { useMemo, useEffect, useRef, useState } from 'react';
-import AdRenderer from './AdRenderer';
-import { isSafeAdBreak, getBlogAdInterval } from '../lib/ads';
+import { useMemo, useEffect, useRef, useState } from "react";
+import AdRenderer from "./AdRenderer";
+import { isSafeAdBreak, getBlogAdInterval } from "../lib/ads";
 
 /**
  * BlogContentWithAds - Renders blog HTML content with ads injected between paragraphs
@@ -19,7 +19,7 @@ import { isSafeAdBreak, getBlogAdInterval } from '../lib/ads';
  * - className: CSS classes for the content wrapper
  * - blog: optional blog object for per-post overrides
  */
-export default function BlogContentWithAds({ html, settings, className = '', blog }) {
+export default function BlogContentWithAds({ html, settings, className = "", blog }) {
   const interval = getBlogAdInterval(settings, blog);
 
   const chunks = useMemo(() => {
@@ -29,29 +29,29 @@ export default function BlogContentWithAds({ html, settings, className = '', blo
     
     // Rejoin into complete HTML blocks
     const blocks = [];
-    let current = '';
+    let current = "";
     for (let i = 0; i < parts.length; i++) {
       current += parts[i];
       if (/^<\/(?:p|h[2-6]|blockquote|ul|ol|div|figure|table|pre)>$/i.test(parts[i])) {
         blocks.push(current);
-        current = '';
+        current = "";
       }
     }
     if (current.trim()) blocks.push(current);
 
     // Group blocks into chunks, inserting ad breaks at safe positions
     const grouped = [];
-    let group = '';
+    let group = "";
     let paraCount = 0;
     for (const block of blocks) {
       group += block;
       // Only count substantial paragraph-like blocks
-      if (block.replace(/<[^>]*>/g, '').trim().length > 20) {
+      if (block.replace(/<[^>]*>/g, "").trim().length > 20) {
         paraCount++;
       }
       if (paraCount >= interval && isSafeAdBreak(block)) {
         grouped.push(group);
-        group = '';
+        group = "";
         paraCount = 0;
       }
     }
@@ -100,7 +100,7 @@ function LazyAdSlot({ settings }) {
           observer.disconnect();
         }
       },
-      { rootMargin: '300px' }
+      { rootMargin: "300px" }
     );
     observer.observe(ref.current);
     return () => observer.disconnect();
@@ -110,7 +110,7 @@ function LazyAdSlot({ settings }) {
     <div
       ref={ref}
       className="my-6 sm:my-8 flex justify-center"
-      style={{ minHeight: '100px' }}
+      style={{ minHeight: "100px" }}
     >
       {visible ? (
         <div className="w-full max-w-3xl">

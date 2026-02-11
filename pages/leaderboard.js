@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import Layout from "../components/Layout";
 import { getLeaderboardWithAllUsers } from "../lib/api-client";
 import { motion } from "framer-motion";
-import { FiAward, FiTrendingUp, FiEye, FiFileText, FiUser, FiCalendar, FiHash, FiStar, FiZap } from "react-icons/fi";
+import { FiAward, FiTrendingUp, FiEye, FiFileText, FiUser, FiStar, FiZap } from "react-icons/fi";
 import Link from "next/link";
 
 export default function Leaderboard() {
@@ -29,7 +29,7 @@ export default function Leaderboard() {
     }
   };
 
-  const getRankStyle = (index) => {
+  const _getRankStyle = (index) => {
     if (index === 0) return { bg: "from-yellow-400 to-amber-500", text: "text-amber-600", border: "border-yellow-200", cardBg: "from-yellow-50 to-amber-50" };
     if (index === 1) return { bg: "from-slate-300 to-slate-400", text: "text-slate-600", border: "border-slate-200", cardBg: "from-slate-50 to-gray-50" };
     if (index === 2) return { bg: "from-amber-600 to-orange-600", text: "text-orange-600", border: "border-orange-200", cardBg: "from-orange-50 to-amber-50" };

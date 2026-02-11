@@ -1,7 +1,7 @@
 import { useState } from "react";
 import Layout from "../components/Layout";
 import { motion } from "framer-motion";
-import { FiMail, FiMapPin, FiPhone, FiSend, FiCheck, FiMessageCircle, FiUser, FiZap, FiHeart } from "react-icons/fi";
+import { FiMail, FiMapPin, FiSend, FiCheck, FiMessageCircle, FiUser, FiZap, FiHeart } from "react-icons/fi";
 import Head from "next/head";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://luvrix.com";
@@ -104,8 +104,8 @@ export default function Contact() {
             className="absolute bottom-0 right-0 w-[300px] h-[300px] bg-gradient-to-r from-blue-600/30 to-cyan-600/30 rounded-full blur-[100px]"
           />
           <div className="absolute inset-0 opacity-[0.03]" style={{
-            backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`,
-            backgroundSize: '40px 40px'
+            backgroundImage: "linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)",
+            backgroundSize: "40px 40px"
           }} />
         </div>
         

@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
-import { useRouter } from 'next/router';
+import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/router";
 
 /**
  * AdRenderer - Renders admin-controlled ad placements
@@ -18,13 +18,13 @@ import { useRouter } from 'next/router';
  */
 
 function getPageType(pathname) {
-  if (pathname === '/' || pathname === '') return 'home';
-  if (pathname.startsWith('/blog')) return 'blog';
-  if (pathname.includes('/chapter') || pathname.match(/\/manga\/[^/]+\/chapter/)) return 'chapter';
-  if (pathname.startsWith('/manga')) return 'manga';
-  if (pathname.startsWith('/categories')) return 'categories';
-  if (pathname.startsWith('/user')) return 'user';
-  return 'other';
+  if (pathname === "/" || pathname === "") return "home";
+  if (pathname.startsWith("/blog")) return "blog";
+  if (pathname.includes("/chapter") || pathname.match(/\/manga\/[^/]+\/chapter/)) return "chapter";
+  if (pathname.startsWith("/manga")) return "manga";
+  if (pathname.startsWith("/categories")) return "categories";
+  if (pathname.startsWith("/user")) return "user";
+  return "other";
 }
 
 function useIsMobile() {
@@ -32,15 +32,15 @@ function useIsMobile() {
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
     check();
-    window.addEventListener('resize', check);
-    return () => window.removeEventListener('resize', check);
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
   }, []);
   return isMobile;
 }
 
-export default function AdRenderer({ position, settings, className = '' }) {
+export default function AdRenderer({ position, settings, className = "" }) {
   const containerRef = useRef(null);
-  const renderedRef = useRef(false);
+  const _renderedRef = useRef(false);
   const router = useRouter();
   const isMobile = useIsMobile();
 
@@ -55,12 +55,12 @@ export default function AdRenderer({ position, settings, className = '' }) {
     if (ad.position !== position) return false;
 
     // Device targeting
-    if (ad.devices === 'desktop' && isMobile) return false;
-    if (ad.devices === 'mobile' && !isMobile) return false;
+    if (ad.devices === "desktop" && isMobile) return false;
+    if (ad.devices === "mobile" && !isMobile) return false;
 
     // Page targeting
-    const pages = ad.pages || ['all'];
-    if (!pages.includes('all')) {
+    const pages = ad.pages || ["all"];
+    if (!pages.includes("all")) {
       const currentPageType = getPageType(router.pathname);
       if (!pages.includes(currentPageType)) return false;
     }
@@ -79,7 +79,7 @@ export default function AdRenderer({ position, settings, className = '' }) {
   );
 }
 
-const BELOW_FOLD_POSITIONS = ['content_middle', 'content_bottom', 'blog_bottom', 'footer_above', 'footer_inside', 'sticky_bottom', 'between_posts'];
+const BELOW_FOLD_POSITIONS = ["content_middle", "content_bottom", "blog_bottom", "footer_above", "footer_inside", "sticky_bottom", "between_posts"];
 
 function SafeAdSlot({ ad }) {
   const slotRef = useRef(null);
@@ -100,7 +100,7 @@ function SafeAdSlot({ ad }) {
           observer.disconnect();
         }
       },
-      { rootMargin: '200px' }
+      { rootMargin: "200px" }
     );
     observer.observe(slotRef.current);
     return () => observer.disconnect();
@@ -112,16 +112,16 @@ function SafeAdSlot({ ad }) {
 
     try {
       // Create a temporary container to parse the HTML
-      const temp = document.createElement('div');
+      const temp = document.createElement("div");
       temp.innerHTML = ad.code;
 
       // Extract and execute scripts separately
-      const scripts = temp.querySelectorAll('script');
+      const scripts = temp.querySelectorAll("script");
       const fragment = document.createDocumentFragment();
 
       // Add non-script content
       while (temp.firstChild) {
-        if (temp.firstChild.nodeName !== 'SCRIPT') {
+        if (temp.firstChild.nodeName !== "SCRIPT") {
           fragment.appendChild(temp.firstChild);
         } else {
           temp.removeChild(temp.firstChild);
@@ -131,10 +131,10 @@ function SafeAdSlot({ ad }) {
 
       // Execute scripts
       scripts.forEach((origScript) => {
-        const newScript = document.createElement('script');
+        const newScript = document.createElement("script");
         if (origScript.src) {
           // Don't duplicate the global AdSense script
-          if (origScript.src.includes('adsbygoogle') && document.querySelector(`script[src*="adsbygoogle"]`)) {
+          if (origScript.src.includes("adsbygoogle") && document.querySelector("script[src*=\"adsbygoogle\"]")) {
             return;
           }
           newScript.src = origScript.src;
@@ -143,16 +143,16 @@ function SafeAdSlot({ ad }) {
           newScript.textContent = origScript.textContent;
         }
         if (origScript.type) newScript.type = origScript.type;
-        newScript.crossOrigin = origScript.crossOrigin || 'anonymous';
+        newScript.crossOrigin = origScript.crossOrigin || "anonymous";
         slotRef.current.appendChild(newScript);
       });
 
       // Push adsbygoogle if ins element exists — guard against duplicate pushes
-      const insElements = slotRef.current.querySelectorAll('ins.adsbygoogle');
-      if (insElements.length > 0 && typeof window !== 'undefined') {
+      const insElements = slotRef.current.querySelectorAll("ins.adsbygoogle");
+      if (insElements.length > 0 && typeof window !== "undefined") {
         insElements.forEach((ins) => {
           if (ins.dataset.adsbygooglePushed) return;
-          ins.dataset.adsbygooglePushed = 'true';
+          ins.dataset.adsbygooglePushed = "true";
           try {
             (window.adsbygoogle = window.adsbygoogle || []).push({});
           } catch (e) {
@@ -161,7 +161,7 @@ function SafeAdSlot({ ad }) {
         });
       }
     } catch (err) {
-      console.error('Ad rendering error:', err);
+      console.error("Ad rendering error:", err);
     }
   }, [ad.code, isVisible]);
 
@@ -171,7 +171,7 @@ function SafeAdSlot({ ad }) {
       className="ad-slot"
       data-ad-id={ad.id}
       data-ad-type={ad.type}
-      style={{ minHeight: ad.type === 'banner' ? '50px' : undefined, overflow: 'hidden' }}
+      style={{ minHeight: ad.type === "banner" ? "50px" : undefined, overflow: "hidden" }}
     />
   );
 }

@@ -13,9 +13,8 @@ import { TemplateSelector } from "../components/BlogTemplates";
 import { calculateSeoScore, MIN_SEO_SCORE } from "../utils/seoScore";
 import { checkForSpam } from "../utils/spamFilter";
 import { canUserPost } from "../utils/paymentLogic";
-import { canAutoApprove } from "../utils/contentValidator";
 import { motion, AnimatePresence } from "framer-motion";
-import { FiAlertCircle, FiCheck, FiImage, FiDollarSign, FiShoppingCart, FiEdit3, FiZap, FiStar, FiArrowRight, FiTag, FiFileText, FiSearch, FiTrendingUp, FiVideo, FiPlay, FiRadio, FiPlus, FiTrash2, FiX } from "react-icons/fi";
+import { FiAlertCircle, FiCheck, FiImage, FiDollarSign, FiEdit3, FiZap, FiStar, FiArrowRight, FiFileText, FiSearch, FiTrendingUp, FiVideo, FiPlay, FiRadio, FiPlus, FiTrash2, FiX } from "react-icons/fi";
 
 const BlogEditor = dynamic(() => import("../components/BlogEditor"), { ssr: false });
 
@@ -68,7 +67,7 @@ function CreateBlogContent({ user, userData }) {
     mediaItems: [],
   });
   const [showMediaModal, setShowMediaModal] = useState(false);
-  const [newMedia, setNewMedia] = useState({ type: 'image', url: '', caption: '', position: 1 });
+  const [newMedia, setNewMedia] = useState({ type: "image", url: "", caption: "", position: 1 });
 
   const [seoData, setSeoData] = useState({
     seoTitle: "",
@@ -524,7 +523,7 @@ function CreateBlogContent({ user, userData }) {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => {
-                      setNewMedia({ type: 'image', url: '', caption: '', position: (blog.mediaItems?.length || 0) + 1 });
+                      setNewMedia({ type: "image", url: "", caption: "", position: (blog.mediaItems?.length || 0) + 1 });
                       setShowMediaModal(true);
                     }}
                     disabled={!postStatus.canPost}
@@ -540,11 +539,11 @@ function CreateBlogContent({ user, userData }) {
                     {blog.mediaItems.map((item, idx) => (
                       <div key={idx} className="flex items-center gap-3 p-3 bg-white/5 rounded-xl border border-white/10">
                         <div className="shrink-0 w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
-                          {item.type === 'video' ? <FiVideo className="w-4 h-4 text-red-400" /> : <FiImage className="w-4 h-4 text-blue-400" />}
+                          {item.type === "video" ? <FiVideo className="w-4 h-4 text-red-400" /> : <FiImage className="w-4 h-4 text-blue-400" />}
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-xs text-slate-300 truncate">{item.url}</p>
-                          <p className="text-[10px] text-slate-500">After section {item.position}{item.caption ? ` · ${item.caption}` : ''}</p>
+                          <p className="text-[10px] text-slate-500">After section {item.position}{item.caption ? ` · ${item.caption}` : ""}</p>
                         </div>
                         <button
                           type="button"
@@ -587,15 +586,15 @@ function CreateBlogContent({ user, userData }) {
                       <div>
                         <label className="block text-sm font-medium text-slate-300 mb-2">Type</label>
                         <div className="flex gap-2">
-                          {[{ id: 'image', icon: <FiImage className="w-4 h-4" />, label: 'Image' }, { id: 'video', icon: <FiVideo className="w-4 h-4" />, label: 'Video' }].map(t => (
+                          {[{ id: "image", icon: <FiImage className="w-4 h-4" />, label: "Image" }, { id: "video", icon: <FiVideo className="w-4 h-4" />, label: "Video" }].map(t => (
                             <button
                               key={t.id}
                               type="button"
                               onClick={() => setNewMedia({ ...newMedia, type: t.id })}
                               className={`flex-1 py-2.5 rounded-xl text-sm font-medium flex items-center justify-center gap-2 border-2 transition ${
                                 newMedia.type === t.id
-                                  ? 'border-indigo-400 bg-indigo-500/20 text-indigo-300'
-                                  : 'border-white/10 text-slate-500 hover:border-white/20'
+                                  ? "border-indigo-400 bg-indigo-500/20 text-indigo-300"
+                                  : "border-white/10 text-slate-500 hover:border-white/20"
                               }`}
                             >
                               {t.icon} {t.label}
@@ -606,13 +605,13 @@ function CreateBlogContent({ user, userData }) {
                       {/* URL */}
                       <div>
                         <label className="block text-sm font-medium text-slate-300 mb-1">
-                          {newMedia.type === 'video' ? 'Video URL' : 'Image URL'}
+                          {newMedia.type === "video" ? "Video URL" : "Image URL"}
                         </label>
                         <input
                           type="url"
                           value={newMedia.url}
                           onChange={e => setNewMedia({ ...newMedia, url: e.target.value })}
-                          placeholder={newMedia.type === 'video' ? 'https://youtube.com/watch?v=...' : 'https://example.com/image.jpg'}
+                          placeholder={newMedia.type === "video" ? "https://youtube.com/watch?v=..." : "https://example.com/image.jpg"}
                           className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:ring-2 focus:ring-indigo-500/50 text-sm"
                         />
                       </div>
@@ -641,9 +640,9 @@ function CreateBlogContent({ user, userData }) {
                         <p className="text-[11px] text-slate-500 mt-1">Media appears after the Nth paragraph group</p>
                       </div>
                       {/* Preview */}
-                      {newMedia.url && newMedia.type === 'image' && (
+                      {newMedia.url && newMedia.type === "image" && (
                         <div className="rounded-xl overflow-hidden border border-white/10">
-                          <img src={newMedia.url} alt="Preview" className="w-full h-32 object-cover" onError={e => e.target.style.display = 'none'} />
+                          <img src={newMedia.url} alt="Preview" className="w-full h-32 object-cover" onError={e => e.target.style.display = "none"} />
                         </div>
                       )}
                       {/* Add button */}

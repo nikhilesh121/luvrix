@@ -9,7 +9,7 @@ import { auth } from "../../lib/local-auth";
 import { motion } from "framer-motion";
 import { 
   FiArrowLeft, FiCheck, FiX, FiUser, FiCalendar, FiTag, 
-  FiBarChart2, FiEye, FiShare2, FiStar
+  FiBarChart2, FiEye, FiShare2
 } from "react-icons/fi";
 
 export default function PreviewBlog() {

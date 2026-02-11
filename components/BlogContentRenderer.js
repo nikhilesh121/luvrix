@@ -1,6 +1,6 @@
-import { useMemo, useEffect, useRef, useState } from 'react';
-import AdRenderer from './AdRenderer';
-import { isSafeAdBreak, getBlogAdInterval } from '../lib/ads';
+import { useMemo, useEffect, useRef, useState } from "react";
+import AdRenderer from "./AdRenderer";
+import { isSafeAdBreak, getBlogAdInterval } from "../lib/ads";
 
 /**
  * BlogContentRenderer — Block-based blog content renderer with:
@@ -99,7 +99,7 @@ function getVideoEmbedUrl(url) {
   const vimeoMatch = url.match(/vimeo\.com\/(\d+)/);
   if (vimeoMatch) return `https://player.vimeo.com/video/${vimeoMatch[1]}`;
   // Direct embed URL
-  if (url.includes('embed') || url.includes('player')) return url;
+  if (url.includes("embed") || url.includes("player")) return url;
   return null;
 }
 
@@ -107,15 +107,15 @@ function getVideoEmbedUrl(url) {
 function MediaBlock({ item }) {
   if (!item?.url) return null;
 
-  if (item.type === 'video') {
+  if (item.type === "video") {
     const embedUrl = getVideoEmbedUrl(item.url);
     if (!embedUrl) return null;
     return (
       <figure className="my-8 sm:my-10 not-prose">
-        <div className="relative w-full rounded-xl overflow-hidden shadow-md bg-black" style={{ paddingBottom: '56.25%' }}>
+        <div className="relative w-full rounded-xl overflow-hidden shadow-md bg-black" style={{ paddingBottom: "56.25%" }}>
           <iframe
             src={embedUrl}
-            title={item.caption || 'Video'}
+            title={item.caption || "Video"}
             className="absolute inset-0 w-full h-full"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
@@ -135,7 +135,7 @@ function MediaBlock({ item }) {
       <div className="rounded-xl overflow-hidden shadow-md bg-gray-100 dark:bg-gray-800">
         <img
           src={item.url}
-          alt={item.caption || ''}
+          alt={item.caption || ""}
           className="w-full h-auto object-cover"
           loading="lazy"
         />
@@ -148,7 +148,7 @@ function MediaBlock({ item }) {
 }
 
 // ─── Main renderer ──────────────────────────────────────────
-export default function BlogContentRenderer({ html, settings, blog, template = 'default', adsEnabled = true }) {
+export default function BlogContentRenderer({ html, settings, blog, template = "default", adsEnabled = true }) {
   const interval = getBlogAdInterval(settings, blog);
   const proseClass = PROSE_CLASSES[template] || PROSE_CLASSES.default;
   const shouldShowAds = adsEnabled && settings?.adsEnabled;
@@ -159,27 +159,27 @@ export default function BlogContentRenderer({ html, settings, blog, template = '
     const parts = html.split(/(<\/(?:p|h[1-6]|blockquote|ul|ol|div|figure|table|pre|section)>)/gi);
 
     const blocks = [];
-    let current = '';
+    let current = "";
     for (let i = 0; i < parts.length; i++) {
       current += parts[i];
       if (/^<\/(?:p|h[1-6]|blockquote|ul|ol|div|figure|table|pre|section)>$/i.test(parts[i])) {
         blocks.push(current);
-        current = '';
+        current = "";
       }
     }
     if (current.trim()) blocks.push(current);
 
     const grouped = [];
-    let group = '';
+    let group = "";
     let paraCount = 0;
     for (const block of blocks) {
       group += block;
-      if (block.replace(/<[^>]*>/g, '').trim().length > 20) {
+      if (block.replace(/<[^>]*>/g, "").trim().length > 20) {
         paraCount++;
       }
       if (paraCount >= interval && isSafeAdBreak(block)) {
         grouped.push(group);
-        group = '';
+        group = "";
         paraCount = 0;
       }
     }
@@ -252,7 +252,7 @@ function LazyInContentAd({ settings }) {
           observer.disconnect();
         }
       },
-      { rootMargin: '300px' }
+      { rootMargin: "300px" }
     );
     observer.observe(ref.current);
     return () => observer.disconnect();
@@ -262,7 +262,7 @@ function LazyInContentAd({ settings }) {
     <div
       ref={ref}
       className="my-8 sm:my-10 flex justify-center not-prose"
-      style={{ minHeight: '100px' }}
+      style={{ minHeight: "100px" }}
     >
       {visible ? (
         <div className="w-full max-w-2xl">

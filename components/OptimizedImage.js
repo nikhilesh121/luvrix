@@ -1,14 +1,14 @@
-import { useState } from 'react';
-import Image from 'next/image';
+import { useState } from "react";
+import Image from "next/image";
 
-const FALLBACK_IMAGE = 'https://res.cloudinary.com/dsga2d0bv/image/upload/w_1200,h_630,c_pad,b_rgb:6366f1/Luvrix/Luvrix_favicon_yqovij.png';
+const FALLBACK_IMAGE = "https://res.cloudinary.com/dsga2d0bv/image/upload/w_1200,h_630,c_pad,b_rgb:6366f1/Luvrix/Luvrix_favicon_yqovij.png";
 
 export default function OptimizedImage({ 
   src, 
   alt, 
   width, 
   height, 
-  className = '',
+  className = "",
   quality = 75,
   priority = false,
   ...props 
@@ -21,13 +21,12 @@ export default function OptimizedImage({
     if (!url) return FALLBACK_IMAGE;
     
     // If it's already our proxy URL, return as-is
-    if (url.includes('/api/image-proxy/')) return url;
+    if (url.includes("/api/image-proxy/")) return url;
     
     // If it's a relative URL, return as-is
-    if (!url.startsWith('http')) return url;
+    if (!url.startsWith("http")) return url;
     
     // Create proxy URL with optimization params
-    const encodedUrl = encodeURIComponent(url);
     return `/api/image-proxy/optimize/${url}?w=${w}&q=${q}`;
   };
 
@@ -77,22 +76,22 @@ export const useImageValidator = () => {
       const urlObj = new URL(url);
       
       // Check protocol
-      if (!['http:', 'https:'].includes(urlObj.protocol)) {
-        return { valid: false, error: 'Only HTTP/HTTPS URLs allowed' };
+      if (!["http:", "https:"].includes(urlObj.protocol)) {
+        return { valid: false, error: "Only HTTP/HTTPS URLs allowed" };
       }
       
       // Check if URL responds
       const response = await fetch(`/api/image-proxy/validate?url=${encodeURIComponent(url)}`, {
-        method: 'HEAD'
+        method: "HEAD"
       });
       
       if (!response.ok) {
-        return { valid: false, error: 'Image URL not accessible' };
+        return { valid: false, error: "Image URL not accessible" };
       }
       
       return { valid: true };
     } catch (error) {
-      return { valid: false, error: 'Invalid URL format' };
+      return { valid: false, error: "Invalid URL format" };
     }
   };
   

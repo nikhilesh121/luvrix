@@ -1,9 +1,9 @@
-import { useTheme } from '../context/ThemeContext';
-import { FiSun, FiMoon, FiMonitor } from 'react-icons/fi';
-import { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useTheme } from "../context/ThemeContext";
+import { FiSun, FiMoon, FiMonitor } from "react-icons/fi";
+import { useState, useRef, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
-export default function ThemeToggle({ className = '' }) {
+export default function ThemeToggle({ className = "" }) {
   const { theme, isDark, toggleTheme, setLightTheme, setDarkTheme, setSystemTheme } = useTheme();
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef(null);
@@ -16,8 +16,8 @@ export default function ThemeToggle({ className = '' }) {
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   return (
@@ -32,7 +32,7 @@ export default function ThemeToggle({ className = '' }) {
           setShowMenu(!showMenu);
         }}
         className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-        title={`Switch to ${isDark ? 'light' : 'dark'} mode (right-click for options)`}
+        title={`Switch to ${isDark ? "light" : "dark"} mode (right-click for options)`}
       >
         <AnimatePresence mode="wait" initial={false}>
           {isDark ? (
@@ -71,7 +71,7 @@ export default function ThemeToggle({ className = '' }) {
             <button
               onClick={() => { setLightTheme(); setShowMenu(false); }}
               className={`w-full px-4 py-2 text-left flex items-center gap-2 hover:bg-gray-100 dark:hover:bg-gray-700 ${
-                theme === 'light' ? 'text-primary' : 'text-gray-700 dark:text-gray-300'
+                theme === "light" ? "text-primary" : "text-gray-700 dark:text-gray-300"
               }`}
             >
               <FiSun className="w-4 h-4" />
@@ -80,7 +80,7 @@ export default function ThemeToggle({ className = '' }) {
             <button
               onClick={() => { setDarkTheme(); setShowMenu(false); }}
               className={`w-full px-4 py-2 text-left flex items-center gap-2 hover:bg-gray-100 dark:hover:bg-gray-700 ${
-                theme === 'dark' ? 'text-primary' : 'text-gray-700 dark:text-gray-300'
+                theme === "dark" ? "text-primary" : "text-gray-700 dark:text-gray-300"
               }`}
             >
               <FiMoon className="w-4 h-4" />
@@ -101,14 +101,14 @@ export default function ThemeToggle({ className = '' }) {
 }
 
 // Compact version for mobile
-export function ThemeToggleCompact({ className = '' }) {
+export function ThemeToggleCompact({ className = "" }) {
   const { isDark, toggleTheme } = useTheme();
 
   return (
     <button
       onClick={toggleTheme}
       className={`p-2 rounded-full transition-colors ${className}`}
-      title={`Switch to ${isDark ? 'light' : 'dark'} mode`}
+      title={`Switch to ${isDark ? "light" : "dark"} mode`}
     >
       {isDark ? (
         <FiMoon className="w-5 h-5 text-yellow-400" />

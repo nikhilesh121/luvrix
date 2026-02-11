@@ -1,29 +1,29 @@
-import { getDb } from '../../../lib/mongodb';
-import nodemailer from 'nodemailer';
-import { withRateLimit } from '../../../lib/rateLimit';
+import { getDb } from "../../../lib/mongodb";
+import nodemailer from "nodemailer";
+import { withRateLimit } from "../../../lib/rateLimit";
 
 // Note: Forgot-password is a public endpoint - CSRF not required (no session yet)
 // Rate limited with OTP config (3 requests per hour) to prevent abuse
 async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
   }
 
   try {
     const { email } = req.body;
 
     if (!email) {
-      return res.status(400).json({ success: false, error: 'Email is required' });
+      return res.status(400).json({ success: false, error: "Email is required" });
     }
 
     const db = await getDb();
     
     // Check if user exists
-    const user = await db.collection('users').findOne({ email: email.toLowerCase() });
+    const user = await db.collection("users").findOne({ email: email.toLowerCase() });
     
     if (!user) {
       // Don't reveal if email exists for security
-      return res.status(200).json({ success: true, message: 'If email exists, OTP will be sent' });
+      return res.status(200).json({ success: true, message: "If email exists, OTP will be sent" });
     }
 
     // Generate 6-digit OTP
@@ -31,7 +31,7 @@ async function handler(req, res) {
     const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
     // Store OTP in database
-    await db.collection('passwordResets').updateOne(
+    await db.collection("passwordResets").updateOne(
       { email: email.toLowerCase() },
       { 
         $set: { 
@@ -47,11 +47,11 @@ async function handler(req, res) {
 
     // Send email with OTP via Hostinger SMTP
     const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST || 'smtp.hostinger.com',
-      port: parseInt(process.env.SMTP_PORT || '465'),
+      host: process.env.SMTP_HOST || "smtp.hostinger.com",
+      port: parseInt(process.env.SMTP_PORT || "465"),
       secure: true,
       auth: {
-        user: process.env.SMTP_USER || 'support@luvrix.com',
+        user: process.env.SMTP_USER || "support@luvrix.com",
         pass: process.env.SMTP_PASS,
       },
     });
@@ -59,7 +59,7 @@ async function handler(req, res) {
     const mailOptions = {
       from: '"Luvrix" <support@luvrix.com>',
       to: email,
-      subject: 'Password Reset OTP - Luvrix',
+      subject: "Password Reset OTP - Luvrix",
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="text-align: center; margin-bottom: 30px;">
@@ -84,15 +84,15 @@ async function handler(req, res) {
     try {
       await transporter.sendMail(mailOptions);
     } catch (emailError) {
-      console.error('Email sending failed:', emailError);
+      console.error("Email sending failed:", emailError);
       // Still return success to not reveal if email exists
     }
 
-    return res.status(200).json({ success: true, message: 'OTP sent to your email' });
+    return res.status(200).json({ success: true, message: "OTP sent to your email" });
   } catch (error) {
-    console.error('Forgot password error:', error);
-    return res.status(500).json({ success: false, error: 'Internal server error' });
+    console.error("Forgot password error:", error);
+    return res.status(500).json({ success: false, error: "Internal server error" });
   }
 }
 
-export default withRateLimit(handler, 'otp');
+export default withRateLimit(handler, "otp");

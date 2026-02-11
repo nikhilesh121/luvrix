@@ -1,23 +1,23 @@
-import { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/router';
-import { FiGlobe, FiChevronDown, FiCheck } from 'react-icons/fi';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/router";
+import { FiGlobe, FiChevronDown, FiCheck } from "react-icons/fi";
+import { motion, AnimatePresence } from "framer-motion";
 
 const languages = [
-  { code: 'en', name: 'English', flag: '🇺🇸' },
-  { code: 'es', name: 'Español', flag: '🇪🇸' },
-  { code: 'ja', name: '日本語', flag: '🇯🇵' },
+  { code: "en", name: "English", flag: "🇺🇸" },
+  { code: "es", name: "Español", flag: "🇪🇸" },
+  { code: "ja", name: "日本語", flag: "🇯🇵" },
 ];
 
 export default function LanguageSwitcher({ compact = false }) {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
-  const [currentLocale, setCurrentLocale] = useState('en');
+  const [currentLocale, setCurrentLocale] = useState("en");
   const dropdownRef = useRef(null);
 
   useEffect(() => {
     // Load saved locale from localStorage or use router locale
-    const savedLocale = localStorage.getItem('preferredLocale');
+    const savedLocale = localStorage.getItem("preferredLocale");
     if (savedLocale && languages.some(l => l.code === savedLocale)) {
       setCurrentLocale(savedLocale);
     } else if (router.locale) {
@@ -33,13 +33,13 @@ export default function LanguageSwitcher({ compact = false }) {
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const changeLanguage = (localeCode) => {
     // Save to localStorage for persistence
-    localStorage.setItem('preferredLocale', localeCode);
+    localStorage.setItem("preferredLocale", localeCode);
     setCurrentLocale(localeCode);
     setIsOpen(false);
 
@@ -60,7 +60,7 @@ export default function LanguageSwitcher({ compact = false }) {
           aria-label="Select language"
         >
           <span className="text-base">{currentLanguage.flag}</span>
-          <FiChevronDown className={`w-3 h-3 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+          <FiChevronDown className={`w-3 h-3 text-gray-400 transition-transform ${isOpen ? "rotate-180" : ""}`} />
         </button>
 
         <AnimatePresence>
@@ -76,7 +76,7 @@ export default function LanguageSwitcher({ compact = false }) {
                   key={language.code}
                   onClick={() => changeLanguage(language.code)}
                   className={`w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-white/5 transition-colors ${
-                    currentLocale === language.code ? 'bg-purple-500/10 text-purple-400' : 'text-gray-300'
+                    currentLocale === language.code ? "bg-purple-500/10 text-purple-400" : "text-gray-300"
                   }`}
                 >
                   <span className="text-lg">{language.flag}</span>
@@ -102,7 +102,7 @@ export default function LanguageSwitcher({ compact = false }) {
       >
         <FiGlobe className="w-4 h-4 text-gray-400" />
         <span className="text-sm text-gray-300">{currentLanguage.name}</span>
-        <FiChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <FiChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isOpen ? "rotate-180" : ""}`} />
       </button>
 
       <AnimatePresence>
@@ -121,12 +121,12 @@ export default function LanguageSwitcher({ compact = false }) {
                 key={language.code}
                 onClick={() => changeLanguage(language.code)}
                 className={`w-full flex items-center gap-3 px-3 py-3 text-left hover:bg-white/5 transition-colors ${
-                  currentLocale === language.code ? 'bg-purple-500/10' : ''
+                  currentLocale === language.code ? "bg-purple-500/10" : ""
                 }`}
               >
                 <span className="text-xl">{language.flag}</span>
                 <div className="flex-1">
-                  <p className={`text-sm font-medium ${currentLocale === language.code ? 'text-purple-400' : 'text-gray-200'}`}>
+                  <p className={`text-sm font-medium ${currentLocale === language.code ? "text-purple-400" : "text-gray-200"}`}>
                     {language.name}
                   </p>
                   <p className="text-xs text-gray-500">{language.code.toUpperCase()}</p>
