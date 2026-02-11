@@ -10,7 +10,11 @@ function toISO(d) {
 
 export default async function handler(req, res) {
   res.setHeader("Content-Type", "application/xml; charset=utf-8");
-  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
+  res.setHeader("Cache-Control", "private, no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0, s-maxage=0");
+  res.setHeader("Pragma", "no-cache");
+  res.setHeader("Expires", "0");
+  res.setHeader("Surrogate-Control", "no-store");
+  res.setHeader("X-Accel-Expires", "0");
   res.setHeader("X-Robots-Tag", "noindex");
 
   try {
@@ -27,7 +31,7 @@ export default async function handler(req, res) {
 
     // Get latest updatedAt per collection for accurate <lastmod>
     const [latestBlog, latestManga, latestGiveaway] = await Promise.all([
-      db.collection("blogs").find({ status: "approved" }).sort({ updatedAt: -1 }).limit(1).project({ updatedAt: 1 }).toArray(),
+      db.collection("blogs").find({ status: { $nin: ["draft", "pending", "hidden", "rejected", "deleted"] } }).sort({ updatedAt: -1 }).limit(1).project({ updatedAt: 1 }).toArray(),
       includeManga ? db.collection("manga").find({ status: { $nin: ["draft", "private"] } }).sort({ updatedAt: -1 }).limit(1).project({ updatedAt: 1 }).toArray() : [],
       includeGiveaways ? db.collection("giveaways").find({ status: { $ne: "draft" } }).sort({ updatedAt: -1 }).limit(1).project({ updatedAt: 1 }).toArray() : [],
     ]);

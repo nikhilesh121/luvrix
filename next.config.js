@@ -19,6 +19,26 @@ const nextConfig = {
   async headers() {
     return [
       {
+        source: '/sitemap:path*.xml',
+        headers: [
+          { key: 'Cache-Control', value: 'private, no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0, s-maxage=0' },
+          { key: 'Pragma', value: 'no-cache' },
+          { key: 'Expires', value: '0' },
+          { key: 'Surrogate-Control', value: 'no-store' },
+          { key: 'X-Accel-Expires', value: '0' },
+        ],
+      },
+      {
+        source: '/api/sitemap/:path*',
+        headers: [
+          { key: 'Cache-Control', value: 'private, no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0, s-maxage=0' },
+          { key: 'Pragma', value: 'no-cache' },
+          { key: 'Expires', value: '0' },
+          { key: 'Surrogate-Control', value: 'no-store' },
+          { key: 'X-Accel-Expires', value: '0' },
+        ],
+      },
+      {
         source: '/:all*(svg|jpg|jpeg|png|gif|ico|webp|avif)',
         headers: [
           { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
