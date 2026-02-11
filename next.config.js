@@ -65,10 +65,6 @@ const nextConfig = {
         destination: '/api/sitemap/manga',
       },
       {
-        source: '/sitemap-chapters.xml',
-        destination: '/api/sitemap/chapters',
-      },
-      {
         source: '/sitemap-categories.xml',
         destination: '/api/sitemap/categories',
       },

@@ -5,7 +5,7 @@ import Footer from "./Footer";
 import AdRenderer from "./AdRenderer";
 import { useEffect, useState } from "react";
 import { getSettings } from "../lib/api-client";
-import { initGA, trackPageView } from "../lib/analytics";
+import { initGA, trackPageView, trackInternalPageView } from "../lib/analytics";
 import { useRouter } from "next/router";
 import useWatchTime from "../hooks/useWatchTime";
 
@@ -34,14 +34,8 @@ export default function Layout({ children, title, description, keywords, image, 
     if (analyticsId) {
       trackPageView(router.asPath, title || "Luvrix");
     }
-    // Log page view to our own analytics
-    if (typeof window !== "undefined" && router.asPath) {
-      fetch("/api/analytics/pageviews", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ path: router.asPath, referrer: document.referrer }),
-      }).catch(() => {});
-    }
+    // Log page view to our own analytics (non-blocking)
+    trackInternalPageView(router.asPath);
   }, [router.asPath, settings, title]);
 
   // Track unique visitor for platform stats
