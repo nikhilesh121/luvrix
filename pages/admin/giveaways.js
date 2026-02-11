@@ -530,7 +530,7 @@ function GiveawayDetail({ giveaway, onRefresh }) {
 
   // Task form
   const [showTaskForm, setShowTaskForm] = useState(false);
-  const [taskForm, setTaskForm] = useState({ type: "custom", title: "", description: "", points: 1, required: false, url: "" });
+  const [taskForm, setTaskForm] = useState({ type: "custom", title: "", description: "", points: 1, required: false, url: "", timerDuration: 0 });
 
   // Winner
   // winnerMode is always SYSTEM_RANDOM for now
@@ -604,11 +604,11 @@ function GiveawayDetail({ giveaway, onRefresh }) {
       description: taskForm.description,
       points: taskForm.points,
       required: taskForm.required,
-      metadata: taskForm.url ? { url: taskForm.url } : {},
+      metadata: { ...(taskForm.url ? { url: taskForm.url } : {}), ...(taskForm.timerDuration > 0 ? { timerDuration: Number(taskForm.timerDuration) } : {}) },
     };
     try {
       await addGiveawayTask(giveaway.id, taskData);
-      setTaskForm({ type: "custom", title: "", description: "", points: 1, required: false, url: "" });
+      setTaskForm({ type: "custom", title: "", description: "", points: 1, required: false, url: "", timerDuration: 0 });
       setShowTaskForm(false);
       await fetchTasks();
     } catch (err) { alert(err.message); }
@@ -783,10 +783,26 @@ function GiveawayDetail({ giveaway, onRefresh }) {
                     ) : null;
                   })()}
 
-                  <div>
-                    <label className="text-xs font-medium text-gray-600 mb-1 block">Description (optional)</label>
-                    <input type="text" value={taskForm.description} onChange={e => setTaskForm(f => ({ ...f, description: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" placeholder="Additional instructions for the user" />
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-xs font-medium text-gray-600 mb-1 block">Description (optional)</label>
+                      <input type="text" value={taskForm.description} onChange={e => setTaskForm(f => ({ ...f, description: e.target.value }))}
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" placeholder="Additional instructions" />
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-gray-600 mb-1 block">⏱ Visit Timer (seconds)</label>
+                      <select value={taskForm.timerDuration} onChange={e => setTaskForm(f => ({ ...f, timerDuration: Number(e.target.value) }))}
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm">
+                        <option value={0}>No timer</option>
+                        <option value={15}>15 seconds</option>
+                        <option value={30}>30 seconds</option>
+                        <option value={45}>45 seconds</option>
+                        <option value={60}>1 minute</option>
+                        <option value={90}>1.5 minutes</option>
+                        <option value={120}>2 minutes</option>
+                      </select>
+                      <p className="text-[10px] text-gray-400 mt-0.5">User must stay on the task page for this duration</p>
+                    </div>
                   </div>
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input type="checkbox" checked={taskForm.required} onChange={e => setTaskForm(f => ({ ...f, required: e.target.checked }))}
@@ -826,6 +842,9 @@ function GiveawayDetail({ giveaway, onRefresh }) {
                             className="text-xs text-blue-500 hover:text-blue-600 flex items-center gap-0.5">
                             <FiLink className="w-3 h-3" /> Link
                           </a>
+                        )}
+                        {task.metadata?.timerDuration > 0 && (
+                          <span className="text-[10px] px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded font-medium">⏱ {task.metadata.timerDuration}s</span>
                         )}
                       </div>
                     </div>

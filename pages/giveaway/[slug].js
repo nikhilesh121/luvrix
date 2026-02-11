@@ -51,6 +51,9 @@ export default function GiveawayDetailPage() {
   const [donorEmail, setDonorEmail] = useState("");
   const [isAnonymous, setIsAnonymous] = useState(false);
 
+  // Task timer state: { [taskId]: { remaining: seconds, intervalId } }
+  const [taskTimers, setTaskTimers] = useState({});
+
   // Donors / support data
   const [supportData, setSupportData] = useState({ total: 0, count: 0, supporters: [] });
 
@@ -206,6 +209,48 @@ export default function GiveawayDetailPage() {
     }
   };
 
+  const handleStartTask = async (task) => {
+    // Open the URL in a new tab
+    if (task.metadata?.url) {
+      window.open(task.metadata.url, "_blank", "noopener,noreferrer");
+    }
+
+    const timerDuration = task.metadata?.timerDuration;
+    if (!timerDuration || timerDuration <= 0) return; // No timer needed
+
+    // Call start-task API to record the start time server-side
+    try {
+      const token = localStorage.getItem("luvrix_auth_token");
+      await fetch(`/api/giveaways/${giveaway.id}/start-task`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ taskId: task.id }),
+      });
+    } catch {}
+
+    // Start local countdown
+    // Clear any existing timer for this task
+    if (taskTimers[task.id]?.intervalId) {
+      clearInterval(taskTimers[task.id].intervalId);
+    }
+
+    setTaskTimers(prev => ({ ...prev, [task.id]: { remaining: timerDuration, done: false } }));
+
+    const intervalId = setInterval(() => {
+      setTaskTimers(prev => {
+        const current = prev[task.id];
+        if (!current || current.remaining <= 1) {
+          clearInterval(intervalId);
+          return { ...prev, [task.id]: { remaining: 0, done: true } };
+        }
+        return { ...prev, [task.id]: { ...current, remaining: current.remaining - 1 } };
+      });
+    }, 1000);
+
+    // Store intervalId for cleanup
+    setTaskTimers(prev => ({ ...prev, [task.id]: { ...prev[task.id], intervalId } }));
+  };
+
   const handleCompleteTask = async (taskId) => {
     setCompleting(taskId);
     try {
@@ -217,6 +262,9 @@ export default function GiveawayDetailPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
+      // Clear timer state for this task
+      if (taskTimers[taskId]?.intervalId) clearInterval(taskTimers[taskId].intervalId);
+      setTaskTimers(prev => { const n = { ...prev }; delete n[taskId]; return n; });
       await fetchMyStatus();
     } catch (err) {
       alert(err.message || "Failed to complete task");
@@ -876,21 +924,68 @@ export default function GiveawayDetailPage() {
                             </div>
                           </div>
                           <div className="flex items-center gap-2">
-                            {task.metadata?.url && !isCompleted && (
-                              <a href={task.metadata.url} target="_blank" rel="noopener noreferrer"
-                                className="text-xs px-3 py-1.5 bg-white/5 text-blue-400 rounded-lg hover:bg-white/10 transition border border-white/10 flex items-center gap-1">
-                                <FiExternalLink className="w-3 h-3" /> Visit
-                              </a>
-                            )}
-                            {myStatus?.joined && !isCompleted && isActive && (
-                              <motion.button
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                                onClick={() => handleCompleteTask(task.id)} disabled={completing === task.id}
-                                className="text-xs px-3 py-1.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition disabled:opacity-50">
-                                {completing === task.id ? "..." : "Done ✓"}
-                              </motion.button>
-                            )}
+                            {(() => {
+                              const timerDuration = task.metadata?.timerDuration || 0;
+                              const hasTimer = timerDuration > 0;
+                              const timer = taskTimers[task.id];
+                              const timerActive = timer && timer.remaining > 0;
+                              const timerDone = timer && timer.done;
+
+                              if (isCompleted) return null;
+
+                              return (
+                                <>
+                                  {/* Visit / Start button */}
+                                  {task.metadata?.url && !timerActive && !timerDone && (
+                                    <motion.button
+                                      whileHover={{ scale: 1.05 }}
+                                      whileTap={{ scale: 0.95 }}
+                                      onClick={() => handleStartTask(task)}
+                                      className="text-xs px-3 py-1.5 bg-white/5 text-blue-400 rounded-lg hover:bg-white/10 transition border border-white/10 flex items-center gap-1">
+                                      <FiExternalLink className="w-3 h-3" /> {hasTimer ? "Start Task" : "Visit"}
+                                    </motion.button>
+                                  )}
+
+                                  {/* Timer countdown */}
+                                  {timerActive && (
+                                    <div className="flex items-center gap-2">
+                                      <div className="relative w-8 h-8">
+                                        <svg className="w-8 h-8 -rotate-90" viewBox="0 0 32 32">
+                                          <circle cx="16" cy="16" r="14" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="2" />
+                                          <circle cx="16" cy="16" r="14" fill="none" stroke="#a78bfa" strokeWidth="2"
+                                            strokeDasharray={`${(1 - timer.remaining / timerDuration) * 88} 88`}
+                                            strokeLinecap="round" />
+                                        </svg>
+                                        <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-purple-400">
+                                          {timer.remaining}
+                                        </span>
+                                      </div>
+                                      <span className="text-[10px] text-gray-500 max-w-[80px] leading-tight">
+                                        Stay on the page...
+                                      </span>
+                                    </div>
+                                  )}
+
+                                  {/* Done button — enabled only when timer is done or task has no timer */}
+                                  {myStatus?.joined && isActive && (
+                                    <motion.button
+                                      whileHover={(!hasTimer || timerDone) ? { scale: 1.05 } : {}}
+                                      whileTap={(!hasTimer || timerDone) ? { scale: 0.95 } : {}}
+                                      onClick={() => handleCompleteTask(task.id)}
+                                      disabled={completing === task.id || (hasTimer && !timerDone)}
+                                      className={`text-xs px-3 py-1.5 rounded-lg transition disabled:opacity-50 ${
+                                        timerDone
+                                          ? "bg-green-600 text-white hover:bg-green-700 animate-pulse"
+                                          : hasTimer && !timerDone
+                                          ? "bg-gray-700 text-gray-500 cursor-not-allowed"
+                                          : "bg-purple-600 text-white hover:bg-purple-700"
+                                      }`}>
+                                      {completing === task.id ? "..." : timerDone ? "Complete ✓" : hasTimer ? `⏱ ${timerDuration}s` : "Done ✓"}
+                                    </motion.button>
+                                  )}
+                                </>
+                              );
+                            })()}
                           </div>
                         </motion.div>
                       );
