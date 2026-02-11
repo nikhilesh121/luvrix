@@ -3,7 +3,7 @@ import AdminGuard from "../../components/AdminGuard";
 import AdminSidebar from "../../components/AdminSidebar";
 import {
   listGiveaways, createGiveaway, updateGiveawayApi, deleteGiveaway,
-  getGiveawayTasks, addGiveawayTask, removeGiveawayTask,
+  getGiveawayTasks, addGiveawayTask, editGiveawayTask, removeGiveawayTask,
   getGiveawayParticipants, selectGiveawayWinner, createLog,
   getGiveawayWinnerInfo,
 } from "../../lib/api-client";
@@ -531,6 +531,7 @@ function GiveawayDetail({ giveaway, onRefresh }) {
   // Task form
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [taskForm, setTaskForm] = useState({ type: "custom", title: "", description: "", points: 1, required: false, url: "", timerDuration: 0 });
+  const [editingTask, setEditingTask] = useState(null); // { id, type, title, description, points, required, url, timerDuration }
 
   // Winner
   // winnerMode is always SYSTEM_RANDOM for now
@@ -610,6 +611,38 @@ function GiveawayDetail({ giveaway, onRefresh }) {
       await addGiveawayTask(giveaway.id, taskData);
       setTaskForm({ type: "custom", title: "", description: "", points: 1, required: false, url: "", timerDuration: 0 });
       setShowTaskForm(false);
+      await fetchTasks();
+    } catch (err) { alert(err.message); }
+  };
+
+  const handleStartEdit = (task) => {
+    setEditingTask({
+      id: task.id,
+      type: task.type,
+      title: task.title,
+      description: task.description || "",
+      points: task.points,
+      required: task.required,
+      url: task.metadata?.url || "",
+      timerDuration: task.metadata?.timerDuration || 0,
+    });
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingTask || !editingTask.title.trim()) return;
+    try {
+      await editGiveawayTask(giveaway.id, editingTask.id, {
+        type: editingTask.type,
+        title: editingTask.title,
+        description: editingTask.description,
+        points: editingTask.points,
+        required: editingTask.required,
+        metadata: {
+          ...(editingTask.url ? { url: editingTask.url } : {}),
+          ...(editingTask.timerDuration > 0 ? { timerDuration: Number(editingTask.timerDuration) } : {}),
+        },
+      });
+      setEditingTask(null);
       await fetchTasks();
     } catch (err) { alert(err.message); }
   };
@@ -827,6 +860,72 @@ function GiveawayDetail({ giveaway, onRefresh }) {
             <div className="space-y-2">
               {tasks.map(task => {
                 const tt = TASK_TYPES.find(x => x.value === task.type);
+                const isEditing = editingTask?.id === task.id;
+
+                if (isEditing) {
+                  return (
+                    <div key={task.id} className="p-4 bg-blue-50 rounded-xl border border-blue-200 space-y-3">
+                      <div className="grid grid-cols-3 gap-3">
+                        <div>
+                          <label className="text-[10px] font-medium text-gray-500 mb-0.5 block">Type</label>
+                          <select value={editingTask.type} onChange={e => setEditingTask(f => ({ ...f, type: e.target.value }))}
+                            className="w-full px-2 py-1.5 border border-gray-200 rounded-lg text-xs">
+                            {TASK_TYPES.map(t => <option key={t.value} value={t.value}>{t.icon} {t.label}</option>)}
+                          </select>
+                        </div>
+                        <div>
+                          <label className="text-[10px] font-medium text-gray-500 mb-0.5 block">Title</label>
+                          <input type="text" value={editingTask.title} onChange={e => setEditingTask(f => ({ ...f, title: e.target.value }))}
+                            className="w-full px-2 py-1.5 border border-gray-200 rounded-lg text-xs" />
+                        </div>
+                        <div>
+                          <label className="text-[10px] font-medium text-gray-500 mb-0.5 block">Points</label>
+                          <input type="number" min={1} value={editingTask.points} onChange={e => setEditingTask(f => ({ ...f, points: Number(e.target.value) }))}
+                            className="w-full px-2 py-1.5 border border-gray-200 rounded-lg text-xs" />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-3 gap-3">
+                        <div>
+                          <label className="text-[10px] font-medium text-gray-500 mb-0.5 block">URL</label>
+                          <input type="url" value={editingTask.url} onChange={e => setEditingTask(f => ({ ...f, url: e.target.value }))}
+                            className="w-full px-2 py-1.5 border border-gray-200 rounded-lg text-xs" placeholder="https://..." />
+                        </div>
+                        <div>
+                          <label className="text-[10px] font-medium text-gray-500 mb-0.5 block">Timer</label>
+                          <select value={editingTask.timerDuration} onChange={e => setEditingTask(f => ({ ...f, timerDuration: Number(e.target.value) }))}
+                            className="w-full px-2 py-1.5 border border-gray-200 rounded-lg text-xs">
+                            <option value={0}>No timer</option>
+                            <option value={15}>15s</option>
+                            <option value={30}>30s</option>
+                            <option value={45}>45s</option>
+                            <option value={60}>1m</option>
+                            <option value={90}>1.5m</option>
+                            <option value={120}>2m</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="text-[10px] font-medium text-gray-500 mb-0.5 block">Description</label>
+                          <input type="text" value={editingTask.description} onChange={e => setEditingTask(f => ({ ...f, description: e.target.value }))}
+                            className="w-full px-2 py-1.5 border border-gray-200 rounded-lg text-xs" placeholder="Optional" />
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <label className="flex items-center gap-1.5 cursor-pointer">
+                          <input type="checkbox" checked={editingTask.required} onChange={e => setEditingTask(f => ({ ...f, required: e.target.checked }))}
+                            className="w-3.5 h-3.5 rounded" />
+                          <span className="text-xs text-gray-600">Required</span>
+                        </label>
+                        <div className="flex gap-2">
+                          <button onClick={handleSaveEdit} className="px-3 py-1 bg-blue-600 text-white rounded-lg text-xs font-medium hover:bg-blue-700 transition flex items-center gap-1">
+                            <FiSave className="w-3 h-3" /> Save
+                          </button>
+                          <button onClick={() => setEditingTask(null)} className="px-3 py-1 text-gray-500 text-xs">Cancel</button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                }
+
                 return (
                 <div key={task.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
                   <div className="flex items-center gap-3">
@@ -849,11 +948,18 @@ function GiveawayDetail({ giveaway, onRefresh }) {
                       </div>
                     </div>
                   </div>
-                  {!isLocked && (
-                    <button onClick={() => handleRemoveTask(task.id)} className="text-red-400 hover:text-red-600 transition">
-                      <FiTrash2 className="w-4 h-4" />
-                    </button>
-                  )}
+                  <div className="flex items-center gap-1.5">
+                    {!isLocked && (
+                      <>
+                        <button onClick={() => handleStartEdit(task)} className="text-blue-400 hover:text-blue-600 transition p-1">
+                          <FiEdit3 className="w-4 h-4" />
+                        </button>
+                        <button onClick={() => handleRemoveTask(task.id)} className="text-red-400 hover:text-red-600 transition p-1">
+                          <FiTrash2 className="w-4 h-4" />
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </div>
                 );
               })}

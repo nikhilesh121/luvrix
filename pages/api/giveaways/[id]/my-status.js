@@ -1,5 +1,7 @@
 import { verifyToken } from "../../../../lib/auth";
-import { getGiveaway, getParticipant, getTasksForGiveaway } from "../../../../lib/giveaway";
+import { getGiveaway, getParticipant, getTasksForGiveaway, checkEligibility } from "../../../../lib/giveaway";
+import { getDb } from "../../../../lib/mongodb";
+import { ObjectId } from "mongodb";
 
 export default async function handler(req, res) {
   if (req.method !== "GET") {
@@ -24,9 +26,25 @@ export default async function handler(req, res) {
 
     const tasks = await getTasksForGiveaway(giveawayId);
 
+    // Self-healing: re-check eligibility and fix status if stuck
+    let status = participant.status;
+    if (status === "participant") {
+      const rawTasks = tasks.map(t => {
+        try { return { ...t, _id: new ObjectId(t.id) }; } catch { return { ...t, _id: t.id }; }
+      });
+      if (checkEligibility(participant, giveaway, rawTasks)) {
+        status = "eligible";
+        const db = await getDb();
+        await db.collection("giveaway_participants").updateOne(
+          { giveawayId, userId: decoded.uid },
+          { $set: { status: "eligible", eligibleAt: new Date() } }
+        );
+      }
+    }
+
     return res.status(200).json({
       joined: true,
-      status: participant.status,
+      status,
       points: participant.points,
       inviteCount: participant.inviteCount,
       inviteCode: participant.inviteCode,

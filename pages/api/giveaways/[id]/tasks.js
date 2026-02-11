@@ -1,6 +1,6 @@
 import { verifyToken } from "../../../../lib/auth";
 import { getDb } from "../../../../lib/mongodb";
-import { getGiveaway, addTask, removeTask, getTasksForGiveaway } from "../../../../lib/giveaway";
+import { getGiveaway, addTask, updateTask, removeTask, getTasksForGiveaway } from "../../../../lib/giveaway";
 import { createAuditLog, AUDIT_CATEGORIES, SEVERITY } from "../../../../lib/auditLog";
 
 export default async function handler(req, res) {
@@ -49,6 +49,27 @@ export default async function handler(req, res) {
       });
 
       return res.status(201).json(task);
+    }
+
+    if (req.method === "PUT") {
+      const { taskId, ...updates } = req.body;
+      if (!taskId) return res.status(400).json({ error: "Task ID is required" });
+
+      const updated = await updateTask(taskId, updates);
+
+      await createAuditLog({
+        userId: decoded.uid,
+        userEmail: user.email,
+        userRole: "ADMIN",
+        action: "giveaway_task_edit",
+        category: AUDIT_CATEGORIES.CONTENT_MANAGEMENT,
+        resourceType: "giveaway_task",
+        resourceId: taskId,
+        details: { giveawayId, updates: Object.keys(updates) },
+        severity: SEVERITY.INFO,
+      });
+
+      return res.status(200).json(updated);
     }
 
     if (req.method === "DELETE") {

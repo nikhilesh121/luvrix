@@ -29,18 +29,36 @@ export default async function handler(req, res) {
 
       const giveaways = await listGiveaways(filter);
 
-      // Auto-transition any upcoming giveaways whose startDate has passed
+      // Auto-transition and auto-extend
       const now = new Date();
+      const { ObjectId } = require("mongodb");
+      const db2 = await getDb();
       for (const g of giveaways) {
+        const objId = ObjectId.isValid(g.id) && g.id.length === 24 ? new ObjectId(g.id) : g.id;
+
+        // upcoming → active
         if (g.status === "upcoming" && g.startDate && new Date(g.startDate) <= now) {
           try {
-            const { ObjectId } = require("mongodb");
-            await db.collection("giveaways").updateOne(
-              { _id: ObjectId.isValid(g.id) && g.id.length === 24 ? new ObjectId(g.id) : g.id },
-              { $set: { status: "active", updatedAt: now } }
-            );
+            await db2.collection("giveaways").updateOne({ _id: objId }, { $set: { status: "active", updatedAt: now } });
             g.status = "active";
           } catch (e) { console.error("Auto-transition error:", e); }
+        }
+
+        // Auto-extend: active giveaway past endDate
+        if (g.status === "active" && g.endDate && g.startDate && new Date(g.endDate) <= now) {
+          const maxExt = g.maxExtensions ?? 0;
+          const usedExt = g.extensionsUsed || 0;
+          if (maxExt === -1 || usedExt < maxExt) {
+            try {
+              const startDate = new Date(g.startDate);
+              const endDate = new Date(g.endDate);
+              const duration = endDate.getTime() - startDate.getTime();
+              const newEndDate = new Date(endDate.getTime() + duration);
+              await db2.collection("giveaways").updateOne({ _id: objId }, { $set: { endDate: newEndDate, updatedAt: now }, $inc: { extensionsUsed: 1 } });
+              g.endDate = newEndDate.toISOString();
+              g.extensionsUsed = usedExt + 1;
+            } catch (e) { console.error("Auto-extend error:", e); }
+          }
         }
       }
 

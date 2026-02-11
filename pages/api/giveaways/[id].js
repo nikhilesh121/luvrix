@@ -43,6 +43,38 @@ export default async function handler(req, res) {
         }
       }
 
+      // Auto-extend: if active giveaway's endDate has passed and extensions are allowed
+      if (giveaway.status === "active" && giveaway.endDate && giveaway.startDate) {
+        const now = new Date();
+        const endDate = new Date(giveaway.endDate);
+        if (now >= endDate) {
+          const maxExt = giveaway.maxExtensions ?? 0; // -1 = unlimited, 0 = none
+          const usedExt = giveaway.extensionsUsed || 0;
+          const canExtend = maxExt === -1 || usedExt < maxExt;
+
+          if (canExtend) {
+            try {
+              // Calculate the original duration and extend by the same amount
+              const startDate = new Date(giveaway.startDate);
+              const originalDuration = endDate.getTime() - startDate.getTime();
+              const newEndDate = new Date(endDate.getTime() + originalDuration);
+
+              const db = await getDb();
+              const { ObjectId: ObjId } = require("mongodb");
+              const objId = ObjId.isValid(giveaway.id) && giveaway.id.length === 24 ? new ObjId(giveaway.id) : giveaway.id;
+              await db.collection("giveaways").updateOne(
+                { _id: objId },
+                { $set: { endDate: newEndDate, updatedAt: new Date() }, $inc: { extensionsUsed: 1 } }
+              );
+              giveaway.endDate = newEndDate.toISOString();
+              giveaway.extensionsUsed = usedExt + 1;
+            } catch (extErr) {
+              console.error("Auto-extend error:", extErr);
+            }
+          }
+        }
+      }
+
       return res.status(200).json(giveaway);
     }
 
