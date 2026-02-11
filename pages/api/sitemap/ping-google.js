@@ -7,7 +7,7 @@ export default async function handler(req, res) {
     const db = await getDb();
 
     // Ping Google with the sitemap URL
-    const sitemapUrl = `${SITE_URL}/sitemaps/`;
+    const sitemapUrl = `${SITE_URL}/sitemap.xml`;
     const googlePingUrl = `https://www.google.com/ping?sitemap=${encodeURIComponent(sitemapUrl)}`;
     const response = await fetch(googlePingUrl);
 

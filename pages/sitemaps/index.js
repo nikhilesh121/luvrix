@@ -39,17 +39,17 @@ export async function getServerSideProps({ res }) {
 
     const sitemaps = [];
 
-    sitemaps.push(`  <sitemap>\n    <loc>${SITE_URL}/sitemaps/pages/</loc>\n    <lastmod>${new Date().toISOString()}</lastmod>\n  </sitemap>`);
-    sitemaps.push(`  <sitemap>\n    <loc>${SITE_URL}/sitemaps/posts/</loc>\n    <lastmod>${toISO(latestBlog[0]?.updatedAt)}</lastmod>\n  </sitemap>`);
+    sitemaps.push(`  <sitemap>\n    <loc>${SITE_URL}/sitemap-pages.xml</loc>\n    <lastmod>${new Date().toISOString()}</lastmod>\n  </sitemap>`);
+    sitemaps.push(`  <sitemap>\n    <loc>${SITE_URL}/sitemap-posts.xml</loc>\n    <lastmod>${toISO(latestBlog[0]?.updatedAt)}</lastmod>\n  </sitemap>`);
 
     if (includeManga) {
-      sitemaps.push(`  <sitemap>\n    <loc>${SITE_URL}/sitemaps/manga/</loc>\n    <lastmod>${toISO(latestManga[0]?.updatedAt)}</lastmod>\n  </sitemap>`);
+      sitemaps.push(`  <sitemap>\n    <loc>${SITE_URL}/sitemap-manga.xml</loc>\n    <lastmod>${toISO(latestManga[0]?.updatedAt)}</lastmod>\n  </sitemap>`);
     }
     if (includeCategories) {
-      sitemaps.push(`  <sitemap>\n    <loc>${SITE_URL}/sitemaps/categories/</loc>\n    <lastmod>${toISO(latestBlog[0]?.updatedAt)}</lastmod>\n  </sitemap>`);
+      sitemaps.push(`  <sitemap>\n    <loc>${SITE_URL}/sitemap-categories.xml</loc>\n    <lastmod>${toISO(latestBlog[0]?.updatedAt)}</lastmod>\n  </sitemap>`);
     }
     if (includeGiveaways) {
-      sitemaps.push(`  <sitemap>\n    <loc>${SITE_URL}/sitemaps/giveaways/</loc>\n    <lastmod>${toISO(latestGiveaway[0]?.updatedAt)}</lastmod>\n  </sitemap>`);
+      sitemaps.push(`  <sitemap>\n    <loc>${SITE_URL}/sitemap-giveaways.xml</loc>\n    <lastmod>${toISO(latestGiveaway[0]?.updatedAt)}</lastmod>\n  </sitemap>`);
     }
 
     const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${sitemaps.join("\n")}\n</sitemapindex>`;

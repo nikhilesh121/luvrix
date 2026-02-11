@@ -19,8 +19,9 @@ const PAGINATION_REGEX = /\/page\/\d+/;
 // Feed pattern
 const FEED_REGEX = /\/feed\/?$/;
 
-// Sitemap .xml → /sitemaps/ SSR pages (302 redirect, never cached by CDN)
-const SITEMAP_REDIRECTS = {
+// Sitemap .xml → internal rewrite to /sitemaps/ SSR pages
+// URL stays as .xml in the browser but content is served fresh from SSR pages
+const SITEMAP_REWRITES = {
   '/sitemap.xml': '/sitemaps/',
   '/sitemap-pages.xml': '/sitemaps/pages/',
   '/sitemap-posts.xml': '/sitemaps/posts/',
@@ -33,10 +34,12 @@ export function middleware(request) {
   const url = request.nextUrl.clone();
   const { pathname, searchParams } = url;
 
-  // 0. Old .xml sitemap URLs → 302 redirect to /sitemaps/ SSR pages
-  const sitemapDest = SITEMAP_REDIRECTS[pathname];
+  // 0. Sitemap .xml → internal rewrite to /sitemaps/ SSR pages (URL stays as .xml)
+  const sitemapDest = SITEMAP_REWRITES[pathname];
   if (sitemapDest) {
-    return NextResponse.redirect(new URL(sitemapDest, request.url), 302);
+    const rewriteUrl = request.nextUrl.clone();
+    rewriteUrl.pathname = sitemapDest;
+    return NextResponse.rewrite(rewriteUrl);
   }
 
   // 1. Strip spam query parameters and redirect to clean URL

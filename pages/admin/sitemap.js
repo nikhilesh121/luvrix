@@ -8,12 +8,12 @@ import { getSettings, updateSettings } from "../../lib/api-client";
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://luvrix.com";
 
 const SITEMAPS = [
-  { name: "Sitemap Index", url: "/sitemaps/", description: "Main index linking all sitemaps", icon: FiLayers, color: "bg-gradient-to-br from-primary to-secondary", key: "Index" },
-  { name: "Static Pages", url: "/sitemaps/pages/", description: "Homepage, about, contact, policies", icon: FiGlobe, color: "bg-gradient-to-br from-blue-500 to-blue-600", key: "Pages" },
-  { name: "Blog Posts", url: "/sitemaps/posts/", description: "All approved blog posts", icon: FiFileText, color: "bg-gradient-to-br from-green-500 to-green-600", key: "Posts" },
-  { name: "Manga", url: "/sitemaps/manga/", description: "All manga main pages", icon: FiBook, color: "bg-gradient-to-br from-purple-500 to-purple-600", key: "Manga" },
-  { name: "Categories", url: "/sitemaps/categories/", description: "Blog category pages", icon: FiGrid, color: "bg-gradient-to-br from-orange-500 to-orange-600", key: "Categories" },
-  { name: "Giveaways", url: "/sitemaps/giveaways/", description: "Active and past giveaways", icon: FiGift, color: "bg-gradient-to-br from-pink-500 to-pink-600", key: "Giveaways" },
+  { name: "Sitemap Index", url: "/sitemap.xml", description: "Main index linking all sitemaps", icon: FiLayers, color: "bg-gradient-to-br from-primary to-secondary", key: "Index" },
+  { name: "Static Pages", url: "/sitemap-pages.xml", description: "Homepage, about, contact, policies", icon: FiGlobe, color: "bg-gradient-to-br from-blue-500 to-blue-600", key: "Pages" },
+  { name: "Blog Posts", url: "/sitemap-posts.xml", description: "All approved blog posts", icon: FiFileText, color: "bg-gradient-to-br from-green-500 to-green-600", key: "Posts" },
+  { name: "Manga", url: "/sitemap-manga.xml", description: "All manga main pages", icon: FiBook, color: "bg-gradient-to-br from-purple-500 to-purple-600", key: "Manga" },
+  { name: "Categories", url: "/sitemap-categories.xml", description: "Blog category pages", icon: FiGrid, color: "bg-gradient-to-br from-orange-500 to-orange-600", key: "Categories" },
+  { name: "Giveaways", url: "/sitemap-giveaways.xml", description: "Active and past giveaways", icon: FiGift, color: "bg-gradient-to-br from-pink-500 to-pink-600", key: "Giveaways" },
 ];
 
 export default function SitemapAdmin() {
