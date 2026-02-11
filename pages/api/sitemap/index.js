@@ -25,6 +25,10 @@ export default async function handler(req, res) {
     <loc>${SITE_URL}/sitemap-categories.xml</loc>
     <lastmod>${new Date().toISOString()}</lastmod>
   </sitemap>
+  <sitemap>
+    <loc>${SITE_URL}/sitemap-giveaways.xml</loc>
+    <lastmod>${new Date().toISOString()}</lastmod>
+  </sitemap>
 </sitemapindex>`;
 
   res.status(200).send(xml);

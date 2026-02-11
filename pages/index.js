@@ -16,11 +16,15 @@ const BlogCard = dynamic(() => import("../components/BlogCard"), {
   loading: () => <div className="bg-gray-100 rounded-xl h-64 animate-pulse" />,
   ssr: true,
 });
+const GiveawayCard = dynamic(() => import("../components/GiveawayCard"), {
+  loading: () => <div className="bg-gray-100 rounded-xl h-64 animate-pulse" />,
+  ssr: true,
+});
 import { 
   FiArrowRight, FiEdit3, FiSearch, FiTag, FiClock, FiUsers, 
   FiTrendingUp, FiZap, FiAward, FiBookOpen, FiGlobe, FiStar,
   FiChevronRight, FiPlay, FiHeart, FiEye, FiCpu, FiFilm,
-  FiMusic, FiGrid, FiCode, FiCoffee, FiMapPin
+  FiMusic, FiGrid, FiCode, FiCoffee, FiMapPin, FiGift
 } from "react-icons/fi";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://luvrix.com";
@@ -729,6 +733,9 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ═══════════════ GIVEAWAYS SECTION ═══════════════ */}
+      <GiveawaysSection />
+
       {/* CTA Section */}
       <section className="py-24 relative overflow-hidden">
         <div className="absolute inset-0 bg-[#0a0a0f]">
@@ -783,5 +790,75 @@ export default function Home() {
         </div>
       </section>
     </Layout>
+  );
+}
+
+// ── Giveaways Section (homepage) ──
+function GiveawaysSection() {
+  const [giveaways, setGiveaways] = useState([]);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/giveaways")
+      .then(r => r.json())
+      .then(data => {
+        const active = (Array.isArray(data) ? data : []).filter(g => g.status === "active");
+        setGiveaways(active.slice(0, 3));
+      })
+      .catch(() => {})
+      .finally(() => setLoaded(true));
+  }, []);
+
+  const staggerGrid = { visible: { transition: { staggerChildren: 0.12 } } };
+  const fadeUpItem = { hidden: { opacity: 0, y: 24 }, visible: { opacity: 1, y: 0 } };
+
+  // Don't render section at all if no active giveaways
+  if (loaded && giveaways.length === 0) return null;
+
+  return (
+    <section className="relative py-20 bg-gradient-to-b from-purple-50/50 to-white dark:from-gray-800/50 dark:to-gray-900 overflow-hidden">
+      {/* Floating decorative orbs */}
+      <motion.div
+        className="absolute top-10 left-[8%] w-32 h-32 rounded-full bg-purple-300/10 blur-3xl"
+        animate={{ y: [0, -25, 0], scale: [1, 1.1, 1] }}
+        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+      />
+      <motion.div
+        className="absolute bottom-10 right-[5%] w-24 h-24 rounded-full bg-pink-300/10 blur-3xl"
+        animate={{ y: [0, 20, 0] }}
+        transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1.5 }}
+      />
+
+      <div className="max-w-7xl mx-auto px-4 relative z-10">
+        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }} className="text-center mb-12">
+          <div className="inline-flex items-center gap-2 bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 px-4 py-1.5 rounded-full text-sm font-semibold mb-4">
+            <FiGift className="w-4 h-4" /> Giveaways
+          </div>
+          <h2 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-3">Win Amazing Prizes</h2>
+          <p className="text-gray-500 dark:text-gray-400 max-w-lg mx-auto">Join for free, complete tasks, and win physical prizes. No purchase required.</p>
+        </motion.div>
+
+        {!loaded ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3].map(i => <div key={i} className="bg-white dark:bg-gray-800 rounded-2xl h-72 animate-pulse" />)}
+          </div>
+        ) : (
+          <motion.div variants={staggerGrid} initial="hidden" whileInView="visible" viewport={{ once: true }}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {giveaways.map(g => (
+              <motion.div key={g.id} variants={fadeUpItem}>
+                <GiveawayCard giveaway={g} />
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
+
+        <motion.div initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.3 }} className="text-center mt-10">
+          <Link href="/giveaway" className="group inline-flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-xl font-semibold hover:bg-purple-700 transition shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30">
+            View All Giveaways <FiArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+          </Link>
+        </motion.div>
+      </div>
+    </section>
   );
 }

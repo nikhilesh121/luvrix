@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   FiFileText, FiUsers, FiBook, FiDollarSign, FiTrendingUp, FiClock,
   FiArrowUpRight, FiArrowRight, FiActivity, FiEye, FiCheckCircle,
-  FiAlertCircle, FiBarChart2, FiPieChart
+  FiAlertCircle, FiBarChart2, FiPieChart, FiGift, FiHeart
 } from "react-icons/fi";
 import Link from "next/link";
 
@@ -27,13 +27,14 @@ function DashboardContent() {
     payments: { total: 0, revenue: 0 },
   });
   const [recentBlogs, setRecentBlogs] = useState([]);
+  const [donationStats, setDonationStats] = useState({ grandTotal: 0, grandCount: 0, perGiveaway: [] });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchStats() {
       try {
         const [blogs, users, manga, payments] = await Promise.all([
-          getAllBlogs('approved', true), // Fetch ALL blogs for admin dashboard
+          getAllBlogs('approved', true),
           getAllUsers(),
           getAllManga(),
           getAllPayments(),
@@ -57,6 +58,18 @@ function DashboardContent() {
         });
 
         setRecentBlogs(blogs.slice(0, 5));
+
+        // Fetch giveaway donation stats
+        try {
+          const token = localStorage.getItem("luvrix_auth_token");
+          const donRes = await fetch("/api/giveaways/donation-stats", {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (donRes.ok) {
+            const donData = await donRes.json();
+            setDonationStats(donData);
+          }
+        } catch {}
       } catch (error) {
         console.error("Error fetching stats:", error);
       } finally {
@@ -126,6 +139,16 @@ function DashboardContent() {
       bgGradient: "from-indigo-500/10 to-blue-500/10",
       link: "/admin/payments",
       change: "+23%",
+      positive: true,
+    },
+    {
+      title: "Giveaway Donations",
+      value: `₹${donationStats.grandTotal.toLocaleString()}`,
+      icon: FiHeart,
+      gradient: "from-rose-500 to-pink-500",
+      bgGradient: "from-rose-500/10 to-pink-500/10",
+      link: "/admin/giveaways",
+      change: `${donationStats.grandCount} donors`,
       positive: true,
     },
   ];
@@ -334,6 +357,64 @@ function DashboardContent() {
                   </div>
                 )}
               </motion.div>
+
+              {/* Giveaway Donation Breakdown */}
+              {donationStats.perGiveaway.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 }}
+                  className="bg-white rounded-2xl shadow-lg shadow-slate-200/50 border border-slate-100 overflow-hidden mb-8"
+                >
+                  <div className="flex items-center justify-between p-6 border-b border-slate-100">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-gradient-to-br from-rose-500 to-pink-500 rounded-xl flex items-center justify-center">
+                        <FiHeart className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <h2 className="text-lg font-bold text-slate-900">Giveaway Donations</h2>
+                        <p className="text-sm text-slate-500">Total: ₹{donationStats.grandTotal.toLocaleString()} from {donationStats.grandCount} supporters</p>
+                      </div>
+                    </div>
+                    <Link
+                      href="/admin/giveaways"
+                      className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg text-sm font-medium text-slate-700 transition-colors"
+                    >
+                      Manage
+                      <FiArrowRight className="w-4 h-4" />
+                    </Link>
+                  </div>
+
+                  <div className="divide-y divide-slate-100">
+                    {donationStats.perGiveaway.map((g, index) => (
+                      <motion.div
+                        key={g.giveawayId}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.6 + index * 0.05 }}
+                        className="flex items-center justify-between p-5 hover:bg-slate-50 transition-colors"
+                      >
+                        <div className="flex items-center gap-4 flex-1 min-w-0">
+                          {g.imageUrl ? (
+                            <img src={g.imageUrl} alt="" className="w-12 h-12 rounded-xl object-cover flex-shrink-0" />
+                          ) : (
+                            <div className="w-12 h-12 bg-gradient-to-br from-purple-100 to-pink-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                              <FiGift className="w-5 h-5 text-purple-500" />
+                            </div>
+                          )}
+                          <div className="min-w-0">
+                            <p className="text-slate-900 font-semibold truncate">{g.title}</p>
+                            <p className="text-sm text-slate-500">{g.count} donation{g.count !== 1 ? "s" : ""}</p>
+                          </div>
+                        </div>
+                        <div className="text-right flex-shrink-0 ml-4">
+                          <p className="text-lg font-bold text-rose-600">₹{g.total.toLocaleString()}</p>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
             </>
           )}
         </div>

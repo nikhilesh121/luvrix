@@ -7,7 +7,7 @@ import {
   getUser, updateUser, getUserBlogs, getUserPayments, getFollowers, getFollowing,
   deleteBlog, getUserLibraries, createLibrary, updateLibrary, deleteLibrary,
   addBlogToLibrary, removeBlogFromLibrary, getUserReferrals, getReferralStats,
-  generateReferralCode
+  generateReferralCode, getMyGiveaways
 } from "../lib/api-client";
 
 import { motion, AnimatePresence } from "framer-motion";
@@ -18,7 +18,7 @@ import {
   FiTrendingUp, FiEye, FiAward, FiZap, FiChevronRight, FiUsers,
   FiHeart, FiCopy, FiLink, FiStar, FiTarget, FiActivity, FiBookOpen,
   FiShare2, FiSettings, FiGrid, FiTrash2, FiFolder, FiCheckCircle,
-  FiClock, FiXCircle, FiMoreVertical, FiEdit3
+  FiClock, FiXCircle, FiMoreVertical, FiEdit3, FiGift
 } from "react-icons/fi";
 import Link from "next/link";
 
@@ -57,6 +57,9 @@ function ProfileContent({ user, initialUserData }) {
   const [referrals, setReferrals] = useState([]);
   const [referralStats, setReferralStats] = useState({ total: 0, completed: 0, pending: 0 });
   const [referralCode, setReferralCode] = useState("");
+
+  // Giveaway states
+  const [myGiveaways, setMyGiveaways] = useState([]);
   const [copiedReferral, setCopiedReferral] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -83,7 +86,7 @@ function ProfileContent({ user, initialUserData }) {
     setLoading(true);
     
     try {
-      const [userBlogs, userPayments, freshUserData, userFollowers, userFollowing, userLibraries, userReferrals, userReferralStats] = await Promise.all([
+      const [userBlogs, userPayments, freshUserData, userFollowers, userFollowing, userLibraries, userReferrals, userReferralStats, userGiveaways] = await Promise.all([
         getUserBlogs(user.uid),
         getUserPayments(user.uid),
         getUser(user.uid),
@@ -92,6 +95,7 @@ function ProfileContent({ user, initialUserData }) {
         getUserLibraries(user.uid, true),
         getUserReferrals(user.uid).catch(() => []),
         getReferralStats(user.uid).catch(() => ({ total: 0, completed: 0, pending: 0 })),
+        getMyGiveaways().catch(() => []),
       ]);
       
       setBlogs(userBlogs);
@@ -101,6 +105,7 @@ function ProfileContent({ user, initialUserData }) {
       setLibraries(userLibraries || []);
       setReferrals(userReferrals || []);
       setReferralStats(userReferralStats || { total: 0, completed: 0, pending: 0 });
+      setMyGiveaways(Array.isArray(userGiveaways) ? userGiveaways : []);
       if (freshUserData) {
         setUserData(freshUserData);
         setReferralCode(freshUserData.referralCode || "");
@@ -259,6 +264,7 @@ function ProfileContent({ user, initialUserData }) {
   const tabs = [
     { id: "blogs", label: "My Blogs", icon: FiFileText, count: blogs.length },
     { id: "libraries", label: "Libraries", icon: FiFolder, count: libraries.length },
+    { id: "giveaways", label: "Giveaways", icon: FiGift, count: myGiveaways.length },
     { id: "referrals", label: "Referrals", icon: FiUsers },
     { id: "profile", label: "Settings", icon: FiSettings },
     { id: "payments", label: "Payments", icon: FiCreditCard, count: payments.length },
@@ -1314,6 +1320,86 @@ function ProfileContent({ user, initialUserData }) {
                   </div>
                 )}
               </div>
+            </motion.div>
+          )}
+
+          {/* Giveaways Tab */}
+          {activeTab === "giveaways" && (
+            <motion.div
+              key="giveaways"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+            >
+              <div className="flex items-center justify-between mb-6">
+                <p className="text-gray-400">Track your giveaway participations and wins</p>
+                <Link
+                  href="/giveaway"
+                  className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-medium hover:shadow-lg hover:shadow-purple-500/30 transition-all text-sm"
+                >
+                  <FiGift className="w-4 h-4" /> Browse Giveaways
+                </Link>
+              </div>
+
+              {myGiveaways.length > 0 ? (
+                <div className="space-y-3">
+                  {myGiveaways.map((entry, index) => {
+                    const g = entry.giveaway;
+                    if (!g) return null;
+                    const isWinner = entry.status === "winner";
+                    const isEligible = entry.status === "eligible";
+                    const statusColor = isWinner ? "purple" : isEligible ? "emerald" : "amber";
+                    const statusLabel = isWinner ? "Winner 🎉" : isEligible ? "Eligible" : g.winnerId ? "Not Selected" : "Joined";
+                    return (
+                      <motion.div
+                        key={entry.id}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.05 }}
+                        className="group"
+                      >
+                        <Link href={`/giveaway/${g.slug}`} className="flex items-center gap-4 p-4 bg-white/5 rounded-xl border border-white/10 hover:border-purple-500/30 transition-all">
+                          {g.imageUrl && (
+                            <img src={g.imageUrl} alt={g.title} className="w-16 h-16 rounded-xl object-cover flex-shrink-0" />
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-semibold text-white truncate group-hover:text-purple-400 transition-colors">{g.title}</h3>
+                            <div className="flex items-center gap-3 mt-1 text-sm text-gray-500">
+                              {g.prizeDetails && <span className="truncate">{g.prizeDetails}</span>}
+                              {g.endDate && <span className="flex items-center gap-1 flex-shrink-0"><FiClock className="w-3 h-3" />{new Date(g.endDate).toLocaleDateString()}</span>}
+                            </div>
+                            {isWinner && g.winnerName && (
+                              <p className="text-xs text-purple-400 mt-1">Won by you!</p>
+                            )}
+                            {!isWinner && g.winnerName && (
+                              <p className="text-xs text-gray-500 mt-1">Won by {g.winnerName}</p>
+                            )}
+                          </div>
+                          <div className="flex-shrink-0">
+                            <span className={`px-3 py-1.5 rounded-full text-xs font-semibold bg-${statusColor}-500/20 text-${statusColor}-400`}>
+                              {statusLabel}
+                            </span>
+                          </div>
+                        </Link>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="text-center py-20 bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl">
+                  <div className="w-24 h-24 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <FiGift className="w-12 h-12 text-purple-400" />
+                  </div>
+                  <h3 className="text-xl font-bold text-white mb-2">No giveaways joined yet</h3>
+                  <p className="text-gray-400 mb-6">Join a giveaway for free and win physical prizes!</p>
+                  <Link
+                    href="/giveaway"
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold shadow-lg shadow-purple-500/25"
+                  >
+                    <FiGift className="w-5 h-5" /> Browse Giveaways
+                  </Link>
+                </div>
+              )}
             </motion.div>
           )}
 

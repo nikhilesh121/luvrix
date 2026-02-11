@@ -12,7 +12,7 @@ import {
   FiDollarSign, FiGlobe, FiActivity, FiCoffee, FiMapPin, FiBook,
   FiFilm, FiMusic, FiCamera, FiStar, FiAward, FiTrophy, FiHome,
   FiSearch, FiZap, FiLayers, FiBell, FiCommand, FiUsers,
-  FiSun, FiMoon
+  FiSun, FiMoon, FiGift
 } from "react-icons/fi";
 
 const defaultMenuData = [
@@ -47,20 +47,20 @@ const defaultMenuData = [
     ],
   },
   {
-    label: "Technology",
-    href: "/categories?category=Technology",
-    icon: FiCpu,
-  },
-  {
     label: "Manga",
     href: "/manga",
     icon: FiBookOpen,
+  },
+  {
+    label: "Giveaways",
+    href: "/giveaway",
+    icon: FiGift,
   },
 ];
 
 const iconMap = {
   FiGlobe, FiDollarSign, FiActivity, FiCpu, FiCoffee, FiMapPin, FiHeart,
-  FiStar, FiGrid, FiFilm, FiMusic, FiCamera, FiAward, FiBookOpen, FiBook,
+  FiStar, FiGrid, FiFilm, FiMusic, FiCamera, FiAward, FiBookOpen, FiBook, FiGift,
 };
 
 const getIconComponent = (iconName) => {
@@ -110,9 +110,11 @@ export default function Header() {
       
       if (s?.navigationMenus) {
         let menus = convertSettingsMenuToMenuData(s.navigationMenus);
-        if (!isMangaVisible) {
-          menus = menus.filter(m => m.label !== "Manga");
+        // Always append Manga and Giveaways links (controlled separately)
+        if (isMangaVisible) {
+          menus.push({ label: "Manga", href: "/manga", icon: FiBookOpen });
         }
+        menus.push({ label: "Giveaways", href: "/giveaway", icon: FiGift });
         setMenuData(menus);
       } else {
         if (!isMangaVisible) {

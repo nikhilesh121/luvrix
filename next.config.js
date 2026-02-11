@@ -72,6 +72,10 @@ const nextConfig = {
         source: '/sitemap-categories.xml',
         destination: '/api/sitemap/categories',
       },
+      {
+        source: '/sitemap-giveaways.xml',
+        destination: '/api/sitemap/giveaways',
+      },
     ];
   },
 };

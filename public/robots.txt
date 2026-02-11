@@ -9,7 +9,11 @@ Allow: /categories
 Allow: /about
 Allow: /contact
 Allow: /publishers
+Allow: /giveaway
 Allow: /leaderboard
+Allow: /privacy
+Allow: /terms
+Allow: /giveaway-terms
 Allow: /policy/
 
 # Disallow admin and private pages
@@ -77,3 +81,4 @@ Sitemap: https://luvrix.com/sitemap-pages.xml
 Sitemap: https://luvrix.com/sitemap-posts.xml
 Sitemap: https://luvrix.com/sitemap-manga.xml
 Sitemap: https://luvrix.com/sitemap-categories.xml
+Sitemap: https://luvrix.com/sitemap-giveaways.xml

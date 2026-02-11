@@ -6,19 +6,16 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { itemId, userId, itemType = 'manga' } = req.query;
+    const { itemId, userId, itemType } = req.query;
     
     if (!itemId || !userId) {
       return res.status(400).json({ error: 'Missing itemId or userId' });
     }
 
     const db = await getDb();
+    const favId = `${userId}_${itemId}`;
     
-    const favorite = await db.collection('favorites').findOne({
-      itemId,
-      userId,
-      itemType
-    });
+    const favorite = await db.collection('favorites').findOne({ _id: favId });
 
     return res.status(200).json({ favorited: !!favorite });
   } catch (error) {

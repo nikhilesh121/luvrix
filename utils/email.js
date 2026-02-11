@@ -237,4 +237,45 @@ export const sendContactEmail = async (name, email, message) => {
   return sendEmail("support@luvrix.com", emailTemplates.contactForm, { name, email, message });
 };
 
+// Giveaway Winner Email
+export const sendGiveawayWinnerEmail = async (email, name, giveawayTitle, giveawaySlug) => {
+  const template = {
+    subject: "Congratulations! You won the Luvrix Giveaway 🎉",
+    html: `
+      <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff;">
+        <div style="background: linear-gradient(135deg, #9333ea 0%, #ec4899 100%); padding: 40px 30px; text-align: center;">
+          <h1 style="color: #ffffff; margin: 0; font-size: 28px;">🎉 You Won!</h1>
+          <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0; font-size: 16px;">Congratulations, ${name}!</p>
+        </div>
+        <div style="padding: 40px 30px;">
+          <p style="font-size: 16px; color: #333; line-height: 1.6;">Hi ${name},</p>
+          <p style="font-size: 16px; color: #333; line-height: 1.6;">
+            Great news! You have been selected as the winner of <strong>"${giveawayTitle}"</strong> on Luvrix!
+          </p>
+          <p style="font-size: 16px; color: #333; line-height: 1.6;">
+            To claim your prize, please provide your shipping details by visiting the giveaway page and filling out the form. We need the following:
+          </p>
+          <ul style="font-size: 16px; color: #333; line-height: 1.8;">
+            <li>Full Name</li>
+            <li>Shipping Address</li>
+            <li>City, State, Pincode</li>
+            <li>Country</li>
+            <li>Phone Number</li>
+          </ul>
+          <div style="text-align: center; margin-top: 30px;">
+            <a href="https://luvrix.com/giveaway/${giveawaySlug}" style="display: inline-block; padding: 14px 40px; background: linear-gradient(135deg, #9333ea 0%, #ec4899 100%); color: #ffffff; text-decoration: none; border-radius: 8px; font-weight: 600;">Claim Your Prize</a>
+          </div>
+          <p style="font-size: 14px; color: #999; line-height: 1.6; margin-top: 30px;">
+            Your shipping details will be stored securely and used only for courier delivery. If you have questions, contact us at support@luvrix.com.
+          </p>
+        </div>
+        <div style="background: #f8f9fa; padding: 20px 30px; text-align: center; border-top: 1px solid #e9ecef;">
+          <p style="margin: 0; color: #666; font-size: 14px;">© ${new Date().getFullYear()} Luvrix. All rights reserved.</p>
+        </div>
+      </div>
+    `,
+  };
+  return sendEmail(email, template);
+};
+
 export default transporter;

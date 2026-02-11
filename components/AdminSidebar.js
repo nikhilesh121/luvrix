@@ -23,6 +23,8 @@ import {
   FiTrendingUp,
   FiEdit3,
   FiX,
+  FiGift,
+  FiHeart,
 } from "react-icons/fi";
 
 const menuItems = [
@@ -32,6 +34,8 @@ const menuItems = [
   { href: "/admin/blogs", label: "Blogs", icon: FiFileText },
   { href: "/admin/manga", label: "Manga", icon: FiBook },
   { href: "/admin/users", label: "Users", icon: FiUsers },
+  { href: "/admin/giveaways", label: "Giveaways", icon: FiGift },
+  { href: "/admin/donations", label: "Donations", icon: FiHeart },
   { href: "/admin/subscribers", label: "Subscribers", icon: FiMail },
   { href: "/admin/payments", label: "Payments", icon: FiDollarSign },
   { href: "/admin/menus", label: "Menus", icon: FiMenuIcon },
@@ -110,7 +114,7 @@ export default function AdminSidebar() {
         <p className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
           Main Menu
         </p>
-        {menuItems.slice(0, 8).map((item, index) => {
+        {menuItems.slice(0, 9).map((item, index) => {
           const Icon = item.icon;
           const isActive = router.pathname === item.href;
 
@@ -143,7 +147,7 @@ export default function AdminSidebar() {
         <p className="px-3 py-2 mt-6 text-xs font-semibold text-gray-500 uppercase tracking-wider">
           Settings
         </p>
-        {menuItems.slice(8).map((item, index) => {
+        {menuItems.slice(9).map((item, index) => {
           const Icon = item.icon;
           const isActive = router.pathname === item.href;
 

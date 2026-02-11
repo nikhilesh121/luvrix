@@ -20,6 +20,14 @@ RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^manga/([^/]+)/chapter-([0-9]+)/?$ /manga/_slug_/_chapter_/index.html [L]
 
 # =====================================================
+# DYNAMIC GIVEAWAY PAGES - SPA Fallback
+# =====================================================
+# Giveaway detail pages: /giveaway/any-slug or /giveaway/any-slug/
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^giveaway/([^/]+)/?$ /giveaway/_slug_/index.html [L]
+
+# =====================================================
 # BLOG PAGES
 # =====================================================
 # Blog uses query params: /blog/?id=xxx (no rewrite needed)
@@ -60,4 +68,15 @@ DirectoryIndex index.html
   Header set X-Content-Type-Options "nosniff"
   Header set X-Frame-Options "SAMEORIGIN"
   Header set X-XSS-Protection "1; mode=block"
+  Header set Referrer-Policy "strict-origin-when-cross-origin"
+  Header set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+  Header set Permissions-Policy "camera=(), microphone=(), geolocation=()"
 </IfModule>
+
+# Force HTTPS
+RewriteCond %{HTTPS} !=on
+RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]
+
+# Remove www (canonical domain)
+RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+RewriteRule ^(.*)$ https://%1/$1 [R=301,L]

@@ -7,8 +7,8 @@ import { useAuth } from "../context/AuthContext";
 import { getUserFavorites, getBlog, getMangaBySlug } from "../lib/api-client";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  FiHeart, FiBookOpen, FiGrid, FiList, FiSearch, 
-  FiX, FiFilter, FiArrowRight, FiStar
+  FiHeart, FiBookOpen, FiGrid, FiSearch, 
+  FiX, FiArrowRight, FiGift, FiClock
 } from "react-icons/fi";
 
 export default function Favorites() {
@@ -17,6 +17,7 @@ export default function Favorites() {
   const [loading, setLoading] = useState(true);
   const [favorites, setFavorites] = useState([]);
   const [blogs, setBlogs] = useState([]);
+  const [giveaways, setGiveaways] = useState([]);
   const [filter, setFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -33,7 +34,7 @@ export default function Favorites() {
         const favs = await getUserFavorites(user.uid);
         setFavorites(favs);
         
-        // Fetch actual blog/manga data for each favorite
+        // Fetch actual blog data for each blog favorite
         const blogPromises = favs
           .filter(f => f.itemType === "blog")
           .map(async (fav) => {
@@ -43,6 +44,21 @@ export default function Favorites() {
         
         const blogsData = await Promise.all(blogPromises);
         setBlogs(blogsData.filter(Boolean));
+
+        // Fetch giveaway data for each giveaway favorite
+        const giveawayFavs = favs.filter(f => f.itemType === "giveaway");
+        if (giveawayFavs.length > 0) {
+          const giveawayPromises = giveawayFavs.map(async (fav) => {
+            try {
+              const res = await fetch(`/api/giveaways/${fav.itemId}`);
+              if (!res.ok) return null;
+              const g = await res.json();
+              return g && !g.error ? { ...g, favoriteType: "giveaway" } : null;
+            } catch { return null; }
+          });
+          const giveawaysData = await Promise.all(giveawayPromises);
+          setGiveaways(giveawaysData.filter(Boolean));
+        }
       } catch (error) {
         console.error("Error fetching favorites:", error);
       } finally {
@@ -53,12 +69,14 @@ export default function Favorites() {
     fetchFavorites();
   }, [authLoading, isLoggedIn, user, router]);
 
-  const filteredBlogs = blogs.filter((blog) => {
-    if (filter !== "all" && blog.favoriteType !== filter) return false;
+  const allItems = [...blogs, ...giveaways];
+
+  const filteredItems = allItems.filter((item) => {
+    if (filter !== "all" && item.favoriteType !== filter) return false;
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      return blog.title?.toLowerCase().includes(query) ||
-             blog.category?.toLowerCase().includes(query);
+      return item.title?.toLowerCase().includes(query) ||
+             item.category?.toLowerCase().includes(query);
     }
     return true;
   });
@@ -107,9 +125,21 @@ export default function Favorites() {
               
               <div className="mt-8 flex items-center justify-center gap-6">
                 <div className="text-center">
-                  <p className="text-3xl font-bold text-white">{blogs.length}</p>
+                  <p className="text-3xl font-bold text-white">{allItems.length}</p>
                   <p className="text-white/60 text-sm">Saved Items</p>
                 </div>
+                {blogs.length > 0 && (
+                  <div className="text-center">
+                    <p className="text-3xl font-bold text-white">{blogs.length}</p>
+                    <p className="text-white/60 text-sm">Articles</p>
+                  </div>
+                )}
+                {giveaways.length > 0 && (
+                  <div className="text-center">
+                    <p className="text-3xl font-bold text-white">{giveaways.length}</p>
+                    <p className="text-white/60 text-sm">Giveaways</p>
+                  </div>
+                )}
               </div>
             </motion.div>
           </div>
@@ -174,6 +204,17 @@ export default function Favorites() {
                   <FiBookOpen className="w-4 h-4" />
                   Articles
                 </button>
+                <button
+                  onClick={() => setFilter("giveaway")}
+                  className={`px-4 py-3 rounded-xl font-medium transition-all flex items-center gap-2 ${
+                    filter === "giveaway" 
+                      ? "bg-primary text-white" 
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  }`}
+                >
+                  <FiGift className="w-4 h-4" />
+                  Giveaways
+                </button>
               </div>
             </div>
           </motion.div>
@@ -183,22 +224,51 @@ export default function Favorites() {
             <div className="flex justify-center py-20">
               <div className="w-12 h-12 border-4 border-gray-200 border-t-primary rounded-full animate-spin" />
             </div>
-          ) : filteredBlogs.length > 0 ? (
+          ) : filteredItems.length > 0 ? (
             <motion.div 
               layout
               className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
             >
               <AnimatePresence mode="popLayout">
-                {filteredBlogs.map((blog, index) => (
+                {filteredItems.map((item, index) => (
                   <motion.div
-                    key={blog.id}
+                    key={item.id}
                     layout
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.9 }}
                     transition={{ delay: index * 0.05 }}
                   >
-                    <BlogCard blog={blog} index={index} />
+                    {item.favoriteType === "giveaway" ? (
+                      <Link href={`/giveaway/${item.slug}`} className="block group">
+                        <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 group-hover:-translate-y-1">
+                          {item.imageUrl && (
+                            <div className="relative h-44 overflow-hidden">
+                              <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                              <div className="absolute top-3 left-3">
+                                <span className={`text-xs font-bold px-2.5 py-1 rounded-full text-white ${
+                                  item.status === "active" ? "bg-green-500" :
+                                  item.status === "winner_selected" ? "bg-purple-500" : "bg-gray-500"
+                                }`}>
+                                  {item.status === "active" ? "Live" : item.status === "winner_selected" ? "Winner" : "Ended"}
+                                </span>
+                              </div>
+                              <div className="absolute top-3 right-3">
+                                <span className="bg-pink-500/90 text-white text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1">
+                                  <FiGift className="w-3 h-3" /> Giveaway
+                                </span>
+                              </div>
+                            </div>
+                          )}
+                          <div className="p-4">
+                            <h3 className="font-bold text-gray-900 mb-1 group-hover:text-primary transition-colors">{item.title}</h3>
+                            {item.prizeDetails && <p className="text-sm text-gray-500 line-clamp-2">{item.prizeDetails}</p>}
+                          </div>
+                        </div>
+                      </Link>
+                    ) : (
+                      <BlogCard blog={item} index={index} />
+                    )}
                   </motion.div>
                 ))}
               </AnimatePresence>

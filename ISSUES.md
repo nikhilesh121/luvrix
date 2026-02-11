@@ -78,5 +78,42 @@
 
 **Settings keys added:** `defaultTheme`, `blogTextColorLight`, `blogTextColorDark`, `blogHeadingColorLight`, `blogHeadingColorDark`, `blogLinkColorLight`, `blogLinkColorDark`, `blogH1MarginTop`, `blogH1MarginBottom`, `blogH2MarginTop`, `blogH2MarginBottom`, `blogH3MarginTop`, `blogH3MarginBottom`, `blogParagraphMarginBottom`, `blogLineHeight`, `blogLetterSpacing`, `blogWordSpacing`
 
+## Issue 9: Giveaway System — Full Implementation
+**Status:** ✅ Fixed  
+**Priority:** High  
+**Description:** Implement a fully legal, SEO-safe, task-based Giveaway system with homepage integration, admin controls, sponsor support, and audit-safe winner selection. Joining is free, tasks determine eligibility, winners selected randomly from eligible users only, physical prizes only, all selections audit-logged.
+
+**Files created:**
+- [x] `docs/GIVEAWAY_SYSTEM.md` — Full design document
+- [x] `lib/giveaway.js` — Server-side DB operations (CRUD, eligibility check, task completion, invite system, winner selection with hard-block enforcement, index creation)
+- [x] `pages/api/giveaways/index.js` — List (public: active only; admin: all) + Create (admin)
+- [x] `pages/api/giveaways/[id].js` — Get (public) + Update/Delete (admin)
+- [x] `pages/api/giveaways/[id]/join.js` — Free join (authenticated users)
+- [x] `pages/api/giveaways/[id]/tasks.js` — GET tasks (public) + POST/DELETE (admin)
+- [x] `pages/api/giveaways/[id]/complete-task.js` — Complete a task, auto-check eligibility
+- [x] `pages/api/giveaways/[id]/participants.js` — Count (public) + Full list with user enrichment (admin)
+- [x] `pages/api/giveaways/[id]/winner.js` — SYSTEM_RANDOM or ADMIN_RANDOM selection, hard-blocks non-eligible, audit logged with CRITICAL severity
+- [x] `pages/api/giveaways/[id]/my-status.js` — User's participation status
+- [x] `pages/api/giveaways/[id]/invite.js` — Validate invite code + award points
+- [x] `pages/admin/giveaways.js` — Admin panel: list/create/edit giveaways, task manager, participants view with search/filter, winner selection (auto-random + manual from eligible only)
+- [x] `components/GiveawayCard.js` — Reusable card with countdown timer, prize info, status badges
+- [x] `pages/giveaway/index.js` — Public list page (active + past giveaways, SEO meta, legal notice)
+- [x] `pages/giveaway/[slug].js` — Public detail page (hero image, countdown, progress bar, join CTA, task list, invite section, eligibility status, structured data JSON-LD, fairness notice)
+- [x] `pages/giveaway-terms.js` — Legal terms page (10 sections: free entry, no purchase, task eligibility, random selection, physical prizes, platform discretion, support disclaimer, data usage, eligibility, contact)
+
+**Files modified:**
+- [x] `lib/api-client.js` — Added 14 giveaway API wrapper functions
+- [x] `pages/index.js` — Added GiveawaysSection (shows up to 3 active giveaways before CTA section, auto-hides if none active)
+- [x] `components/Header.js` — Added "Giveaways" menu item with FiGift icon to defaultMenuData + iconMap
+
+**Key enforcement rules (server-side):**
+- Winner selection hard-blocks non-eligible participants (`participant.status !== 'eligible'` → throws error)
+- All winner selections logged in `giveaway_winner_logs` collection + `audit_logs` with CRITICAL severity
+- Eligibility requires all required tasks completed + points threshold (task_gated mode)
+- Giveaways locked after winner selection (status = `winner_selected`)
+- Draft giveaways only can be deleted
+
+**MongoDB collections:** `giveaways`, `giveaway_tasks`, `giveaway_participants`, `giveaway_winner_logs`
+
 ---
-*Updated: Feb 8, 2026*
+*Updated: Feb 10, 2026*

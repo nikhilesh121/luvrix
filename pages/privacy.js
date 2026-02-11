@@ -1,14 +1,9 @@
-import Head from 'next/head';
 import Link from 'next/link';
+import Layout from '../components/Layout';
 
 export default function PrivacyPolicy() {
   return (
-    <>
-      <Head>
-        <title>Privacy Policy | Luvrix</title>
-        <meta name="description" content="Luvrix Privacy Policy - How we collect, use, and protect your data" />
-      </Head>
-
+    <Layout title="Privacy Policy" description="Luvrix Privacy Policy - How we collect, use, and protect your data" canonical="https://luvrix.com/privacy">
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 md:p-12">
@@ -210,6 +205,6 @@ export default function PrivacyPolicy() {
           </div>
         </div>
       </div>
-    </>
+    </Layout>
   );
 }
