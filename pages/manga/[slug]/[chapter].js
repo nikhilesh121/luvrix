@@ -176,7 +176,7 @@ export default function ChapterPage({ initialManga, initialSettings, initialChap
           <title>{seoTitle}</title>
           <meta name="description" content={seoDescription} />
           <meta name="robots" content="noindex, follow" />
-          <link rel="canonical" href={`${SITE_URL}/manga/${slug}`} />
+          <link rel="canonical" href={`${SITE_URL}/manga/${slug}/`} />
           <meta property="og:title" content={seoTitle} />
           <meta property="og:type" content="article" />
           <meta property="og:url" content={fullUrl} />
@@ -222,7 +222,7 @@ export default function ChapterPage({ initialManga, initialSettings, initialChap
         
         {/* Robots — noindex: chapter pages are not indexable (external redirect architecture) */}
         <meta name="robots" content="noindex, follow" />
-        <link rel="canonical" href={`${SITE_URL}/manga/${slug}`} />
+        <link rel="canonical" href={`${SITE_URL}/manga/${slug}/`} />
         
         {/* Open Graph */}
         <meta property="og:type" content="article" />

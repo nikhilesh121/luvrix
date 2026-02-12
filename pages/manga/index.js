@@ -120,16 +120,16 @@ export default function MangaList() {
   }
 
   return (
-    <Layout title="Manga" description="Browse and read the best manga series online for free on Luvrix. Discover popular manga across all genres with high-quality chapters updated regularly." canonical="https://luvrix.com/manga">
+    <Layout title="Manga" description="Browse and read the best manga series online for free on Luvrix. Discover popular manga across all genres with high-quality chapters updated regularly." canonical="https://luvrix.com/manga/">
       <CollectionPageSchema
         title="Browse Manga"
         description="Browse and read the best manga series online for free on Luvrix."
-        url="/manga"
-        items={filteredManga.slice(0, 20).map(m => ({ title: m.title, url: `/manga/${m.slug || m.id}`, image: m.coverUrl }))}
+        url="/manga/"
+        items={filteredManga.slice(0, 20).map(m => ({ title: m.title, url: `/manga/${m.slug || m.id}/`, image: m.coverUrl }))}
       />
       <BreadcrumbSchema items={[
         { name: "Home", url: "/" },
-        { name: "Manga", url: "/manga" },
+        { name: "Manga", url: "/manga/" },
       ]} />
       <div className="min-h-screen bg-[#0a0a0f]">
         {/* Hero Section */}

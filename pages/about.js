@@ -62,9 +62,9 @@ export default function About() {
     <Layout title="About Us" description="Learn about Luvrix - the free platform for reading blogs, manga & stories. Join thousands of creators and readers sharing content worldwide.">
       <Head>
         <meta name="robots" content="index, follow" />
-        <link rel="canonical" href={`${SITE_URL}/about`} />
+        <link rel="canonical" href={`${SITE_URL}/about/`} />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content={`${SITE_URL}/about`} />
+        <meta property="og:url" content={`${SITE_URL}/about/`} />
         <meta property="og:title" content="About Us - Luvrix" />
         <meta property="og:description" content="Learn more about Luvrix - your destination for blogs, manga, and stories" />
       </Head>

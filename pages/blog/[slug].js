@@ -8,7 +8,7 @@ export async function getServerSideProps(context) {
   const { slug } = context.params;
   
   if (!slug) {
-    return { props: { initialBlog: null, initialAuthor: null, initialSettings: null } };
+    return { notFound: true };
   }
 
   try {
@@ -17,7 +17,7 @@ export async function getServerSideProps(context) {
     const blogData = await getBlogBySlug(slug);
     
     if (!blogData || blogData.status !== "approved") {
-      return { props: { initialBlog: null, initialAuthor: null, initialSettings: null } };
+      return { notFound: true };
     }
 
     const serializeData = (obj) => {

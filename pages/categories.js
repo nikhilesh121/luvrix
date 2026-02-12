@@ -197,18 +197,18 @@ export default function Categories() {
     <Layout
       title={selectedCategory === "All" ? "All Categories" : selectedCategory}
       description={config.description}
-      canonical="https://luvrix.com/categories"
+      canonical={selectedCategory === "All" ? "https://luvrix.com/categories/" : `https://luvrix.com/categories/?category=${encodeURIComponent(selectedCategory)}`}
     >
       <CollectionPageSchema
         title={selectedCategory === "All" ? "All Categories" : selectedCategory}
         description={config.description}
-        url="/categories"
-        items={filteredBlogs.slice(0, 20).map(b => ({ title: b.title, url: b.slug ? `/blog/${b.slug}` : `/blog?id=${b.id}`, image: b.thumbnail }))}
+        url="/categories/"
+        items={filteredBlogs.slice(0, 20).map(b => ({ title: b.title, url: b.slug ? `/blog/${b.slug}/` : `/blog/?id=${b.id}`, image: b.thumbnail }))}
       />
       <BreadcrumbSchema items={[
         { name: "Home", url: "/" },
-        { name: "Categories", url: "/categories" },
-        ...(selectedCategory !== "All" ? [{ name: selectedCategory, url: `/categories?category=${selectedCategory}` }] : []),
+        { name: "Categories", url: "/categories/" },
+        ...(selectedCategory !== "All" ? [{ name: selectedCategory, url: `/categories/?category=${selectedCategory}` }] : []),
       ]} />
       <div className="min-h-screen bg-[#fafafa]">
         {/* Hero Section */}

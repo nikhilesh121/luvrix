@@ -272,7 +272,7 @@ export default function MangaDetail({ initialManga, initialSettings }) {
       <Layout title={seoTitle} description={seoDescription}>
         <Head>
           <meta name="robots" content="index, follow" />
-          <link rel="canonical" href={`${SITE_URL}/manga/${slug}`} />
+          <link rel="canonical" href={`${SITE_URL}/manga/${slug}/`} />
           <meta property="og:title" content={seoTitle} />
           <meta property="og:type" content="book" />
         </Head>
@@ -301,8 +301,8 @@ export default function MangaDetail({ initialManga, initialSettings }) {
     );
   }
 
-  const pageUrl = `/manga/${slug}`;
-  const fullUrl = `${SITE_URL}${pageUrl}`;
+  const pageUrl = `/manga/${slug}/`;
+  const fullUrl = `${SITE_URL}/manga/${slug}/`;
 
   return (
     <Layout
@@ -637,7 +637,7 @@ export async function getServerSideProps(context) {
     ]);
     
     if (!mangaData) {
-      return { props: { initialManga: null, initialSettings: null } };
+      return { notFound: true };
     }
 
     // Serialize timestamps for SSR

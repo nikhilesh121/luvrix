@@ -46,7 +46,7 @@ export async function getServerSideProps({ params, res }) {
         for (const blog of blogs) {
           if (!blog.slug || seen.has(blog.slug)) continue;
           seen.add(blog.slug);
-          urls.push(`  <url>\n    <loc>${escapeXml(SITE_URL)}/blog/${escapeXml(blog.slug)}</loc>\n    <lastmod>${toISO(blog.updatedAt || blog.createdAt)}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.7</priority>\n  </url>`);
+          urls.push(`  <url>\n    <loc>${escapeXml(SITE_URL)}/blog/${escapeXml(blog.slug)}/</loc>\n    <lastmod>${toISO(blog.updatedAt || blog.createdAt)}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.7</priority>\n  </url>`);
         }
         xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join("\n")}\n</urlset>`;
         break;
@@ -64,7 +64,7 @@ export async function getServerSideProps({ params, res }) {
         for (const m of manga) {
           if (!m.slug || seen.has(m.slug)) continue;
           seen.add(m.slug);
-          urls.push(`  <url>\n    <loc>${escapeXml(SITE_URL)}/manga/${escapeXml(m.slug)}</loc>\n    <lastmod>${toISO(m.updatedAt || m.createdAt)}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.8</priority>\n  </url>`);
+          urls.push(`  <url>\n    <loc>${escapeXml(SITE_URL)}/manga/${escapeXml(m.slug)}/</loc>\n    <lastmod>${toISO(m.updatedAt || m.createdAt)}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.8</priority>\n  </url>`);
         }
         xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join("\n")}\n</urlset>`;
         break;
@@ -73,10 +73,10 @@ export async function getServerSideProps({ params, res }) {
       case "categories": {
         const categories = await db.collection("blogs").distinct("category", { status: { $nin: ["draft", "pending", "hidden", "rejected", "deleted"] } });
         const urls = [];
-        urls.push(`  <url>\n    <loc>${escapeXml(SITE_URL)}/categories</loc>\n    <changefreq>weekly</changefreq>\n    <priority>0.7</priority>\n  </url>`);
+        urls.push(`  <url>\n    <loc>${escapeXml(SITE_URL)}/categories/</loc>\n    <changefreq>weekly</changefreq>\n    <priority>0.7</priority>\n  </url>`);
         for (const cat of categories) {
           if (!cat || typeof cat !== "string") continue;
-          urls.push(`  <url>\n    <loc>${escapeXml(SITE_URL)}/categories?category=${escapeXml(encodeURIComponent(cat))}</loc>\n    <changefreq>weekly</changefreq>\n    <priority>0.6</priority>\n  </url>`);
+          urls.push(`  <url>\n    <loc>${escapeXml(SITE_URL)}/categories/?category=${escapeXml(encodeURIComponent(cat))}</loc>\n    <changefreq>weekly</changefreq>\n    <priority>0.6</priority>\n  </url>`);
         }
         xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join("\n")}\n</urlset>`;
         break;
@@ -100,7 +100,10 @@ export async function getServerSideProps({ params, res }) {
           { url: "/policy/disclaimer", changefreq: "yearly", priority: "0.3" },
           { url: "/policy/dmca", changefreq: "yearly", priority: "0.3" },
         ];
-        const urls = staticPages.map(p => `  <url>\n    <loc>${escapeXml(SITE_URL + p.url)}</loc>\n    <changefreq>${p.changefreq}</changefreq>\n    <priority>${p.priority}</priority>\n  </url>`);
+        const urls = staticPages.map(p => {
+          const loc = p.url === "/" ? `${SITE_URL}/` : `${SITE_URL}${p.url}/`;
+          return `  <url>\n    <loc>${escapeXml(loc)}</loc>\n    <changefreq>${p.changefreq}</changefreq>\n    <priority>${p.priority}</priority>\n  </url>`;
+        });
         xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join("\n")}\n</urlset>`;
         break;
       }
@@ -113,13 +116,13 @@ export async function getServerSideProps({ params, res }) {
           .toArray();
         const seen = new Set();
         const urls = [];
-        urls.push(`  <url>\n    <loc>${escapeXml(SITE_URL)}/giveaway</loc>\n    <changefreq>daily</changefreq>\n    <priority>0.8</priority>\n  </url>`);
+        urls.push(`  <url>\n    <loc>${escapeXml(SITE_URL)}/giveaway/</loc>\n    <changefreq>daily</changefreq>\n    <priority>0.8</priority>\n  </url>`);
         for (const g of giveaways) {
           if (!g.slug || seen.has(g.slug)) continue;
           seen.add(g.slug);
           const priority = g.status === "active" ? "0.9" : "0.6";
           const changefreq = g.status === "active" ? "daily" : "weekly";
-          urls.push(`  <url>\n    <loc>${escapeXml(SITE_URL)}/giveaway/${escapeXml(g.slug)}</loc>\n    <lastmod>${toISO(g.updatedAt || g.createdAt)}</lastmod>\n    <changefreq>${changefreq}</changefreq>\n    <priority>${priority}</priority>\n  </url>`);
+          urls.push(`  <url>\n    <loc>${escapeXml(SITE_URL)}/giveaway/${escapeXml(g.slug)}/</loc>\n    <lastmod>${toISO(g.updatedAt || g.createdAt)}</lastmod>\n    <changefreq>${changefreq}</changefreq>\n    <priority>${priority}</priority>\n  </url>`);
         }
         xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join("\n")}\n</urlset>`;
         break;

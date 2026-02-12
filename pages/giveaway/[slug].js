@@ -506,12 +506,12 @@ export default function GiveawayDetailPage() {
     <Layout title={giveaway.title} description={giveaway.prizeDetails}>
       <Head>
         <meta name="robots" content="index, follow" />
-        <link rel="canonical" href={`${SITE_URL}/giveaway/${giveaway.slug}`} />
+        <link rel="canonical" href={`${SITE_URL}/giveaway/${giveaway.slug}/`} />
         <meta property="og:title" content={giveaway.title} />
         <meta property="og:description" content={giveaway.prizeDetails || giveaway.description} />
         <meta property="og:image" content={giveaway.imageUrl} />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content={`${SITE_URL}/giveaway/${giveaway.slug}`} />
+        <meta property="og:url" content={`${SITE_URL}/giveaway/${giveaway.slug}/`} />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={giveaway.title} />
         <meta name="twitter:image" content={giveaway.imageUrl} />

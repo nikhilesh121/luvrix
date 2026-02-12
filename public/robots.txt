@@ -3,38 +3,15 @@
 
 User-agent: *
 Allow: /
-Allow: /blog
-Allow: /manga
-Allow: /categories
-Allow: /about
-Allow: /contact
-Allow: /publishers
-Allow: /giveaway
-Allow: /leaderboard
-Allow: /privacy
-Allow: /terms
-Allow: /giveaway-terms
-Allow: /policy/
 
-# Disallow admin and private pages
+# Disallow admin, private, and API pages
 Disallow: /admin/
 Disallow: /dashboard/
-
-# Allow sitemap API routes (must come before Disallow: /api/)
-Allow: /api/sitemap/
-Allow: /api/sitemap/pages/
-Allow: /api/sitemap/posts/
-Allow: /api/sitemap/manga/
-Allow: /api/sitemap/categories/
-Allow: /api/sitemap/giveaways/
-
 Disallow: /api/
 Disallow: /_next/
 Disallow: /login/
 Disallow: /register/
-
-# Disallow internal chapter pages (chapters link directly to external sources)
-Disallow: /manga/*/chapter*
+Disallow: /sitemaps/
 
 # Disallow user-specific / transactional pages
 Disallow: /profile/
@@ -44,31 +21,10 @@ Disallow: /edit-blog/
 Disallow: /preview-blog/
 Disallow: /payment-success/
 Disallow: /payment-failed/
+Disallow: /user/
 
-# Disallow e-commerce / account paths
-Disallow: /cart/
-Disallow: /checkout/
-Disallow: /my-account/
-
-# Block parameter-based crawling (spam / low-value URLs)
-Disallow: /*?amp
-Disallow: /*?noamp
-Disallow: /*?share
-Disallow: /*?add_to_wishlist
-Disallow: /*?orderby
-Disallow: /*?type
-Disallow: /*?replytocom
-Disallow: /*?product-page
-Disallow: /*?nb
-
-# Block feeds and pagination from crawling
-Disallow: /feed/
-Disallow: /*/feed/
-Disallow: /page/
-Disallow: /*/page/
-
-# Crawl delay for polite crawling
-Crawl-delay: 1
+# Disallow internal chapter pages (external redirect targets)
+Disallow: /manga/*/chapter*
 
 # Google Image Bot — allow all public images
 User-agent: Googlebot-Image
@@ -80,7 +36,6 @@ Disallow: /api/
 User-agent: AdsBot-Google
 Allow: /
 
-# AdsBot Mobile
 User-agent: AdsBot-Google-Mobile
 Allow: /
 

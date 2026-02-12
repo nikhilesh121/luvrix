@@ -34,7 +34,7 @@ export default function Document() {
               "@context": "https://schema.org",
               "@type": "Organization",
               "name": "Luvrix",
-              "url": "https://luvrix.com",
+              "url": "https://luvrix.com/",
               "logo": "https://res.cloudinary.com/dsga2d0bv/image/upload/v1770089324/Luvrix/Luvrix_favicon_yqovij.png",
               "sameAs": [
                 "https://facebook.com/luvrix",

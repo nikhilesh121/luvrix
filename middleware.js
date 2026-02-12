@@ -60,7 +60,7 @@ export function middleware(request) {
   const response = NextResponse.next();
 
   const shouldNoindex =
-    (NOINDEX_PATHS.some(p => pathname.startsWith(p)) && !pathname.startsWith('/api/sitemap')) ||
+    (NOINDEX_PATHS.some(p => pathname.startsWith(p)) && !pathname.startsWith('/api/sitemap') && !pathname.startsWith('/sitemaps')) ||
     PAGINATION_REGEX.test(pathname) ||
     FEED_REGEX.test(pathname);
 

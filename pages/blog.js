@@ -348,7 +348,7 @@ export default function BlogPage({ initialBlog, initialAuthor, initialSettings }
     );
   }
 
-  const pageUrl = blog.slug ? `/blog/${blog.slug}` : `/blog?id=${blog.id}`;
+  const pageUrl = blog.slug ? `/blog/${blog.slug}/` : `/blog/?id=${blog.id}`;
   const fullUrl = `${SITE_URL}${pageUrl}`;
   const publishedDate = blog.createdAt?.toDate?.()?.toISOString() || new Date().toISOString();
   const modifiedDate = blog.updatedAt?.toDate?.()?.toISOString() || publishedDate;
@@ -378,9 +378,14 @@ export default function BlogPage({ initialBlog, initialAuthor, initialSettings }
   return (
     <Layout
       title={blog.seoTitle || blog.title}
-      description={blog.seoDescription}
+      description={seoDescription}
       keywords={blog.focusKeyword || blog.keywords}
       image={ogImage}
+      canonical={fullUrl}
+      type="article"
+      author={author?.name}
+      publishedTime={publishedDate}
+      modifiedTime={modifiedDate}
     >
       <Head>
         <meta name="robots" content="index, follow, max-image-preview:large" />

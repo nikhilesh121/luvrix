@@ -72,8 +72,8 @@ export default function Layout({ children, title, description, keywords, image, 
           <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
         )}
         
-        {/* Canonical URL */}
-        {canonical && <link rel="canonical" href={canonical} />}
+        {/* Canonical URL — ensure trailing slash matches next.config trailingSlash:true */}
+        {canonical && <link rel="canonical" href={canonical.includes('?') ? canonical : (canonical.endsWith('/') ? canonical : canonical + '/')} />}
         
         {/* Open Graph */}
         <meta property="og:site_name" content={siteName} />

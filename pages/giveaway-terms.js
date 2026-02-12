@@ -10,7 +10,7 @@ export default function GiveawayTerms() {
     <Layout title="Giveaway Terms & Conditions" description="Read the official rules and terms for Luvrix giveaways.">
       <Head>
         <meta name="robots" content="index, follow" />
-        <link rel="canonical" href={`${SITE_URL}/giveaway-terms`} />
+        <link rel="canonical" href={`${SITE_URL}/giveaway-terms/`} />
       </Head>
 
       <div className="min-h-screen bg-white dark:bg-gray-900 py-12 sm:py-20 px-4">

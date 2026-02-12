@@ -57,6 +57,8 @@ const nextConfig = {
       {
         source: '/:path*',
         headers: [
+          { key: 'CDN-Cache-Control', value: 'no-store' },
+          { key: 'Cloudflare-CDN-Cache-Control', value: 'no-store' },
           { key: 'X-DNS-Prefetch-Control', value: 'on' },
           { key: 'X-XSS-Protection', value: '1; mode=block' },
           { key: 'X-Frame-Options', value: 'DENY' },
@@ -69,7 +71,7 @@ const nextConfig = {
       },
     ];
   },
-  // Sitemap .xml URLs are handled by middleware (rewrites to /api/sitemap/* with cache-busting)
+  // Sitemap .xml URLs are handled by middleware (rewrites to /sitemaps/ SSR pages)
 };
 
 module.exports = nextConfig;

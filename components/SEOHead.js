@@ -26,7 +26,7 @@ export default function SEOHead({
   noindex = false,
 }) {
   const fullTitle = title ? `${title} - ${SITE_NAME}` : SITE_NAME;
-  const fullUrl = url ? `${SITE_URL}${url}` : SITE_URL;
+  const fullUrl = url ? `${SITE_URL}${url.endsWith('/') ? url : url + '/'}` : `${SITE_URL}/`;
   const ogImage = getAbsoluteImageUrl(image);
 
   // Generate keywords string
@@ -106,7 +106,7 @@ export default function SEOHead({
                 name: SITE_NAME,
                 logo: {
                   "@type": "ImageObject",
-                  url: `${SITE_URL}/logo.png`,
+                  url: "https://res.cloudinary.com/dsga2d0bv/image/upload/v1770089324/Luvrix/Luvrix_favicon_yqovij.png",
                 },
               },
             }),
@@ -119,12 +119,13 @@ export default function SEOHead({
 
 // Blog Article Schema
 export function BlogArticleSchema({ blog, url }) {
+  const blogUrl = url?.endsWith('/') ? url : `${url}/`;
   const schema = {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
     mainEntityOfPage: {
       "@type": "WebPage",
-      "@id": `${SITE_URL}${url}`,
+      "@id": `${SITE_URL}${blogUrl}`,
     },
     headline: blog.title,
     description: blog.seoDescription || blog.content?.replace(/<[^>]*>/g, "").slice(0, 160),
@@ -144,11 +145,11 @@ export function BlogArticleSchema({ blog, url }) {
       name: SITE_NAME,
       logo: {
         "@type": "ImageObject",
-        url: `${SITE_URL}/logo.png`,
+        url: "https://res.cloudinary.com/dsga2d0bv/image/upload/v1770089324/Luvrix/Luvrix_favicon_yqovij.png",
       },
     },
-    datePublished: blog.createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
-    dateModified: blog.updatedAt?.toDate?.()?.toISOString() || blog.createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
+    datePublished: (typeof blog.createdAt === 'string' ? blog.createdAt : blog.createdAt?.toDate?.()?.toISOString()) || new Date().toISOString(),
+    dateModified: (typeof blog.updatedAt === 'string' ? blog.updatedAt : blog.updatedAt?.toDate?.()?.toISOString()) || (typeof blog.createdAt === 'string' ? blog.createdAt : blog.createdAt?.toDate?.()?.toISOString()) || new Date().toISOString(),
     keywords: blog.focusKeyword || blog.seoKeywords || blog.category,
   };
 
@@ -174,7 +175,7 @@ export function MangaSchema({ manga, url }) {
       height: 1200,
     },
     thumbnailUrl: getAbsoluteImageUrl(manga.coverUrl),
-    url: `${SITE_URL}${url}`,
+    url: `${SITE_URL}${url?.endsWith('/') ? url : url + '/'}`,
     author: {
       "@type": "Person",
       name: manga.author || "Unknown",
@@ -225,7 +226,7 @@ export function ChapterSchema({ manga, chapterNumber, url }) {
       name: SITE_NAME,
       logo: {
         "@type": "ImageObject",
-        url: `${SITE_URL}/logo.png`,
+        url: "https://res.cloudinary.com/dsga2d0bv/image/upload/v1770089324/Luvrix/Luvrix_favicon_yqovij.png",
       },
     },
   };
@@ -247,7 +248,7 @@ export function BreadcrumbSchema({ items }) {
       "@type": "ListItem",
       position: index + 1,
       name: item.name,
-      item: `${SITE_URL}${item.url}`,
+      item: `${SITE_URL}${item.url?.endsWith('/') ? item.url : item.url + '/'}`,
     })),
   };
 
@@ -266,7 +267,7 @@ export function CollectionPageSchema({ title, description, url, items = [] }) {
     "@type": "CollectionPage",
     name: title,
     description: description,
-    url: `${SITE_URL}${url}`,
+    url: `${SITE_URL}${url?.endsWith('/') ? url : url + '/'}`,
     publisher: {
       "@type": "Organization",
       name: SITE_NAME,
@@ -336,7 +337,7 @@ export function WebsiteSchema() {
     "@context": "https://schema.org",
     "@type": "WebSite",
     name: SITE_NAME,
-    url: SITE_URL,
+    url: `${SITE_URL}/`,
     description: "Read blogs, manga, and stories from creators worldwide. Free platform for writers and readers.",
     potentialAction: {
       "@type": "SearchAction",

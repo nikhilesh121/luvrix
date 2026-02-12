@@ -157,11 +157,11 @@ export default function Home() {
       <Head>
         {/* Primary SEO */}
         <meta name="robots" content="index, follow, max-image-preview:large" />
-        <link rel="canonical" href={SITE_URL} />
+        <link rel="canonical" href={`${SITE_URL}/`} />
         
         {/* Open Graph */}
         <meta property="og:type" content="website" />
-        <meta property="og:url" content={SITE_URL} />
+        <meta property="og:url" content={`${SITE_URL}/`} />
         <meta property="og:title" content="Luvrix - Read Blogs, Manga & Stories Free" />
         <meta property="og:description" content="Discover amazing blogs, manga, and stories from creators worldwide. Write, share, and explore content on the #1 free platform for writers and readers." />
         <meta property="og:image" content="https://res.cloudinary.com/dsga2d0bv/image/upload/w_1200,h_630,c_pad,b_rgb:6366f1/Luvrix/Luvrix_favicon_yqovij.png" />
@@ -528,6 +528,9 @@ export default function Home() {
                         <img 
                           src={featuredBlog.thumbnail} 
                           alt={featuredBlog.title}
+                          width={800}
+                          height={600}
+                          loading="lazy"
                           className="w-full h-full object-cover"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover/img:opacity-100 transition-opacity" />
