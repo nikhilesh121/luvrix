@@ -388,32 +388,16 @@ export default function BlogPage({ initialBlog, initialAuthor, initialSettings }
       modifiedTime={modifiedDate}
     >
       <Head>
-        <meta name="robots" content="index, follow, max-image-preview:large" />
-        <link rel="canonical" href={fullUrl} />
-        <meta property="og:type" content="article" />
-        <meta property="og:url" content={fullUrl} />
-        <meta property="og:title" content={blog.seoTitle || blog.title} />
-        <meta property="og:description" content={seoDescription} />
-        <meta property="og:image" content={ogImage} />
+        {/* Only extras not handled by Layout */}
         <meta property="og:image:alt" content={blog.title} />
-        <meta property="og:image:width" content="1200" />
-        <meta property="og:image:height" content="630" />
-        <meta property="og:site_name" content="Luvrix" />
-        <meta property="article:published_time" content={publishedDate} />
-        <meta property="article:modified_time" content={modifiedDate} />
         {blog.category && <meta property="article:section" content={blog.category} />}
-        {author?.name && <meta property="article:author" content={author.name} />}
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={blog.seoTitle || blog.title} />
-        <meta name="twitter:description" content={seoDescription} />
-        <meta name="twitter:image" content={ogImage} />
         {blog.focusKeyword && <meta name="news_keywords" content={blog.focusKeyword} />}
       </Head>
       
       <BlogArticleSchema blog={blog} url={pageUrl} />
       <BreadcrumbSchema items={[
         { name: "Home", url: "/" },
-        { name: blog.category || "Blog", url: `/categories?cat=${blog.category?.toLowerCase()}` },
+        { name: blog.category || "Blog", url: `/categories/?category=${encodeURIComponent(blog.category || "Blog")}` },
         { name: blog.title, url: pageUrl },
       ]} />
 

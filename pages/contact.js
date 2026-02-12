@@ -80,14 +80,9 @@ export default function Contact() {
   ];
 
   return (
-    <Layout title="Contact Us" description="Get in touch with Luvrix. We'd love to hear from you!">
+    <Layout title="Contact Us" description="Get in touch with Luvrix. We'd love to hear from you!" canonical={`${SITE_URL}/contact/`}>
       <Head>
-        <meta name="robots" content="index, follow" />
-        <link rel="canonical" href={`${SITE_URL}/contact/`} />
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content={`${SITE_URL}/contact/`} />
-        <meta property="og:title" content="Contact Us - Luvrix" />
-        <meta property="og:description" content="Get in touch with Luvrix. We'd love to hear from you!" />
+        <meta name="keywords" content="contact luvrix, support, feedback, get in touch" />
       </Head>
 
       {/* Hero Section */}

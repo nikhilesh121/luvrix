@@ -220,6 +220,97 @@
 
 ---
 
+## PHASE 8 — Second Full SEO Audit (Feb 12, 2026)
+
+### 16. Duplicate Meta Tags Across All Pages (CRITICAL)
+- **Problem:** Pages like index.js, blog.js, manga detail, about, contact, giveaway index, giveaway detail, and giveaway-terms all set meta tags (canonical, og:*, twitter:*, robots) both via Layout props AND inline `<Head>` blocks. This creates duplicate canonical tags, duplicate OG tags, and duplicate robots directives in the HTML — confusing Google's parser.
+- **Status:** ✅ FIXED
+- **Files changed:**
+  - `pages/index.js` — Moved canonical to Layout prop, removed all duplicate inline Head tags
+  - `pages/blog.js` — Removed duplicate canonical/og/twitter/robots from inline Head (Layout handles them)
+  - `pages/manga/[slug]/index.js` — Added canonical to Layout prop, removed duplicates from both loading and main render states
+  - `pages/about.js` — Moved canonical to Layout prop, removed duplicates
+  - `pages/contact.js` — Moved canonical to Layout prop, removed duplicates
+  - `pages/giveaway/index.js` — Moved canonical to Layout prop, removed duplicates
+  - `pages/giveaway/[slug].js` — Moved canonical+image to Layout prop, removed duplicates (kept Event JSON-LD)
+  - `pages/giveaway-terms.js` — Moved canonical to Layout prop, removed duplicates
+
+### 17. CollectionPageSchema Item URLs Missing Trailing Slashes (HIGH)
+- **Problem:** In `CollectionPageSchema`, individual item URLs used `${SITE_URL}${item.url}` without enforcing trailing slash. Mismatch with actual served URLs.
+- **Status:** ✅ FIXED
+- **Files changed:**
+  - `components/SEOHead.js` — CollectionPageSchema item URLs now enforce trailing slash
+
+### 18. ProfilePageSchema URL Missing Trailing Slash (HIGH)
+- **Problem:** ProfilePage schema `mainEntity.url` didn't enforce trailing slash.
+- **Status:** ✅ FIXED
+- **Files changed:**
+  - `components/SEOHead.js` — ProfilePageSchema URL now enforces trailing slash
+
+### 19. Blog Breadcrumb Category URL Incorrect (MEDIUM)
+- **Problem:** Blog breadcrumb used `/categories?cat=...` but the actual URL pattern is `/categories/?category=...`. Wrong URL in breadcrumb schema = broken structured data link.
+- **Status:** ✅ FIXED
+- **Files changed:**
+  - `pages/blog.js` — Breadcrumb category URL changed to `/categories/?category=${encodeURIComponent(...)}`
+
+### 20. Manga Sitemap Missing `deleted` Status Filter (HIGH)
+- **Problem:** Blog sitemap correctly excluded `deleted` status, but manga sitemap only excluded `draft` and `private`. Deleted manga could appear in sitemap → Google crawls 404/410 pages → wasted crawl budget.
+- **Status:** ✅ FIXED
+- **Files changed:**
+  - `pages/sitemaps/[type].js` — Added `deleted` to manga exclusion filter
+
+### 21. Giveaway Sitemap Including Low-Value Ended Pages (MEDIUM)
+- **Problem:** Giveaway sitemap included ended and winner_selected giveaways. These are thin content pages that waste crawl budget.
+- **Status:** ✅ FIXED
+- **Files changed:**
+  - `pages/sitemaps/[type].js` — Now only includes `active` and `upcoming` giveaways
+
+### 22. Chapter 410 Middleware Regex Improvement (LOW)
+- **Problem:** Non-trailing-slash chapter URLs like `/manga/x/chapter-1` got a 308 redirect to `/manga/x/chapter-1/` before middleware could return 410. Two-hop response instead of direct 410.
+- **Status:** ✅ FIXED
+- **Files changed:**
+  - `middleware.js` — Regex now strips trailing slash before matching, catching both variants
+
+### 23. Event Schema URLs Missing Trailing Slashes (LOW)
+- **Problem:** Giveaway detail Event schema had `location.url` and `organizer.url` without trailing slashes.
+- **Status:** ✅ FIXED
+- **Files changed:**
+  - `pages/giveaway/[slug].js` — Added trailing slashes to schema URLs
+
+---
+
+## Updated Summary Table
+
+| # | Issue | Severity | Status |
+|---|-------|----------|--------|
+| 1–15 | Previous audit fixes | Various | ✅ Fixed |
+| 16 | Duplicate meta tags on 8 pages | 🔴 CRITICAL | ✅ Fixed |
+| 17 | CollectionPageSchema item URLs no trailing slash | 🟠 HIGH | ✅ Fixed |
+| 18 | ProfilePageSchema URL no trailing slash | 🟠 HIGH | ✅ Fixed |
+| 19 | Blog breadcrumb wrong category URL | 🟡 MEDIUM | ✅ Fixed |
+| 20 | Manga sitemap includes deleted manga | 🟠 HIGH | ✅ Fixed |
+| 21 | Giveaway sitemap includes ended giveaways | 🟡 MEDIUM | ✅ Fixed |
+| 22 | Chapter 410 redirect chain | 🟢 LOW | ✅ Fixed |
+| 23 | Event schema URLs missing trailing slashes | 🟢 LOW | ✅ Fixed |
+
+---
+
+## Files Modified in Phase 8 (11 files)
+
+1. `pages/index.js` — Removed duplicate meta tags, canonical via Layout
+2. `pages/blog.js` — Removed duplicate meta tags, fixed breadcrumb URL
+3. `pages/manga/[slug]/index.js` — Removed duplicate meta tags, canonical via Layout
+4. `pages/about.js` — Removed duplicate meta tags, canonical via Layout
+5. `pages/contact.js` — Removed duplicate meta tags, canonical via Layout
+6. `pages/giveaway/index.js` — Removed duplicate meta tags, canonical via Layout
+7. `pages/giveaway/[slug].js` — Removed duplicate meta tags, canonical via Layout, Event schema URLs fixed
+8. `pages/giveaway-terms.js` — Removed duplicate meta tags, canonical via Layout
+9. `components/SEOHead.js` — CollectionPageSchema + ProfilePageSchema trailing slash fixes
+10. `pages/sitemaps/[type].js` — Manga deleted filter, giveaway active-only filter
+11. `middleware.js` — Chapter 410 regex handles both trailing slash variants
+
+---
+
 ## Server Deployment Steps
 
 ```bash

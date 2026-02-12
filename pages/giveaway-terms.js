@@ -7,10 +7,9 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://luvrix.com";
 
 export default function GiveawayTerms() {
   return (
-    <Layout title="Giveaway Terms & Conditions" description="Read the official rules and terms for Luvrix giveaways.">
+    <Layout title="Giveaway Terms & Conditions" description="Read the official rules and terms for Luvrix giveaways." canonical={`${SITE_URL}/giveaway-terms/`}>
       <Head>
-        <meta name="robots" content="index, follow" />
-        <link rel="canonical" href={`${SITE_URL}/giveaway-terms/`} />
+        <meta name="keywords" content="giveaway rules, terms and conditions, luvrix giveaway terms" />
       </Head>
 
       <div className="min-h-screen bg-white dark:bg-gray-900 py-12 sm:py-20 px-4">

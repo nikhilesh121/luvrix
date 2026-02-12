@@ -35,7 +35,7 @@ export function middleware(request) {
   const { pathname, searchParams } = url;
 
   // 0a. Chapter pages permanently removed — return 410 Gone so Google de-indexes them
-  if (/^\/manga\/[^/]+\/chapter/.test(pathname)) {
+  if (/^\/manga\/[^/]+\/chapter/.test(pathname.replace(/\/$/, ''))) {
     return new NextResponse('Gone', { status: 410, headers: { 'X-Robots-Tag': 'noindex' } });
   }
 

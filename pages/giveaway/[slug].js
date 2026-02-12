@@ -503,18 +503,9 @@ export default function GiveawayDetailPage() {
     : "Joined — Complete tasks to be eligible";
 
   return (
-    <Layout title={giveaway.title} description={giveaway.prizeDetails}>
+    <Layout title={giveaway.title} description={giveaway.prizeDetails || giveaway.description} image={giveaway.imageUrl} canonical={`${SITE_URL}/giveaway/${giveaway.slug}/`}>
       <Head>
-        <meta name="robots" content="index, follow" />
-        <link rel="canonical" href={`${SITE_URL}/giveaway/${giveaway.slug}/`} />
-        <meta property="og:title" content={giveaway.title} />
-        <meta property="og:description" content={giveaway.prizeDetails || giveaway.description} />
-        <meta property="og:image" content={giveaway.imageUrl} />
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content={`${SITE_URL}/giveaway/${giveaway.slug}/`} />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={giveaway.title} />
-        <meta name="twitter:image" content={giveaway.imageUrl} />
+        {/* Event Schema for rich results */}
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
           "@context": "https://schema.org",
           "@type": "Event",
@@ -525,8 +516,8 @@ export default function GiveawayDetailPage() {
           "endDate": giveaway.endDate,
           "eventStatus": hasWinner ? "https://schema.org/EventCancelled" : "https://schema.org/EventScheduled",
           "eventAttendanceMode": "https://schema.org/OnlineEventAttendanceMode",
-          "location": { "@type": "VirtualLocation", "url": `${SITE_URL}/giveaway/${giveaway.slug}` },
-          "organizer": { "@type": "Organization", "name": "Luvrix", "url": SITE_URL },
+          "location": { "@type": "VirtualLocation", "url": `${SITE_URL}/giveaway/${giveaway.slug}/` },
+          "organizer": { "@type": "Organization", "name": "Luvrix", "url": `${SITE_URL}/` },
           "offers": { "@type": "Offer", "price": "0", "priceCurrency": "INR", "availability": isActive ? "https://schema.org/InStock" : "https://schema.org/SoldOut" },
         }) }} />
       </Head>

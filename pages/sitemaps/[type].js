@@ -54,7 +54,7 @@ export async function getServerSideProps({ params, res }) {
 
       case "manga": {
         const manga = await db.collection("manga")
-          .find({ status: { $nin: ["draft", "private"] } })
+          .find({ status: { $nin: ["draft", "private", "deleted"] } })
           .project({ slug: 1, updatedAt: 1, createdAt: 1 })
           .sort({ updatedAt: -1 })
           .limit(50000)
@@ -110,7 +110,7 @@ export async function getServerSideProps({ params, res }) {
 
       case "giveaways": {
         const giveaways = await db.collection("giveaways")
-          .find({ status: { $ne: "draft" } })
+          .find({ status: { $in: ["active", "upcoming"] } })
           .project({ slug: 1, status: 1, updatedAt: 1, createdAt: 1 })
           .sort({ updatedAt: -1 })
           .toArray();

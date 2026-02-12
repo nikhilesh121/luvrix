@@ -84,14 +84,9 @@ export default function GiveawayListPage() {
   ];
 
   return (
-    <Layout title="Giveaways" description="Join free giveaways on Luvrix. Complete tasks, earn eligibility, and win physical prizes!">
+    <Layout title="Giveaways" description="Join free giveaways on Luvrix. Complete tasks, earn eligibility, and win physical prizes!" canonical={`${SITE_URL}/giveaway/`}>
       <Head>
-        <meta name="robots" content="index, follow" />
-        <link rel="canonical" href={`${SITE_URL}/giveaway/`} />
-        <meta property="og:title" content="Giveaways — Luvrix" />
-        <meta property="og:description" content="Join free giveaways on Luvrix. Complete tasks, earn eligibility, and win physical prizes!" />
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content={`${SITE_URL}/giveaway/`} />
+        <meta name="keywords" content="free giveaways, win prizes, luvrix giveaway, online contests" />
       </Head>
 
       <div className="min-h-screen bg-[#0a0a0f]">

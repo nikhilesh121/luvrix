@@ -269,11 +269,8 @@ export default function MangaDetail({ initialManga, initialSettings }) {
   // Loading state with SEO from URL
   if (loading) {
     return (
-      <Layout title={seoTitle} description={seoDescription}>
+      <Layout title={seoTitle} description={seoDescription} canonical={`${SITE_URL}/manga/${slug}/`}>
         <Head>
-          <meta name="robots" content="index, follow" />
-          <link rel="canonical" href={`${SITE_URL}/manga/${slug}/`} />
-          <meta property="og:title" content={seoTitle} />
           <meta property="og:type" content="book" />
         </Head>
         <div className="min-h-screen flex items-center justify-center">
@@ -310,31 +307,13 @@ export default function MangaDetail({ initialManga, initialSettings }) {
       description={seoDescription}
       keywords={seoKeywords}
       image={ogImage}
+      canonical={fullUrl}
     >
       <Head>
-        {/* Primary SEO */}
-        <meta name="robots" content="index, follow, max-image-preview:large" />
-        <link rel="canonical" href={fullUrl} />
-        
-        {/* Open Graph */}
+        {/* Only extras not handled by Layout */}
         <meta property="og:type" content="book" />
-        <meta property="og:url" content={fullUrl} />
-        <meta property="og:title" content={seoTitle} />
-        <meta property="og:description" content={seoDescription} />
-        <meta property="og:image" content={ogImage} />
         <meta property="og:image:alt" content={`${manga.title} Cover`} />
-        <meta property="og:image:width" content="800" />
-        <meta property="og:image:height" content="1200" />
-        <meta property="og:site_name" content="Luvrix" />
         <meta property="book:author" content={manga.author || "Unknown"} />
-        
-        {/* Twitter */}
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={seoTitle} />
-        <meta name="twitter:description" content={seoDescription} />
-        <meta name="twitter:image" content={ogImage} />
-        
-        {/* Focus Keyword */}
         {manga.focusKeyword && <meta name="news_keywords" content={manga.focusKeyword} />}
       </Head>
       

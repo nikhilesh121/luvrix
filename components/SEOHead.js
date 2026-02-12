@@ -238,7 +238,7 @@ export function CollectionPageSchema({ title, description, url, items = [] }) {
           "@type": "ListItem",
           position: index + 1,
           name: item.title,
-          url: `${SITE_URL}${item.url}`,
+          url: `${SITE_URL}${item.url?.endsWith('/') ? item.url : item.url + '/'}`,
           ...(item.image && {
             image: {
               "@type": "ImageObject",
@@ -266,7 +266,7 @@ export function ProfilePageSchema({ user, url }) {
     mainEntity: {
       "@type": "Person",
       name: user?.name || "Luvrix User",
-      url: `${SITE_URL}${url}`,
+      url: `${SITE_URL}${url?.endsWith('/') ? url : url + '/'}`,
       ...(user?.photoURL && {
         image: {
           "@type": "ImageObject",
