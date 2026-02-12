@@ -451,9 +451,14 @@ export default function GiveawayDetailPage() {
 
   const countdown = useCountdown(giveaway?.endDate);
   const startCountdown = useCountdown(giveaway?.startDate);
-  const progressPercent = giveaway?.targetParticipants
-    ? Math.min(100, Math.round((participantCount / giveaway.targetParticipants) * 100))
+  const rawPercent = giveaway?.targetParticipants
+    ? Math.min(100, (participantCount / giveaway.targetParticipants) * 100)
     : 0;
+  const progressPercent = rawPercent >= 1
+    ? Math.round(rawPercent)
+    : rawPercent > 0
+      ? parseFloat(rawPercent.toFixed(4))
+      : 0;
 
   if (loading) {
     return (

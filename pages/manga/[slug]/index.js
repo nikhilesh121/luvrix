@@ -76,7 +76,7 @@ export default function MangaDetail({ initialManga, initialSettings }) {
   const [sortOrder, setSortOrder] = useState("desc");
   const [isFavorited, setIsFavorited] = useState(false);
   const [favoriteLoading, setFavoriteLoading] = useState(false);
-  const [_liveViews, setLiveViews] = useState(null);
+  const [liveViews, setLiveViews] = useState(null);
   const [liveFavorites, setLiveFavorites] = useState(null);
 
   // Format slug to readable title for SEO (from URL)
@@ -149,7 +149,7 @@ export default function MangaDetail({ initialManga, initialSettings }) {
       setChapters(chapterList);
       
       // Increment views and emit to socket
-      incrementMangaViews(manga.id).then((result) => {
+      incrementMangaViews(manga.slug || manga.id).then((result) => {
         if (result?.views) {
           setLiveViews(result.views);
           emitMangaView(manga.id, result.views);
@@ -165,7 +165,8 @@ export default function MangaDetail({ initialManga, initialSettings }) {
   useEffect(() => {
     async function checkFavorite() {
       if (user && manga) {
-        const favorited = await isItemFavorited(user.uid, manga.id);
+        const result = await isItemFavorited(manga.id, user.uid);
+        const favorited = result?.favorited || false;
         setIsFavorited(favorited);
       }
     }
@@ -215,8 +216,8 @@ export default function MangaDetail({ initialManga, initialSettings }) {
     setFavoriteLoading(true);
     try {
       if (isFavorited) {
-        await removeFromFavorites(user.uid, manga.id);
-        const result = await decrementMangaFavorites(manga.id);
+        await removeFromFavorites(`${user.uid}_${manga.id}`);
+        const result = await decrementMangaFavorites(manga.slug || manga.id);
         setIsFavorited(false);
         // Emit socket event for real-time update
         const newFavorites = result?.favorites ?? (liveFavorites || manga.favorites || 0) - 1;
@@ -225,7 +226,7 @@ export default function MangaDetail({ initialManga, initialSettings }) {
         trackEngagement("favorite", manga.id, manga.title);
       } else {
         await addToFavorites(user.uid, manga.id, "manga");
-        const result = await incrementMangaFavorites(manga.id);
+        const result = await incrementMangaFavorites(manga.slug || manga.id);
         setIsFavorited(true);
         // Emit socket event for real-time update
         const newFavorites = result?.favorites ?? (liveFavorites || manga.favorites || 0) + 1;
@@ -446,7 +447,7 @@ export default function MangaDetail({ initialManga, initialSettings }) {
                     className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/10"
                   >
                     <FiStar className="w-6 h-6 text-yellow-400 mb-2" />
-                    <p className="text-2xl font-bold">{formatNumber(manga.views || 0)}</p>
+                    <p className="text-2xl font-bold">{formatNumber(liveViews ?? manga.views ?? 0)}</p>
                     <p className="text-white/50 text-sm">Views</p>
                   </motion.div>
                   <motion.div
@@ -454,7 +455,7 @@ export default function MangaDetail({ initialManga, initialSettings }) {
                     className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/10"
                   >
                     <FiHeart className="w-6 h-6 text-red-400 mb-2" />
-                    <p className="text-2xl font-bold">{formatNumber(manga.favorites || 0)}</p>
+                    <p className="text-2xl font-bold">{formatNumber(liveFavorites ?? manga.favorites ?? 0)}</p>
                     <p className="text-white/50 text-sm">Favorites</p>
                   </motion.div>
                   <motion.div
@@ -608,7 +609,7 @@ export async function getServerSideProps(context) {
   }
 
   try {
-    const { getMangaBySlug, getSettings } = await import("../../../lib/api-client");
+    const { getMangaBySlug, getSettings } = await import("../../../lib/db");
     
     const [mangaData, settingsData] = await Promise.all([
       getMangaBySlug(slug),
