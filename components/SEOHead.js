@@ -297,14 +297,6 @@ export function WebsiteSchema() {
     name: SITE_NAME,
     url: `${SITE_URL}/`,
     description: "Read blogs, manga, and stories from creators worldwide. Free platform for writers and readers.",
-    potentialAction: {
-      "@type": "SearchAction",
-      target: {
-        "@type": "EntryPoint",
-        urlTemplate: `${SITE_URL}/search?q={search_term_string}`,
-      },
-      "query-input": "required name=search_term_string",
-    },
     sameAs: [
       "https://facebook.com/luvrix",
       "https://twitter.com/luvrix",

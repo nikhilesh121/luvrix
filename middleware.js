@@ -11,6 +11,7 @@ const NOINDEX_PATHS = [
   '/admin', '/dashboard', '/login', '/register',
   '/favorites', '/profile', '/create-blog', '/edit-blog',
   '/preview-blog', '/payment-success', '/payment-failed',
+  '/user',
   '/api',
 ];
 

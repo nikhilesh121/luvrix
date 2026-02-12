@@ -3,7 +3,7 @@ import Layout from "../components/Layout";
 
 export default function TermsOfService() {
   return (
-    <Layout title="Terms of Service" description="Luvrix Terms of Service - Rules and guidelines for using our platform" canonical="https://luvrix.com/terms">
+    <Layout title="Terms of Service" description="Luvrix Terms of Service - Rules and guidelines for using our platform" canonical="https://luvrix.com/policy/terms/">
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 md:p-12">

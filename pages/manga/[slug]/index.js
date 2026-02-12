@@ -641,6 +641,6 @@ export async function getServerSideProps(context) {
     };
   } catch (error) {
     console.error("SSR Error:", error);
-    return { props: { initialManga: null, initialSettings: null } };
+    return { notFound: true };
   }
 }

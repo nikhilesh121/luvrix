@@ -42,7 +42,7 @@ export default function BlogCard({ blog, index = 0, variant = "default" }) {
         transition={{ delay: index * 0.05, duration: 0.4 }}
         className="group col-span-1 md:col-span-2 lg:col-span-2"
       >
-        <Link href={blog.slug ? `/blog/${blog.slug}` : `/blog?id=${blog.id}`} className="block">
+        <Link href={`/blog/${blog.slug || blog.id}`} className="block">
           <div className="relative h-full min-h-[320px] md:min-h-[400px] rounded-2xl overflow-hidden">
             {imageUrl ? (
               <img src={imageUrl} alt={blog.title} loading="lazy"
@@ -99,7 +99,7 @@ export default function BlogCard({ blog, index = 0, variant = "default" }) {
       transition={{ delay: index * 0.05, duration: 0.4 }}
       className="group"
     >
-      <Link href={blog.slug ? `/blog/${blog.slug}` : `/blog?id=${blog.id}`} className="block h-full">
+      <Link href={`/blog/${blog.slug || blog.id}`} className="block h-full">
         <div className="h-full bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg hover:shadow-gray-200/60 hover:border-gray-200 transition-all duration-300">
           {/* Thumbnail */}
           <div className="relative aspect-[16/10] overflow-hidden">

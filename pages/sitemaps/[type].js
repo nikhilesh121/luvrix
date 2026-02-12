@@ -92,8 +92,6 @@ export async function getServerSideProps({ params, res }) {
           { url: "/giveaway", changefreq: "daily", priority: "0.8" },
           { url: "/leaderboard", changefreq: "daily", priority: "0.7" },
           { url: "/publishers", changefreq: "weekly", priority: "0.7" },
-          { url: "/privacy", changefreq: "yearly", priority: "0.3" },
-          { url: "/terms", changefreq: "yearly", priority: "0.3" },
           { url: "/giveaway-terms", changefreq: "yearly", priority: "0.3" },
           { url: "/policy/privacy", changefreq: "yearly", priority: "0.3" },
           { url: "/policy/terms", changefreq: "yearly", priority: "0.3" },

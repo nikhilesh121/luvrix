@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 
 export default function Disclaimer() {
   return (
-    <Layout title="Disclaimer" description="Disclaimer for Luvrix.com" canonical="https://luvrix.com/policy/disclaimer">
+    <Layout title="Disclaimer" description="Disclaimer for Luvrix.com" canonical="https://luvrix.com/policy/disclaimer/">
       <div className="max-w-4xl mx-auto px-4 py-12">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

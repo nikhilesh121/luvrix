@@ -491,7 +491,7 @@ export default function Home() {
                     </p>
                     <div className="flex items-center gap-4">
                       <Link
-                        href={featuredBlog.slug ? `/blog/${featuredBlog.slug}` : `/blog?id=${featuredBlog.id}`}
+                        href={`/blog/${featuredBlog.slug || featuredBlog.id}`}
                         className="group/btn inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:opacity-90 transition"
                       >
                         Read Article 

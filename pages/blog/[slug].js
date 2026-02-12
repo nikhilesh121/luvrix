@@ -55,6 +55,6 @@ export async function getServerSideProps(context) {
     };
   } catch (error) {
     console.error("SSR Error (slug):", error);
-    return { props: { initialBlog: null, initialAuthor: null, initialSettings: null } };
+    return { notFound: true };
   }
 }

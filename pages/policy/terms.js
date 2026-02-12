@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 
 export default function TermsOfService() {
   return (
-    <Layout title="Terms of Service" description="Terms of Service for Luvrix.com" canonical="https://luvrix.com/policy/terms">
+    <Layout title="Terms of Service" description="Terms of Service for Luvrix.com" canonical="https://luvrix.com/policy/terms/">
       <div className="max-w-4xl mx-auto px-4 py-12">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

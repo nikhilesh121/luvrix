@@ -348,7 +348,7 @@ export default function BlogPage({ initialBlog, initialAuthor, initialSettings }
     );
   }
 
-  const pageUrl = blog.slug ? `/blog/${blog.slug}/` : `/blog/?id=${blog.id}`;
+  const pageUrl = `/blog/${blog.slug || blog.id}/`;
   const fullUrl = `${SITE_URL}${pageUrl}`;
   const publishedDate = blog.createdAt?.toDate?.()?.toISOString() || new Date().toISOString();
   const modifiedDate = blog.updatedAt?.toDate?.()?.toISOString() || publishedDate;
@@ -746,7 +746,7 @@ export default function BlogPage({ initialBlog, initialAuthor, initialSettings }
               {relatedBlogs.map((related) => (
                 <Link
                   key={related.id}
-                  href={related.slug ? `/blog/${related.slug}` : `/blog?id=${related.id}`}
+                  href={`/blog/${related.slug || related.id}`}
                   className="group block bg-white dark:bg-gray-800 rounded-xl overflow-hidden border border-gray-100 dark:border-gray-700 hover:shadow-lg hover:border-gray-200 dark:hover:border-gray-600 transition-all"
                 >
                   {/* Thumbnail */}

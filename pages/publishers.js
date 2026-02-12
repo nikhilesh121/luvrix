@@ -107,10 +107,9 @@ export default function PublishersPage() {
   );
 
   return (
-    <Layout title="Discover Creators" description="Find and follow your favorite content creators on Luvrix" canonical="https://luvrix.com/publishers">
+    <Layout title="Discover Creators" description="Find and follow your favorite content creators on Luvrix" canonical="https://luvrix.com/publishers/">
       <Head>
-        <meta property="og:title" content="Discover Creators - Luvrix" />
-        <meta property="og:description" content="Find amazing storytellers, news publishers, and content creators" />
+        <meta name="keywords" content="content creators, bloggers, publishers, luvrix writers" />
       </Head>
 
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">

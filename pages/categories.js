@@ -203,7 +203,7 @@ export default function Categories() {
         title={selectedCategory === "All" ? "All Categories" : selectedCategory}
         description={config.description}
         url="/categories/"
-        items={filteredBlogs.slice(0, 20).map(b => ({ title: b.title, url: b.slug ? `/blog/${b.slug}/` : `/blog/?id=${b.id}`, image: b.thumbnail }))}
+        items={filteredBlogs.slice(0, 20).map(b => ({ title: b.title, url: `/blog/${b.slug || b.id}/`, image: b.thumbnail }))}
       />
       <BreadcrumbSchema items={[
         { name: "Home", url: "/" },
