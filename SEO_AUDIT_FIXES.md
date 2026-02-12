@@ -193,16 +193,51 @@
 
 ---
 
+## Chapter Page Complete Removal
+
+### What was removed:
+- **`pages/manga/[slug]/[chapter].js`** — Entire chapter page deleted
+- **`components/MangaRedirectBox.js`** — Redirect box component deleted (only used by chapter page)
+- **`components/SEOHead.js`** — `ChapterSchema` export removed
+- **`components/AdRenderer.js`** — Chapter page type detection removed
+- **`pages/admin/seo-settings.js`** — Chapter SEO template fields removed from admin UI
+
+### What was added:
+- **`middleware.js`** — 410 Gone response for all `/manga/*/chapter*` URLs with `X-Robots-Tag: noindex` header. This tells Google the pages are permanently removed and to de-index them.
+- **`pages/api/admin/cleanup-chapter-urls.js`** — Admin endpoint to list all chapter URLs that need de-indexing.
+
+### What was kept:
+- **`utils/mangaRedirectGenerator.js`** — Still used by manga detail page to generate EXTERNAL chapter links (not internal pages)
+- **`pages/manga/[slug]/index.js`** — Chapter list UI still works — links open externally via `target="_blank" rel="nofollow noopener"`
+- **`public/robots.txt`** — `Disallow: /manga/*/chapter*` already blocks crawlers
+- **`pages/admin/manga.js`** — Manga admin still manages totalChapters, redirectBaseUrl, chapterFormat (data fields for external redirect generation)
+
+### How Google de-indexes old chapter URLs:
+1. **Automatic (410 Gone):** Middleware returns HTTP 410 for any `/manga/*/chapter*` request. Google will de-index on next crawl.
+2. **Speed up via GSC:** Google Search Console → Removals → New Request → URL prefix `https://luvrix.com/manga/` with path containing `chapter`
+3. **robots.txt:** Already blocks `/manga/*/chapter*` for all user agents
+4. **Server cleanup:** After deploying, clear Nginx cache and Cloudflare cache (commands below)
+
+---
+
 ## Server Deployment Steps
 
 ```bash
 cd /path/to/luvrix/WebApp
 git pull origin main
 npm install
+
+# IMPORTANT: Clear old .next build cache (includes old chapter page bundles)
+rm -rf .next
+
 npm run build
 pm2 restart luvrix
+
+# Clear Nginx cache (removes any cached chapter page responses)
 sudo rm -rf /var/cache/nginx/*
 sudo systemctl reload nginx
+
 # Purge Cloudflare cache: Dashboard → Caching → Purge Everything
 # Resubmit sitemap in Google Search Console
+# Use GSC Removals tool to speed up chapter URL de-indexing
 ```

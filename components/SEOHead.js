@@ -197,48 +197,6 @@ export function MangaSchema({ manga, url }) {
   );
 }
 
-// Chapter Schema for Manga Chapters
-export function ChapterSchema({ manga, chapterNumber, url }) {
-  const schema = {
-    "@context": "https://schema.org",
-    "@type": "Chapter",
-    name: `${manga.title} Chapter ${chapterNumber}`,
-    description: `Read ${manga.title} Chapter ${chapterNumber} online. ${manga.seoDescription || manga.description || ""}`.slice(0, 160),
-    isPartOf: {
-      "@type": "Book",
-      name: manga.title,
-      author: {
-        "@type": "Person",
-        name: manga.author || "Unknown",
-      },
-    },
-    position: chapterNumber,
-    url: `${SITE_URL}${url}`,
-    image: {
-      "@type": "ImageObject",
-      url: getAbsoluteImageUrl(manga.coverUrl),
-      width: 800,
-      height: 1200,
-    },
-    thumbnailUrl: getAbsoluteImageUrl(manga.coverUrl),
-    publisher: {
-      "@type": "Organization",
-      name: SITE_NAME,
-      logo: {
-        "@type": "ImageObject",
-        url: "https://res.cloudinary.com/dsga2d0bv/image/upload/v1770089324/Luvrix/Luvrix_favicon_yqovij.png",
-      },
-    },
-  };
-
-  return (
-    <script
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
-    />
-  );
-}
-
 // Breadcrumb Schema
 export function BreadcrumbSchema({ items }) {
   const schema = {

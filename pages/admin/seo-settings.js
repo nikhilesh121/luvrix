@@ -97,8 +97,6 @@ function SeoSettingsContent() {
     titleTemplate: "{title} Manga | Luvrix",
     descriptionTemplate: "Read {title} manga online. Also known as {altNames}. Chapters 1 to {chapters} available. {genre} manga, {status}. Updated regularly on Luvrix.",
     focusKeywordTemplate: "{title} manga, read {title} online, {title} chapters, {altNames}",
-    chapterTitleTemplate: "{title} Chapter {chapter} | Luvrix",
-    chapterDescriptionTemplate: "Read {title} Chapter {chapter} online. {chapters} chapters available. {genre} manga on Luvrix.",
     blogTitleTemplate: "{title} | Luvrix Blog",
     blogDescriptionTemplate: "Read {title} on Luvrix Blog. Discover the latest articles, guides, and news.",
     defaultOgImage: "https://res.cloudinary.com/dsga2d0bv/image/upload/w_1200,h_630,c_pad,b_rgb:6366f1/Luvrix/Luvrix_favicon_yqovij.png",
@@ -226,7 +224,6 @@ function SeoSettingsContent() {
                     <code className="bg-purple-100 px-1 rounded">{"{title}"}</code>,{" "}
                     <code className="bg-purple-100 px-1 rounded">{"{altNames}"}</code>,{" "}
                     <code className="bg-purple-100 px-1 rounded">{"{chapters}"}</code>,{" "}
-                    <code className="bg-purple-100 px-1 rounded">{"{chapter}"}</code>,{" "}
                     <code className="bg-purple-100 px-1 rounded">{"{genre}"}</code>,{" "}
                     <code className="bg-purple-100 px-1 rounded">{"{status}"}</code>,{" "}
                     <code className="bg-purple-100 px-1 rounded">{"{author}"}</code>
@@ -271,32 +268,6 @@ function SeoSettingsContent() {
                       onChange={(e) => setMangaSeoDefaults({ ...mangaSeoDefaults, focusKeywordTemplate: e.target.value })}
                       className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
                       placeholder="{title} manga, read {title} online, {title} chapters, {altNames}"
-                    />
-                  </div>
-
-                  {/* Chapter Section Header */}
-                  <h3 className="text-md font-semibold text-gray-700 border-b pb-2 mt-6">Chapter Page Defaults (noindex pages)</h3>
-
-                  {/* Chapter Title Template */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Chapter Title Template</label>
-                    <input
-                      type="text"
-                      value={mangaSeoDefaults.chapterTitleTemplate}
-                      onChange={(e) => setMangaSeoDefaults({ ...mangaSeoDefaults, chapterTitleTemplate: e.target.value })}
-                      className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
-                      placeholder="{title} Chapter {chapter} | Luvrix"
-                    />
-                  </div>
-
-                  {/* Chapter Description Template */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Chapter Description Template</label>
-                    <textarea
-                      value={mangaSeoDefaults.chapterDescriptionTemplate}
-                      onChange={(e) => setMangaSeoDefaults({ ...mangaSeoDefaults, chapterDescriptionTemplate: e.target.value })}
-                      className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 h-16"
-                      placeholder="Read {title} Chapter {chapter} online. {chapters} chapters available."
                     />
                   </div>
 

@@ -11,7 +11,7 @@ import { useRouter } from "next/router";
  * 
  * Features:
  * - Device targeting (desktop/mobile)
- * - Page targeting (home, blog, manga, chapter, categories, user)
+ * - Page targeting (home, blog, manga, categories, user)
  * - Safe rendering with error boundaries
  * - Prevents duplicate AdSense calls
  * - Prevents layout shifts with min-height containers
@@ -20,7 +20,6 @@ import { useRouter } from "next/router";
 function getPageType(pathname) {
   if (pathname === "/" || pathname === "") return "home";
   if (pathname.startsWith("/blog")) return "blog";
-  if (pathname.includes("/chapter") || pathname.match(/\/manga\/[^/]+\/chapter/)) return "chapter";
   if (pathname.startsWith("/manga")) return "manga";
   if (pathname.startsWith("/categories")) return "categories";
   if (pathname.startsWith("/user")) return "user";

@@ -34,7 +34,12 @@ export function middleware(request) {
   const url = request.nextUrl.clone();
   const { pathname, searchParams } = url;
 
-  // 0. Sitemap .xml → internal rewrite to /sitemaps/ SSR pages (URL stays as .xml)
+  // 0a. Chapter pages permanently removed — return 410 Gone so Google de-indexes them
+  if (/^\/manga\/[^/]+\/chapter/.test(pathname)) {
+    return new NextResponse('Gone', { status: 410, headers: { 'X-Robots-Tag': 'noindex' } });
+  }
+
+  // 0b. Sitemap .xml → internal rewrite to /sitemaps/ SSR pages (URL stays as .xml)
   const sitemapDest = SITEMAP_REWRITES[pathname];
   if (sitemapDest) {
     const rewriteUrl = request.nextUrl.clone();
