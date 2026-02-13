@@ -332,3 +332,94 @@ sudo systemctl reload nginx
 # Resubmit sitemap in Google Search Console
 # Use GSC Removals tool to speed up chapter URL de-indexing
 ```
+
+---
+
+## PHASE 9 — Faster Indexing & Search Engine Integration (Feb 13, 2026)
+
+### 24. IndexNow Integration Enabled (CRITICAL)
+- **Problem:** Auto-indexing infrastructure existed but was not active — `INDEXNOW_KEY` env var missing, no verification file.
+- **Status:** ✅ FIXED
+- **Changes:**
+  - Created `/public/97966f3775497d1ad6046d7c506ecbef.txt` — IndexNow key verification file
+  - Added `INDEXNOW_KEY=97966f3775497d1ad6046d7c506ecbef` to `.env`
+  - Updated `middleware.js` matcher to exclude `.txt` verification files
+- **Impact:** New content now auto-notifies Bing, Yandex, Seznam, Naver for **instant indexing**
+
+### 25. Bing Webmaster Verification Support (HIGH)
+- **Problem:** Site not verified in Bing Webmaster Tools — missing access to Bing's indexing tools, URL removal, and crawl data.
+- **Status:** ✅ READY (requires manual step)
+- **Changes:**
+  - Added `<meta name="msvalidate.01">` support to `pages/_document.js`
+  - Uses `NEXT_PUBLIC_BING_VERIFICATION` env var
+- **Manual Step Required:**
+  1. Go to https://www.bing.com/webmasters/
+  2. Add site: https://luvrix.com
+  3. Get verification code
+  4. Add `NEXT_PUBLIC_BING_VERIFICATION=YOUR_CODE` to `.env`
+
+### 26. Middleware Matcher Updated for Verification Files (LOW)
+- **Problem:** Middleware matcher could potentially intercept verification `.txt` files.
+- **Status:** ✅ FIXED
+- **Changes:**
+  - Added `[a-f0-9]{32}\\.txt|ads\\.txt|robots\\.txt` to middleware exclusion pattern
+
+### 27. Comprehensive SEO Expert Guide Created
+- **File:** `SEO_INDEXING_GUIDE.md`
+- **Contents:**
+  - Faster indexing strategies (IndexNow, Google Indexing API, sitemap pings)
+  - Deleted URL management best practices
+  - DNS configuration audit and recommendations
+  - Implementation checklist
+
+---
+
+## Updated Summary Table (Phase 9)
+
+| # | Issue | Severity | Status |
+|---|-------|----------|--------|
+| 1–23 | Previous audit fixes | Various | ✅ Fixed |
+| 24 | IndexNow not enabled | 🔴 CRITICAL | ✅ Fixed |
+| 25 | Bing Webmaster not verified | 🟠 HIGH | ✅ Ready (manual step) |
+| 26 | Middleware blocks .txt files | 🟢 LOW | ✅ Fixed |
+| 27 | No indexing speed guide | 🟡 MEDIUM | ✅ Created |
+
+---
+
+## Files Modified in Phase 9 (4 files + 1 new)
+
+1. `public/97966f3775497d1ad6046d7c506ecbef.txt` — **NEW** IndexNow key verification
+2. `pages/_document.js` — Bing verification meta tag support
+3. `middleware.js` — Exclude verification files from middleware
+4. `.env` — Added INDEXNOW_KEY
+5. `SEO_INDEXING_GUIDE.md` — **NEW** Comprehensive SEO expert guide
+
+---
+
+## Environment Variables Reference
+
+```env
+# Required for faster indexing
+INDEXNOW_KEY=97966f3775497d1ad6046d7c506ecbef
+
+# Optional: Bing Webmaster verification (get from Bing)
+NEXT_PUBLIC_BING_VERIFICATION=YOUR_BING_CODE
+
+# Optional: Google Indexing API (fastest Google indexing)
+GOOGLE_INDEXING_CREDENTIALS={"type":"service_account",...}
+```
+
+---
+
+## DNS Recommendations (from SEO Expert Audit)
+
+Your current DNS is **mostly good**. Key recommendations:
+
+| Action | Priority | Status |
+|--------|----------|--------|
+| Add Bing verification TXT record | 🔴 High | ❌ Missing |
+| Strengthen DMARC to `p=quarantine` | 🟡 Medium | Optional |
+| Simplify CAA records (14 → 2-3) | 🟢 Low | Optional |
+| Add AAAA record (IPv6) | 🟢 Low | Optional |
+
+See `SEO_INDEXING_GUIDE.md` for detailed DNS recommendations.

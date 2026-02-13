@@ -79,7 +79,8 @@ export function middleware(request) {
 
 export const config = {
   matcher: [
-    // Match all paths except static files and _next
-    '/((?!_next/static|_next/image|favicon\\.ico|favicon\\.svg|apple-touch-icon\\.svg|manifest\\.json|og-default\\.svg|default-blog\\.svg).*)',
+    // Match all paths except static files, _next, and verification files
+    // IndexNow key file pattern: 32-char hex + .txt (e.g., /97966f3775497d1ad6046d7c506ecbef.txt)
+    '/((?!_next/static|_next/image|favicon\\.ico|favicon\\.svg|apple-touch-icon\\.svg|manifest\\.json|og-default\\.svg|default-blog\\.svg|[a-f0-9]{32}\\.txt|ads\\.txt|robots\\.txt).*)',
   ],
 };

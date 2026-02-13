@@ -15,6 +15,11 @@ export default function Document() {
         />
         {/* Google AdSense meta — script loaded dynamically by Layout.js (admin-controlled) */}
         <meta name="google-adsense-account" content="ca-pub-9162211780712502" />
+        {/* Bing Webmaster Verification — get code from https://www.bing.com/webmasters/ */}
+        {/* TODO: Replace YOUR_BING_CODE with actual verification code from Bing Webmaster Tools */}
+        {process.env.NEXT_PUBLIC_BING_VERIFICATION && (
+          <meta name="msvalidate.01" content={process.env.NEXT_PUBLIC_BING_VERIFICATION} />
+        )}
         {/* Mobile App Compatibility */}
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
