@@ -74,6 +74,15 @@ export function middleware(request) {
     response.headers.set('X-Robots-Tag', 'noindex, follow');
   }
 
+  // 3. Add canonical URL via HTTP Link header (Google supports this)
+  // This ensures canonical is always set correctly regardless of SSR issues
+  const SITE_URL = 'https://luvrix.com';
+  let canonicalPath = pathname.endsWith('/') ? pathname : pathname + '/';
+  // Homepage special case
+  if (canonicalPath === '//' || canonicalPath === '/') canonicalPath = '/';
+  const canonicalUrl = `${SITE_URL}${canonicalPath}`;
+  response.headers.set('Link', `<${canonicalUrl}>; rel="canonical"`);
+
   return response;
 }
 

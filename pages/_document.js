@@ -4,6 +4,23 @@ export default function Document() {
   return (
     <Html lang="en">
       <Head>
+        {/* Critical SEO Meta Tags - Always Server Rendered */}
+        <meta name="description" content="Luvrix - Read free manga, manhwa, manhua, blogs and stories online. Discover trending content, join giveaways, and connect with creators." />
+        <meta name="keywords" content="manga, manhwa, manhua, free manga, read manga online, blogs, stories, giveaways, Luvrix" />
+        <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+        <meta name="googlebot" content="index, follow" />
+        <meta name="bingbot" content="index, follow" />
+        {/* NOTE: Canonical URL must be set per-page in Layout component, NOT here */}
+        
+        {/* Open Graph defaults */}
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="Luvrix" />
+        <meta property="og:locale" content="en_US" />
+        
+        {/* Twitter Card defaults */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:site" content="@luvrix" />
+        
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://res.cloudinary.com" />

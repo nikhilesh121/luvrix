@@ -355,3 +355,8 @@ export default function PublishersPage() {
     </Layout>
   );
 }
+
+// SSR required for SEO meta tags to be rendered server-side
+export async function getServerSideProps() {
+  return { props: {} };
+}

@@ -865,3 +865,9 @@ function GiveawaysSection() {
     </section>
   );
 }
+
+// CRITICAL: getServerSideProps ensures SEO meta tags are rendered server-side
+// Without this, the page is auto-exported as static HTML with no content for Google to see
+export async function getServerSideProps() {
+  return { props: {} };
+}

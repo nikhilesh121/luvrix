@@ -233,3 +233,8 @@ export default function About() {
     </Layout>
   );
 }
+
+// SSR required for SEO meta tags to be rendered server-side
+export async function getServerSideProps() {
+  return { props: {} };
+}

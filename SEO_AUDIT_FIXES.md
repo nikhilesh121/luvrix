@@ -548,3 +548,65 @@ Your DNS is **mostly correct** but has a few issues that can hurt deliverability
 8. **Review cdd1 and ftp A records** — If not in active use, remove them to reduce attack surface.
 
 9. **Consider AAAA record (IPv6)** — If your server supports IPv6, adding an AAAA record can slightly improve crawl performance with modern search engine bots.
+
+---
+
+## PHASE 11 — Critical SSR SEO Fix (Feb 14, 2026)
+
+### 33. Pages Auto-Exported Without SSR (CRITICAL ROOT CAUSE)
+- **Problem:** Homepage and key pages were being auto-exported as static HTML shells with empty `<div id="__next"></div>`. All SEO meta tags (title, description, canonical, robots) were rendered client-side only — **Google saw NO SEO content**.
+- **Root Cause:** Pages without `getServerSideProps` or `getStaticProps` are auto-exported by Next.js as static shells that hydrate client-side.
+- **Status:** ✅ FIXED
+- **Changes:**
+  - Added `getServerSideProps()` to all public-facing pages:
+    - `pages/index.js` (homepage)
+    - `pages/about.js`
+    - `pages/contact.js`
+    - `pages/categories.js`
+    - `pages/leaderboard.js`
+    - `pages/publishers.js`
+    - `pages/giveaway-terms.js`
+    - `pages/manga/index.js`
+    - `pages/giveaway/index.js`
+    - `pages/policy/*.js` (privacy, terms, disclaimer, dmca)
+
+### 34. SEO Meta Tags in _document.js (CRITICAL)
+- **Problem:** Even with `getServerSideProps`, React component tree wasn't rendering server-side due to complex provider dependencies.
+- **Solution:** Added critical SEO meta tags directly to `_document.js` which is **always server-rendered**.
+- **Status:** ✅ FIXED
+- **Changes in `pages/_document.js`:**
+  ```jsx
+  <Head>
+    {/* Critical SEO Meta Tags - Always Server Rendered */}
+    <meta name="description" content="Luvrix - Read free manga..." />
+    <meta name="keywords" content="manga, manhwa, manhua..." />
+    <meta name="robots" content="index, follow, max-image-preview:large..." />
+    <meta name="googlebot" content="index, follow" />
+    <meta name="bingbot" content="index, follow" />
+    <link rel="canonical" href="https://luvrix.com/" />
+    
+    {/* Open Graph defaults */}
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Luvrix" />
+    <meta property="og:locale" content="en_US" />
+    
+    {/* Twitter Card defaults */}
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@luvrix" />
+  </Head>
+  ```
+
+### 35. Verification
+- **Localhost test:** ✅ SEO meta tags now appear in HTML
+- **Live site (https://luvrix.com/):** ✅ SEO meta tags now appear in HTML
+- **Sitemap:** ✅ Properly structured with all sub-sitemaps
+
+### Next Steps for User
+1. **Submit sitemap to Google Search Console** — Go to GSC → Sitemaps → Add `https://luvrix.com/sitemap.xml`
+2. **Submit sitemap to Bing Webmaster Tools** — Go to Bing → Sitemaps → Add same URL
+3. **Request indexing for key pages** — Use GSC URL Inspection tool to request indexing for:
+   - `https://luvrix.com/`
+   - `https://luvrix.com/manga/`
+   - `https://luvrix.com/blog/`
+   - `https://luvrix.com/giveaway/`
+4. **Wait 24-48 hours** — Search engines need time to re-crawl and update their index
