@@ -411,15 +411,140 @@ GOOGLE_INDEXING_CREDENTIALS={"type":"service_account",...}
 
 ---
 
-## DNS Recommendations (from SEO Expert Audit)
+## PHASE 10 — SEO Expert: Faster Indexing & Deleted URL Protection (Feb 14, 2026)
 
-Your current DNS is **mostly good**. Key recommendations:
+### 28. Auto-Index URLs Missing Trailing Slashes (CRITICAL)
+- **Problem:** `lib/auto-index.js` submitted URLs to IndexNow and Google Indexing API without trailing slashes (e.g., `/blog/my-post`). Since the site uses `trailingSlash: true`, the canonical URL is `/blog/my-post/`. Google/Bing see these as different URLs → indexing confusion, diluted signals.
+- **Status:** ✅ FIXED
+- **Changes:**
+  - `lib/auto-index.js` — Added `ensureTrailingSlash()` helper. All `submitIndexNow()`, `submitGoogleIndexingAPI()`, and `logIndexRequest()` now enforce trailing slashes before sending to search engines.
 
-| Action | Priority | Status |
-|--------|----------|--------|
-| Add Bing verification TXT record | 🔴 High | ❌ Missing |
-| Strengthen DMARC to `p=quarantine` | 🟡 Medium | Optional |
-| Simplify CAA records (14 → 2-3) | 🟢 Low | Optional |
-| Add AAAA record (IPv6) | 🟢 Low | Optional |
+### 29. Auto-Deindex for Deleted Content (CRITICAL)
+- **Problem:** When blogs or manga were deleted, they were removed from the sitemap collection, but search engines were **never notified**. Google could keep deleted URLs indexed for weeks/months. The Google Indexing API supports `URL_DELETED` type and IndexNow can re-ping to trigger re-crawl (which then sees the 404/410).
+- **Status:** ✅ FIXED
+- **Changes:**
+  - `lib/auto-index.js` — Added `autoDeindex()` function that sends `URL_DELETED` via Google Indexing API and re-pings IndexNow
+  - `lib/db.js` — `deleteBlog()` now calls `autoDeindex()` after removing from sitemap
+  - `lib/db.js` — `deleteManga()` now calls `autoDeindex()` after removing from sitemap
+  - `lib/db.js` — `removeMangaFromSitemap()` now calls `autoDeindex()`
 
-See `SEO_INDEXING_GUIDE.md` for detailed DNS recommendations.
+### 30. Sitemap Index Manga Query Missing `deleted` Filter (HIGH)
+- **Problem:** `sitemaps/index.js` queried manga with `$nin: ["draft", "private"]` but the individual manga sitemap used `$nin: ["draft", "private", "deleted"]`. The sitemap index `<lastmod>` could reflect a deleted manga's update time, causing Google to re-crawl the sub-sitemap unnecessarily.
+- **Status:** ✅ FIXED
+- **Changes:**
+  - `pages/sitemaps/index.js` — Added `"deleted"` to manga `$nin` filter to match the individual sitemap
+
+### 31. Image Sitemap Tags for Google Image Search (MEDIUM)
+- **Problem:** Blog and manga sitemaps had no `<image:image>` tags. Google Image Search is a significant traffic source (20-30% of all Google searches). Without image sitemap data, Google may not discover or rank content images properly.
+- **Status:** ✅ FIXED
+- **Changes:**
+  - `pages/sitemaps/[type].js` — Blog sitemap now includes `<image:image>` with `featuredImage` URL and title
+  - `pages/sitemaps/[type].js` — Manga sitemap now includes `<image:image>` with `coverImage` URL and title
+  - Both sitemaps now include `xmlns:image` namespace declaration
+
+### 32. Last-Modified Header for Dynamic Pages (MEDIUM)
+- **Problem:** Blog and manga SSR pages had no `Last-Modified` header. Without it, Googlebot must re-download the full page on every crawl to check for changes. With it, crawlers can use conditional requests (`If-Modified-Since`) to skip unchanged pages → faster crawling, reduced server load, better crawl budget allocation.
+- **Status:** ✅ FIXED
+- **Changes:**
+  - `pages/blog/[slug].js` — `getServerSideProps` now sets `Last-Modified` header from `updatedAt || publishedAt || createdAt`
+  - `pages/manga/[slug]/index.js` — `getServerSideProps` now sets `Last-Modified` header from `updatedAt || createdAt`
+
+---
+
+## Updated Summary Table (Phase 10)
+
+| # | Issue | Severity | Status |
+|---|-------|----------|--------|
+| 1–27 | Previous audit fixes | Various | ✅ Fixed |
+| 28 | Auto-index URLs missing trailing slashes | 🔴 CRITICAL | ✅ Fixed |
+| 29 | No auto-deindex when content deleted | 🔴 CRITICAL | ✅ Fixed |
+| 30 | Sitemap index manga query missing `deleted` | � HIGH | ✅ Fixed |
+| 31 | No image sitemap tags (missing Google Image Search traffic) | 🟡 MEDIUM | ✅ Fixed |
+| 32 | No Last-Modified header on dynamic pages | 🟡 MEDIUM | ✅ Fixed |
+
+---
+
+## Files Modified in Phase 10 (5 files)
+
+1. `lib/auto-index.js` — `ensureTrailingSlash()` helper, trailing slash enforcement on all URL submissions, new `autoDeindex()` function
+2. `lib/db.js` — Import `autoDeindex`, added deindex calls to `deleteBlog`, `deleteManga`, `removeMangaFromSitemap`
+3. `pages/sitemaps/index.js` — Added `deleted` to manga `$nin` filter
+4. `pages/sitemaps/[type].js` — Image sitemap tags for blog (`featuredImage`) and manga (`coverImage`)
+5. `pages/blog/[slug].js` — `Last-Modified` header in `getServerSideProps`
+6. `pages/manga/[slug]/index.js` — `Last-Modified` header in `getServerSideProps`
+
+---
+
+## DNS Expert Review (Updated Feb 14, 2026)
+
+### Current DNS Configuration Analysis
+
+Your DNS is **mostly correct** but has a few issues that can hurt deliverability and SEO:
+
+| Record | Status | Analysis |
+|--------|--------|----------|
+| **A record (luvrix.com → 38.146.28.243)** | ✅ Good | Proxied through Cloudflare — DDoS protection + CDN |
+| **A records (cdd1, ftp → 46.202.161.74)** | ⚠️ Review | These are DNS-only pointing to a different IP. If not actively used, they're attack surface. Consider removing. |
+| **CNAME www → luvrix.com** | ✅ Good | Properly proxied. **Ensure Cloudflare Page Rule:** `www.luvrix.com/*` → 301 redirect to `https://luvrix.com/$1` to avoid duplicate content. |
+| **MX records (Hostinger)** | ✅ Good | Priority 5/10 for mx1/mx2 |
+| **SPF record** | ⚠️ Incomplete | `v=spf1 include:_spf.mail.hostinger.com ~all` — **Missing Brevo SPF**. Emails sent via Brevo may fail SPF checks. |
+| **DKIM records** | ✅ Good | Both Brevo and Hostinger DKIM configured |
+| **DMARC** | ⚠️ Weak | `p=none` only monitors, doesn't protect. Should upgrade to `p=quarantine` after monitoring period. |
+| **CAA records** | ⚠️ Excessive | 14 CAA records (6 CAs × issue/issuewild). Keep only CAs you actually use. |
+| **Google verification** | ✅ Present | `google-site-verification=HV_vnIriki10qfX9MKUD8YJwG372P_5WD7TgNUjWW-o` |
+| **Yandex verification** | ✅ Present | `yandex-verification: 20735c8f81d228fe` |
+| **Bing verification** | ❌ Missing | **Add Bing Webmaster TXT record** |
+| **Brevo codes** | ⚠️ Duplicate | Two `brevo-code:` TXT records — remove the old one |
+| **CNAME autoconfig/autodiscover** | ⚠️ Should be DNS-only | These are mail autoconfiguration records. Being proxied through Cloudflare can break email client auto-setup. **Set to DNS-only.** |
+
+### DNS Actions Required
+
+**🔴 HIGH PRIORITY:**
+
+1. **Fix SPF record** — Add Brevo SPF include:
+   ```
+   Current:  v=spf1 include:_spf.mail.hostinger.com ~all
+   Fixed:    v=spf1 include:_spf.mail.hostinger.com include:spf.brevo.com ~all
+   ```
+   Without this, emails sent via Brevo to Gmail/Outlook may go to spam.
+
+2. **Add Bing Webmaster verification TXT record:**
+   ```
+   Type: TXT
+   Name: luvrix.com (or @)
+   Content: [Get from Bing Webmaster Tools → Settings → Ownership Verification]
+   TTL: Auto
+   Proxy: DNS only
+   ```
+
+3. **Ensure www→non-www redirect in Cloudflare:**
+   - Go to Cloudflare → Rules → Redirect Rules
+   - Create rule: `www.luvrix.com/*` → `https://luvrix.com/$1` (301)
+   - This prevents duplicate content (Google seeing www and non-www as separate sites)
+
+**🟡 MEDIUM PRIORITY:**
+
+4. **Upgrade DMARC policy:**
+   ```
+   Current:  v=DMARC1; p=none; rua=mailto:rua@dmarc.brevo.com
+   Upgrade:  v=DMARC1; p=quarantine; rua=mailto:rua@dmarc.brevo.com; pct=100
+   ```
+
+5. **Set autoconfig/autodiscover CNAMEs to DNS-only** (not Proxied):
+   - `autoconfig` → DNS only
+   - `autodiscover` → DNS only
+
+6. **Remove duplicate Brevo verification code** — Keep only the latest `brevo-code:` TXT record
+
+**🟢 LOW PRIORITY:**
+
+7. **Simplify CAA records** — Keep only CAs you actively use:
+   ```
+   0 issue letsencrypt.org
+   0 issuewild letsencrypt.org
+   ```
+   Remove the rest (pki.goog, comodoca, globalsign, digicert, sectigo) unless you have certificates from them.
+
+8. **Review cdd1 and ftp A records** — If not in active use, remove them to reduce attack surface.
+
+9. **Consider AAAA record (IPv6)** — If your server supports IPv6, adding an AAAA record can slightly improve crawl performance with modern search engine bots.

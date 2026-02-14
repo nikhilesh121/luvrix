@@ -37,7 +37,7 @@ export async function getServerSideProps({ params, res }) {
       case "posts": {
         const blogs = await db.collection("blogs")
           .find({ status: { $nin: ["draft", "pending", "hidden", "rejected", "deleted"] } })
-          .project({ slug: 1, updatedAt: 1, createdAt: 1 })
+          .project({ slug: 1, updatedAt: 1, createdAt: 1, featuredImage: 1, title: 1 })
           .sort({ updatedAt: -1 })
           .limit(50000)
           .toArray();
@@ -46,16 +46,20 @@ export async function getServerSideProps({ params, res }) {
         for (const blog of blogs) {
           if (!blog.slug || seen.has(blog.slug)) continue;
           seen.add(blog.slug);
-          urls.push(`  <url>\n    <loc>${escapeXml(SITE_URL)}/blog/${escapeXml(blog.slug)}/</loc>\n    <lastmod>${toISO(blog.updatedAt || blog.createdAt)}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.7</priority>\n  </url>`);
+          let imageTag = "";
+          if (blog.featuredImage) {
+            imageTag = `\n    <image:image>\n      <image:loc>${escapeXml(blog.featuredImage)}</image:loc>\n      <image:title>${escapeXml(blog.title || "")}</image:title>\n    </image:image>`;
+          }
+          urls.push(`  <url>\n    <loc>${escapeXml(SITE_URL)}/blog/${escapeXml(blog.slug)}/</loc>\n    <lastmod>${toISO(blog.updatedAt || blog.createdAt)}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.7</priority>${imageTag}\n  </url>`);
         }
-        xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join("\n")}\n</urlset>`;
+        xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n${urls.join("\n")}\n</urlset>`;
         break;
       }
 
       case "manga": {
         const manga = await db.collection("manga")
           .find({ status: { $nin: ["draft", "private", "deleted"] } })
-          .project({ slug: 1, updatedAt: 1, createdAt: 1 })
+          .project({ slug: 1, updatedAt: 1, createdAt: 1, coverImage: 1, title: 1 })
           .sort({ updatedAt: -1 })
           .limit(50000)
           .toArray();
@@ -64,9 +68,13 @@ export async function getServerSideProps({ params, res }) {
         for (const m of manga) {
           if (!m.slug || seen.has(m.slug)) continue;
           seen.add(m.slug);
-          urls.push(`  <url>\n    <loc>${escapeXml(SITE_URL)}/manga/${escapeXml(m.slug)}/</loc>\n    <lastmod>${toISO(m.updatedAt || m.createdAt)}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.8</priority>\n  </url>`);
+          let imageTag = "";
+          if (m.coverImage) {
+            imageTag = `\n    <image:image>\n      <image:loc>${escapeXml(m.coverImage)}</image:loc>\n      <image:title>${escapeXml(m.title || "")}</image:title>\n    </image:image>`;
+          }
+          urls.push(`  <url>\n    <loc>${escapeXml(SITE_URL)}/manga/${escapeXml(m.slug)}/</loc>\n    <lastmod>${toISO(m.updatedAt || m.createdAt)}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.8</priority>${imageTag}\n  </url>`);
         }
-        xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join("\n")}\n</urlset>`;
+        xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n${urls.join("\n")}\n</urlset>`;
         break;
       }
 

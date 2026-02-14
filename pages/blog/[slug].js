@@ -46,6 +46,13 @@ export async function getServerSideProps(context) {
 
     const settingsData = await getSettings();
 
+    // Set Last-Modified header so crawlers can skip re-crawling unchanged content
+    const lastMod = blogData.updatedAt || blogData.publishedAt || blogData.createdAt;
+    if (lastMod) {
+      const lastModDate = lastMod instanceof Date ? lastMod : new Date(lastMod);
+      context.res.setHeader('Last-Modified', lastModDate.toUTCString());
+    }
+
     return {
       props: {
         initialBlog: serializeData(blogData),

@@ -33,7 +33,7 @@ export async function getServerSideProps({ res }) {
 
     const [latestBlog, latestManga, latestGiveaway] = await Promise.all([
       db.collection("blogs").find({ status: { $nin: ["draft", "pending", "hidden", "rejected", "deleted"] } }).sort({ updatedAt: -1 }).limit(1).project({ updatedAt: 1 }).toArray(),
-      includeManga ? db.collection("manga").find({ status: { $nin: ["draft", "private"] } }).sort({ updatedAt: -1 }).limit(1).project({ updatedAt: 1 }).toArray() : [],
+      includeManga ? db.collection("manga").find({ status: { $nin: ["draft", "private", "deleted"] } }).sort({ updatedAt: -1 }).limit(1).project({ updatedAt: 1 }).toArray() : [],
       includeGiveaways ? db.collection("giveaways").find({ status: { $ne: "draft" } }).sort({ updatedAt: -1 }).limit(1).project({ updatedAt: 1 }).toArray() : [],
     ]);
 

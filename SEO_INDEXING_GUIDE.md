@@ -275,39 +275,53 @@ If your server supports IPv6, add an AAAA record. Google slightly prefers IPv6-e
 
 ---
 
-## PART 5: TECHNICAL IMPLEMENTATION
+## PART 5: TECHNICAL IMPLEMENTATION (Completed)
 
-The following code changes will be made to enable faster indexing:
+### Phase 9 — Initial Setup (Feb 13, 2026)
+1. **`/public/97966f3775497d1ad6046d7c506ecbef.txt`** — IndexNow verification file ✅
+2. **`pages/_document.js`** — Bing meta verification tag ✅
+3. **`middleware.js`** — IndexNow key file excluded from middleware ✅
+4. **`.env`** — INDEXNOW_KEY set ✅
 
-### Files to Create/Modify
-
-1. **`/public/{INDEXNOW_KEY}.txt`** — IndexNow verification file
-2. **`pages/_document.js`** — Add Bing meta verification tag
-3. **`middleware.js`** — Ensure IndexNow key file is accessible
-4. **`.env`** — Add INDEXNOW_KEY (manual step on server)
+### Phase 10 — SEO Expert Improvements (Feb 14, 2026)
+5. **`lib/auto-index.js`** — `ensureTrailingSlash()` on all search engine submissions + new `autoDeindex()` function ✅
+6. **`lib/db.js`** — Auto-deindex calls on `deleteBlog`, `deleteManga`, `removeMangaFromSitemap` ✅
+7. **`pages/sitemaps/index.js`** — Fixed manga `deleted` status filter ✅
+8. **`pages/sitemaps/[type].js`** — Image sitemap tags (`<image:image>`) for blog and manga ✅
+9. **`pages/blog/[slug].js`** — `Last-Modified` header for crawl efficiency ✅
+10. **`pages/manga/[slug]/index.js`** — `Last-Modified` header for crawl efficiency ✅
 
 ---
 
 ## Summary
 
-| Priority | Action | Impact | Effort |
-|----------|--------|--------|--------|
-| 🔴 Critical | Enable IndexNow | Instant Bing/Yandex indexing | Low |
-| 🔴 Critical | Verify Bing Webmaster | Access to Bing tools | Low |
-| 🟠 High | Google Indexing API | Instant Google indexing | Medium |
-| 🟠 High | Submit sitemaps everywhere | Ensure discovery | Low |
-| 🟡 Medium | URL Removal for chapters | Speed up de-indexing | Low |
-| 🟢 Low | Simplify CAA records | DNS hygiene | Low |
+| Priority | Action | Impact | Effort | Status |
+|----------|--------|--------|--------|--------|
+| 🔴 Critical | Enable IndexNow | Instant Bing/Yandex indexing | Low | ✅ Done |
+| 🔴 Critical | Verify Bing Webmaster | Access to Bing tools | Low | ⏳ Manual step |
+| 🔴 Critical | Fix auto-index trailing slashes | Correct URL signals to engines | Low | ✅ Done |
+| � Critical | Auto-deindex deleted content | Fast removal from search results | Low | ✅ Done |
+| �🟠 High | Google Indexing API | Instant Google indexing | Medium | ⏳ Needs credentials |
+| 🟠 High | Submit sitemaps everywhere | Ensure discovery | Low | ⏳ Manual step |
+| 🟠 High | Image sitemap tags | Google Image Search traffic | Low | ✅ Done |
+| 🟡 Medium | Last-Modified headers | Crawl efficiency | Low | ✅ Done |
+| 🟡 Medium | URL Removal for chapters | Speed up de-indexing | Low | ⏳ Manual in GSC |
+| 🟡 Medium | Fix SPF for Brevo | Email deliverability | Low | ⏳ DNS change |
+| 🟡 Medium | www→non-www redirect | Prevent duplicate content | Low | ⏳ Cloudflare rule |
+| 🟢 Low | Simplify CAA records | DNS hygiene | Low | Optional |
 
 ---
 
 ## Appendix: Environment Variables Reference
 
 ```env
-# IndexNow (Bing, Yandex, Seznam, Naver)
-INDEXNOW_KEY=your-32-char-hex-key
+# IndexNow (Bing, Yandex, Seznam, Naver) — ACTIVE
+INDEXNOW_KEY=97966f3775497d1ad6046d7c506ecbef
 
-# Google Indexing API (optional but recommended)
+# Bing Webmaster verification (get from Bing Webmaster Tools)
+NEXT_PUBLIC_BING_VERIFICATION=YOUR_BING_CODE
+
+# Google Indexing API (optional but recommended for fastest Google indexing)
 GOOGLE_INDEXING_CREDENTIALS={"type":"service_account",...}
 
 # Site URL (already set)
@@ -316,5 +330,5 @@ NEXT_PUBLIC_SITE_URL=https://luvrix.com
 
 ---
 
-*Document Version: 1.0*  
-*Last Updated: Feb 13, 2026*
+*Document Version: 2.0*  
+*Last Updated: Feb 14, 2026*
