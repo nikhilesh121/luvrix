@@ -93,10 +93,11 @@ export async function getServerSideProps({ params, res }) {
       case "pages": {
         const staticPages = [
           { url: "/", changefreq: "daily", priority: "1.0" },
+          { url: "/blog", changefreq: "daily", priority: "0.9" },
+          { url: "/manga", changefreq: "daily", priority: "0.9" },
           { url: "/about", changefreq: "monthly", priority: "0.8" },
           { url: "/contact", changefreq: "monthly", priority: "0.7" },
           { url: "/categories", changefreq: "weekly", priority: "0.8" },
-          { url: "/manga", changefreq: "daily", priority: "0.9" },
           { url: "/giveaway", changefreq: "daily", priority: "0.8" },
           { url: "/leaderboard", changefreq: "daily", priority: "0.7" },
           { url: "/publishers", changefreq: "weekly", priority: "0.7" },

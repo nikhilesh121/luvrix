@@ -610,3 +610,60 @@ Your DNS is **mostly correct** but has a few issues that can hurt deliverability
    - `https://luvrix.com/blog/`
    - `https://luvrix.com/giveaway/`
 4. **Wait 24-48 hours** — Search engines need time to re-crawl and update their index
+
+---
+
+## PHASE 12 — 6-Iteration SEO Audit (Feb 14, 2026)
+
+### Iteration 1: Sitemap Fix
+- **Issue Found:** `/blog/` missing from `pages/sitemaps/[type].js` SSR sitemap
+- **Status:** ✅ FIXED — Added `/blog/` to staticPages array
+
+### Iteration 2: Meta Tags & Structured Data
+- **Meta tags:** ✅ description, keywords, robots, googlebot, bingbot
+- **Structured data:** ✅ Organization schema in `<body>`
+- **410 responses:** ✅ Chapter pages return 410 Gone
+- **Note:** Bing verification meta tag requires `NEXT_PUBLIC_BING_VERIFICATION` env var
+
+### Iteration 3: Individual Page SEO
+- **Manga detail pages:** ✅ Correct canonical headers
+- **Blog posts sitemap:** ✅ All posts with lastmod, images
+- **Giveaways sitemap:** ✅ Active giveaways with priority 0.9
+
+### Iteration 4: Middleware & Noindex
+- **Noindex paths:** ✅ /admin/, /profile/, /user/, /login/ have `X-Robots-Tag: noindex`
+- **Spam param redirect:** ✅ `?amp=1` redirects to clean URL (301)
+- **Canonical headers:** ✅ All pages have `Link: <url>; rel="canonical"`
+
+### Iteration 5: DNS & Verification
+- **IndexNow key:** ✅ Accessible at `/97966f3775497d1ad6046d7c506ecbef.txt`
+- **Google verification:** ✅ TXT record present
+- **Yandex verification:** ✅ TXT record present
+- **ads.txt:** ✅ Google AdSense publisher ID correct
+- **INDEXNOW_KEY:** ✅ Added to `.env.local`
+
+### Iteration 6: Final Verification
+All SEO components verified working:
+
+| Component | Status | Details |
+|-----------|--------|---------|
+| robots.txt | ✅ | Correct Allow/Disallow rules |
+| sitemap.xml | ✅ | 5 sub-sitemaps with lastmod |
+| sitemap-pages.xml | ✅ | 14 pages including /blog/ |
+| sitemap-manga.xml | ✅ | All manga with images |
+| sitemap-posts.xml | ✅ | All blog posts |
+| Canonical URLs | ✅ | HTTP Link header per page |
+| Meta robots | ✅ | index, follow on public pages |
+| Noindex paths | ✅ | Private paths have noindex |
+| 410 chapters | ✅ | Deleted chapters return 410 |
+| IndexNow | ✅ | Key file accessible |
+| Structured data | ✅ | Organization schema |
+
+### Environment Variables Required
+```env
+NEXT_PUBLIC_SITE_URL=https://luvrix.com
+NEXT_PUBLIC_GA_ID=G-4Q1ER4SF02
+INDEXNOW_KEY=97966f3775497d1ad6046d7c506ecbef
+# Optional: Bing Webmaster verification
+NEXT_PUBLIC_BING_VERIFICATION=YOUR_BING_CODE
+```
