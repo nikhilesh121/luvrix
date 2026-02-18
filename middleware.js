@@ -1,5 +1,30 @@
 import { NextResponse } from 'next/server';
 
+// CORS Configuration for API routes (Frontend-Backend Separation)
+const ALLOWED_ORIGINS = [
+  'https://luvrix.com',
+  'https://www.luvrix.com',
+  'http://localhost:3000',
+  'http://localhost:3001',
+];
+
+function setCorsHeaders(response, origin) {
+  const isAllowed = !origin || ALLOWED_ORIGINS.some(allowed => 
+    origin === allowed || origin.endsWith('.luvrix.com')
+  );
+  
+  if (isAllowed && origin) {
+    response.headers.set('Access-Control-Allow-Origin', origin);
+  } else {
+    response.headers.set('Access-Control-Allow-Origin', ALLOWED_ORIGINS[0]);
+  }
+  
+  response.headers.set('Access-Control-Allow-Credentials', 'true');
+  response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+  response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
+  response.headers.set('Access-Control-Max-Age', '86400');
+}
+
 // Spam/low-value query parameters that should be stripped
 const SPAM_PARAMS = [
   'amp', 'noamp', 'share', 'add_to_wishlist', 'orderby',
@@ -34,6 +59,14 @@ const SITEMAP_REWRITES = {
 export function middleware(request) {
   const url = request.nextUrl.clone();
   const { pathname, searchParams } = url;
+  const origin = request.headers.get('origin');
+
+  // 0. Handle CORS preflight for API routes
+  if (pathname.startsWith('/api/') && request.method === 'OPTIONS') {
+    const response = new NextResponse(null, { status: 200 });
+    setCorsHeaders(response, origin);
+    return response;
+  }
 
   // 0a. Chapter pages permanently removed — return 410 Gone so Google de-indexes them
   if (/^\/manga\/[^/]+\/chapter/.test(pathname.replace(/\/$/, ''))) {
@@ -64,6 +97,11 @@ export function middleware(request) {
 
   // 2. Add noindex headers for paths that should not be indexed
   const response = NextResponse.next();
+
+  // Add CORS headers to all API responses
+  if (pathname.startsWith('/api/')) {
+    setCorsHeaders(response, origin);
+  }
 
   const shouldNoindex =
     (NOINDEX_PATHS.some(p => pathname.startsWith(p)) && !pathname.startsWith('/api/sitemap') && !pathname.startsWith('/sitemaps')) ||
