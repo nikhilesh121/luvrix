@@ -6,6 +6,7 @@ import { useAuth } from "../context/AuthContext";
 import { useForm } from "react-hook-form";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiMail, FiLock, FiAlertCircle, FiArrowRight, FiZap, FiEdit3, FiBook, FiStar, FiKey, FiCheck, FiArrowLeft } from "react-icons/fi";
+import { getApiUrl } from "../lib/api-config";
 
 export default function Login() {
   const router = useRouter();
@@ -27,7 +28,7 @@ export default function Login() {
     setResetLoading(true);
     setResetError("");
     try {
-      const res = await fetch("/api/auth/forgot-password/", {
+      const res = await fetch(getApiUrl("/api/auth/forgot-password/"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: resetEmail }),
@@ -58,7 +59,7 @@ export default function Login() {
     setResetLoading(true);
     setResetError("");
     try {
-      const res = await fetch("/api/auth/reset-password/", {
+      const res = await fetch(getApiUrl("/api/auth/reset-password/"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: resetEmail, otp: resetOtp, newPassword }),

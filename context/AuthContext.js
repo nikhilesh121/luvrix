@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { updateAuthUser } from "../lib/local-auth";
+import { getApiUrl } from "../lib/api-config";
 
 const AuthContext = createContext({});
 
@@ -28,7 +29,7 @@ export function AuthProvider({ children }) {
         return;
       }
 
-      const response = await fetch('/api/auth/me', {
+      const response = await fetch(getApiUrl('/api/auth/me'), {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -56,7 +57,7 @@ export function AuthProvider({ children }) {
 
   const login = useCallback(async (email, password) => {
     try {
-      const response = await fetch('/api/auth/login', {
+      const response = await fetch(getApiUrl('/api/auth/login'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
@@ -80,7 +81,7 @@ export function AuthProvider({ children }) {
 
   const register = useCallback(async (email, password, additionalData = {}) => {
     try {
-      const response = await fetch('/api/auth/register', {
+      const response = await fetch(getApiUrl('/api/auth/register'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password, ...additionalData }),

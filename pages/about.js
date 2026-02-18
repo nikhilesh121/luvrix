@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import Layout from "../components/Layout";
+import { getApiUrl } from "../lib/api-config";
 import { motion } from "framer-motion";
 import { FiUsers, FiTarget, FiHeart, FiAward, FiZap, FiGlobe, FiEdit3, FiBook, FiTrendingUp, FiStar } from "react-icons/fi";
 import Head from "next/head";
@@ -18,7 +19,7 @@ export default function About() {
   const [platformStats, setPlatformStats] = useState({ readers: 0, writers: 0, articles: 0, categories: 0 });
 
   useEffect(() => {
-    fetch("/api/stats/platform")
+    fetch(getApiUrl("/api/stats/platform"))
       .then(r => r.ok ? r.json() : null)
       .then(data => { if (data) setPlatformStats(data); })
       .catch(() => {});

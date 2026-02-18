@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import { getApiUrl } from '../lib/api-config';
 
 const ThemeContext = createContext();
 
@@ -23,7 +24,7 @@ export const ThemeProvider = ({ children }) => {
       setTheme(savedTheme);
     } else {
       // No saved preference — fetch admin default
-      fetch('/api/settings')
+      fetch(getApiUrl('/api/settings'))
         .then(res => res.json())
         .then(data => {
           if (data?.defaultTheme && !localStorage.getItem('theme')) {

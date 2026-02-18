@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Layout from "../components/Layout";
+import { getApiUrl } from "../lib/api-config";
 import { motion } from "framer-motion";
 import { FiMail, FiMapPin, FiSend, FiCheck, FiMessageCircle, FiUser, FiZap, FiHeart } from "react-icons/fi";
 import Head from "next/head";
@@ -24,7 +25,7 @@ export default function Contact() {
     setError("");
     
     try {
-      const response = await fetch("/api/send-email", {
+      const response = await fetch(getApiUrl("/api/send-email"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

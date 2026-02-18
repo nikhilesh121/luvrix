@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/router";
+import { getApiUrl } from "../lib/api-config";
 import Layout from "../components/Layout";
 import UserGuard from "../components/UserGuard";
 import BuyPostsModal from "../components/BuyPostsModal";
@@ -1157,7 +1158,7 @@ function ProfileContent({ user, initialUserData }) {
                       onClick={async () => {
                         try {
                           const token = localStorage.getItem("token");
-                          const res = await fetch("/api/user/export-data", {
+                          const res = await fetch(getApiUrl("/api/user/export-data"), {
                             headers: { Authorization: `Bearer ${token}` },
                           });
                           if (!res.ok) throw new Error("Export failed");
@@ -1184,7 +1185,7 @@ function ProfileContent({ user, initialUserData }) {
                         if (!confirm("This will delete ALL your data including blogs, comments, and profile. Type OK to confirm.")) return;
                         try {
                           const token = localStorage.getItem("token");
-                          const res = await fetch("/api/user/delete-account", {
+                          const res = await fetch(getApiUrl("/api/user/delete-account"), {
                             method: "DELETE",
                             headers: { Authorization: `Bearer ${token}` },
                           });
