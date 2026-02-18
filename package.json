@@ -14,7 +14,7 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "build:static": "NEXT_PUBLIC_API_URL=https://api.luvrix.com next build --config next.config.static.js",
+    "build:static": "NEXT_PUBLIC_API_URL=https://api.luvrix.com node scripts/build-static.js",
     "build:backend": "next build"
   },
   "dependencies": {

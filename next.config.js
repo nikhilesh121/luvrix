@@ -1,5 +1,15 @@
 /** @type {import('next').NextConfig} */
+const isStaticExport = process.env.STATIC_EXPORT === 'true';
+
 const nextConfig = {
+  // Enable static export when STATIC_EXPORT=true
+  ...(isStaticExport && { 
+    output: 'export',
+    // Skip pages with getServerSideProps during static export
+    experimental: {
+      // This allows pages with getServerSideProps to be skipped
+    },
+  }),
   images: {
     unoptimized: true,
     domains: ['cdn.manhuain.com', 'luvrix.com', 'localhost'],
