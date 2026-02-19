@@ -1,9 +1,7 @@
 import { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
 import { io } from 'socket.io-client';
 import { useAuth } from './AuthContext';
-import { getApiUrl } from '../lib/api-config';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || '';
 const SocketContext = createContext(null);
 
 export const useSocket = () => {
@@ -26,9 +24,9 @@ export const SocketProvider = ({ children }) => {
   useEffect(() => {
     const initSocket = async () => {
       // First, hit the socket API to initialize the server
-      await fetch(getApiUrl('/api/socket'));
+      await fetch('/api/socket');
       
-      const socketInstance = io(API_URL || undefined, {
+      const socketInstance = io({
         path: '/api/socket',
         addTrailingSlash: false,
         reconnection: true,

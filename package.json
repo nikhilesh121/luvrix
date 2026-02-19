@@ -13,9 +13,7 @@
     "sitemap": "node scripts/generate-sitemap.js",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage",
-    "build:static": "NEXT_PUBLIC_API_URL=https://api.luvrix.com node scripts/build-static.js",
-    "build:backend": "next build"
+    "test:coverage": "jest --coverage"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

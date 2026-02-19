@@ -1,5 +1,4 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { getApiUrl } from '../lib/api-config';
 
 const ThemeContext = createContext();
 
@@ -24,7 +23,7 @@ export const ThemeProvider = ({ children }) => {
       setTheme(savedTheme);
     } else {
       // No saved preference — fetch admin default
-      fetch(getApiUrl('/api/settings'))
+      fetch('/api/settings')
         .then(res => res.json())
         .then(data => {
           if (data?.defaultTheme && !localStorage.getItem('theme')) {
@@ -81,19 +80,17 @@ export const ThemeProvider = ({ children }) => {
 
   const isDark = theme === 'dark';
 
-  // Prevent flash of wrong theme
-  if (!mounted) {
-    return null;
-  }
-
+  // Always render children for SSR - use CSS to handle flash prevention
+  // The theme will be applied client-side after hydration
   return (
     <ThemeContext.Provider value={{ 
-      theme, 
-      isDark,
+      theme: mounted ? theme : 'light', 
+      isDark: mounted ? isDark : false,
       toggleTheme, 
       setLightTheme, 
       setDarkTheme,
-      setSystemTheme 
+      setSystemTheme,
+      mounted
     }}>
       {children}
     </ThemeContext.Provider>

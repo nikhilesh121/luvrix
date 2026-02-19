@@ -10,7 +10,6 @@ import { BlogGridSkeleton } from "../components/ui/Skeleton";
 import { WebsiteSchema } from "../components/SEOHead";
 import AdRenderer from "../components/AdRenderer";
 import { motion, AnimatePresence } from "framer-motion";
-import { getApiUrl } from "../lib/api-config";
 
 // Dynamic imports for better code splitting
 const BlogCard = dynamic(() => import("../components/BlogCard"), {
@@ -68,7 +67,7 @@ export default function Home() {
 
   // Fetch real platform stats
   useEffect(() => {
-    fetch(getApiUrl("/api/stats/platform"))
+    fetch("/api/stats/platform")
       .then(r => r.ok ? r.json() : null)
       .then(data => { if (data) setPlatformStats(data); })
       .catch(() => {});

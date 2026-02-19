@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import { getApiUrl } from "../lib/api-config";
 import Link from "next/link";
 import Layout from "../components/Layout";
 import { useAuth } from "../context/AuthContext";
@@ -23,7 +22,7 @@ export default function Register() {
   const [platformStats, setPlatformStats] = useState({ readers: 0, writers: 0, articles: 0 });
 
   useEffect(() => {
-    fetch(getApiUrl("/api/stats/platform"))
+    fetch("/api/stats/platform")
       .then(r => r.ok ? r.json() : null)
       .then(data => { if (data) setPlatformStats(data); })
       .catch(() => {});

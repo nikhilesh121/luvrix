@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiShield, FiCheck } from "react-icons/fi";
 import Link from "next/link";
-import { getApiUrl } from "../lib/api-config";
 
 export default function CookieConsent() {
   const [showBanner, setShowBanner] = useState(false);
@@ -19,7 +18,7 @@ export default function CookieConsent() {
 
   const fetchCookieSettings = async () => {
     try {
-      const res = await fetch(getApiUrl("/api/settings/cookies/"));
+      const res = await fetch("/api/settings/cookies/");
       const data = await res.json();
       if (data.enabled !== false) {
         setCookieSettings(data);
@@ -33,7 +32,7 @@ export default function CookieConsent() {
   };
 
   const recordConsent = (accepted, analytics, marketing) => {
-    fetch(getApiUrl("/api/consent"), {
+    fetch("/api/consent", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ accepted, analytics, marketing }),
