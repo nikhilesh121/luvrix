@@ -289,7 +289,7 @@ export function ProfilePageSchema({ user, url }) {
   );
 }
 
-// Website Schema for Homepage
+// Website Schema for Homepage with SearchAction
 export function WebsiteSchema() {
   const schema = {
     "@context": "https://schema.org",
@@ -297,6 +297,11 @@ export function WebsiteSchema() {
     name: SITE_NAME,
     url: `${SITE_URL}/`,
     description: "Read blogs, manga, and stories from creators worldwide. Free platform for writers and readers.",
+    potentialAction: {
+      "@type": "SearchAction",
+      target: `${SITE_URL}/blog?q={search_term_string}`,
+      "query-input": "required name=search_term_string",
+    },
     sameAs: [
       "https://facebook.com/luvrix",
       "https://twitter.com/luvrix",

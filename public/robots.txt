@@ -39,5 +39,8 @@ Allow: /
 User-agent: AdsBot-Google-Mobile
 Allow: /
 
-# Sitemap
+# Sitemaps
+Sitemap: https://luvrix.com/sitemap-index.xml
 Sitemap: https://luvrix.com/sitemap.xml
+Sitemap: https://luvrix.com/sitemap-blog.xml
+Sitemap: https://luvrix.com/sitemap-manga.xml
