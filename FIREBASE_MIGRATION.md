@@ -24,8 +24,8 @@
 | 7. Update Firestore security rules | ✅ Done | `firestore.rules` |
 | 8. Add Firebase env variables | ✅ Done | `.env.local` |
 | 9. Run migration script | ✅ Done | 1800 documents migrated |
-| 10. Update application code | ⏳ Pending | Replace MongoDB calls with Firestore |
-| 11. Remove MongoDB dependency | ⏳ Pending | After successful migration |
+| 10. Update application code | ✅ Done | `lib/db-firestore.js` replaces MongoDB |
+| 11. Remove MongoDB dependency | ⏳ Pending | Keep for rollback capability |
 
 ---
 
@@ -67,7 +67,10 @@
 lib/
 ├── firebase.js          # Firebase client SDK (frontend)
 ├── firebase-admin.js    # Firebase Admin SDK (server-side)
-└── firestore.js         # Firestore CRUD helper functions
+├── firestore.js         # Firestore CRUD helper functions
+├── db-firestore.js      # Complete Firestore database layer (replaces MongoDB)
+├── db-mongodb.js        # Original MongoDB implementation (backup)
+└── db.js                # Re-exports from db-firestore.js
 
 scripts/migration/
 ├── migrate-to-firestore.js    # Migration script
