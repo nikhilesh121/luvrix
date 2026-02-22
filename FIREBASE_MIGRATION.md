@@ -23,9 +23,41 @@
 | 6. Create migration script | ✅ Done | `scripts/migration/migrate-to-firestore.js` |
 | 7. Update Firestore security rules | ✅ Done | `firestore.rules` |
 | 8. Add Firebase env variables | ✅ Done | `.env.local` |
-| 9. Run migration script | ⏳ Pending | Requires service account key |
+| 9. Run migration script | ✅ Done | 1800 documents migrated |
 | 10. Update application code | ⏳ Pending | Replace MongoDB calls with Firestore |
 | 11. Remove MongoDB dependency | ⏳ Pending | After successful migration |
+
+---
+
+## Migration Results (Feb 22, 2026)
+
+| Collection | Documents | Status |
+|------------|-----------|--------|
+| users | 5 | ✅ |
+| manga | 32 | ✅ |
+| blogs | 14 | ✅ |
+| comments | 0 | ⚠️ Empty |
+| giveaways | 1 | ✅ |
+| settings | 3 | ✅ |
+| notifications | 9 | ✅ |
+| subscribers | 1 | ✅ |
+| payments | 17 | ✅ |
+| favorites | 2 | ✅ |
+| follows | 3 | ✅ |
+| blogLikes | 7 | ✅ |
+| blogViews | 0 | ⚠️ Empty |
+| libraries | 0 | ⚠️ Empty |
+| giveaway_invites | 1 | ✅ |
+| giveaway_tasks | 5 | ✅ |
+| giveaway_participants | 3 | ✅ |
+| giveaway_supports | 6 | ✅ |
+| giveaway_task_starts | 6 | ✅ |
+| pageviews | 1482 | ✅ |
+| watchtime | 1 | ✅ |
+| visitors | 193 | ✅ |
+| daily_views | 8 | ✅ |
+| site_stats | 1 | ✅ |
+| **TOTAL** | **1800** | ✅ |
 
 ---
 
