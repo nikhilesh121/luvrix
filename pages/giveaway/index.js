@@ -3,6 +3,7 @@ import Head from "next/head";
 import Link from "next/link";
 import Layout from "../../components/Layout";
 import GiveawayCard from "../../components/GiveawayCard";
+import { listGiveaways, getGiveawayWinnerInfo } from "../../lib/firebase-client";
 import { FiGift, FiAward, FiArrowRight, FiStar, FiClock } from "react-icons/fi";
 import { motion, useScroll, useTransform } from "framer-motion";
 
@@ -50,19 +51,19 @@ export default function GiveawayListPage() {
   useEffect(() => {
     const load = async () => {
       try {
-        const data = await fetch("/api/giveaways").then(r => r.json());
-        const list = Array.isArray(data) ? data : [];
+        // Use Firebase client directly instead of API routes
+        const list = await listGiveaways();
 
         const withWinner = list.filter(g => g.status === "winner_selected" && g.id);
-        const winnerPromises = withWinner.map(g =>
-          fetch(`/api/giveaways/${g.id}/winner-info`).then(r => r.json()).catch(() => null)
-        );
+        const winnerPromises = withWinner.map(g => getGiveawayWinnerInfo(g.id).catch(() => null));
         const winnerResults = await Promise.all(winnerPromises);
         const winnerMap = {};
         withWinner.forEach((g, i) => { if (winnerResults[i]?.name) winnerMap[g.id] = winnerResults[i].name; });
 
         setGiveaways(list.map(g => ({ ...g, winnerName: winnerMap[g.id] || null })));
-      } catch { /* ignore */ }
+      } catch (err) {
+        console.error("Error loading giveaways:", err);
+      }
       setLoading(false);
     };
     load();

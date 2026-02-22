@@ -14,7 +14,21 @@ import {
   FiAlertCircle, FiHeart, FiSend, FiMapPin, FiPhone, FiUser,
   FiExternalLink, FiDollarSign,
 } from "react-icons/fi";
-import { initiatePayment } from "../../lib/firebase-client";
+import {
+  initiatePayment,
+  getGiveaway,
+  getGiveawayTasks,
+  getGiveawayParticipantCount,
+  getGiveawayWinnerInfo,
+  getGiveawaySupportData,
+  getMyGiveawayStatus,
+  joinGiveaway,
+  completeGiveawayTask,
+  getGiveawayInterest,
+  toggleGiveawayInterest,
+  getGiveawayShipping,
+  submitGiveawayShipping,
+} from "../../lib/firebase-client";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://luvrix.com";
 
@@ -64,32 +78,32 @@ export default function GiveawayDetailPage() {
 
   const fetchData = useCallback(async () => {
     if (!slug) return;
-    const encodedSlug = encodeURIComponent(slug);
     setLoading(true);
     try {
-      const [gRes, tRes, cRes] = await Promise.all([
-        fetch(`/api/giveaways/${encodedSlug}`).then(r => r.ok ? r.json() : r.json().then(e => ({ error: e.error || "Not found" }))).catch(() => ({ error: "Network error" })),
-        fetch(`/api/giveaways/${encodedSlug}/tasks`).then(r => r.ok ? r.json() : []).catch(() => []),
-        fetch(`/api/giveaways/${encodedSlug}/participants?countOnly=true`).then(r => r.ok ? r.json() : { count: 0 }).catch(() => ({ count: 0 })),
+      // Use Firebase client directly
+      const gRes = await getGiveaway(slug);
+      if (!gRes) { setError("Giveaway not found"); setLoading(false); return; }
+      
+      const [tRes, count] = await Promise.all([
+        getGiveawayTasks(gRes.id),
+        getGiveawayParticipantCount(gRes.id),
       ]);
-      if (gRes.error) { setError(gRes.error); setLoading(false); return; }
+      
       setGiveaway(gRes);
       setTasks(Array.isArray(tRes) ? tRes : []);
-      setParticipantCount(cRes?.count || 0);
+      setParticipantCount(count || 0);
 
       // Fetch winner info if winner selected
       if (gRes.status === "winner_selected" && gRes.id) {
-        fetch(`/api/giveaways/${encodeURIComponent(gRes.id)}/winner-info`).then(r => r.ok ? r.json() : null).then(w => { if (w) setWinnerInfo(w); }).catch(() => {});
+        const winnerData = await getGiveawayWinnerInfo(gRes.id);
+        if (winnerData) setWinnerInfo(winnerData);
       }
 
-      // Fetch support/donation data (with auth for myDonation info)
-      const supportHeaders = {};
-      const sToken = localStorage.getItem("luvrix_auth_token");
-      if (sToken) supportHeaders.Authorization = `Bearer ${sToken}`;
-      fetch(`/api/giveaways/${encodedSlug}/support`, { headers: supportHeaders }).then(r => r.ok ? r.json() : null).then(d => {
-        if (d && !d.error) setSupportData(d);
-      }).catch(() => {});
+      // Fetch support/donation data
+      const supportDataRes = await getGiveawaySupportData(gRes.id);
+      if (supportDataRes) setSupportData(supportDataRes);
     } catch (err) {
+      console.error("Error loading giveaway:", err);
       setError("Failed to load giveaway");
     } finally {
       setLoading(false);
@@ -97,17 +111,12 @@ export default function GiveawayDetailPage() {
   }, [slug]);
 
   const fetchMyStatus = useCallback(async () => {
-    if (!slug || !isLoggedIn) return;
+    if (!slug || !isLoggedIn || !user?.uid || !giveaway?.id) return;
     try {
-      const token = localStorage.getItem("luvrix_auth_token");
-      if (!token) return;
-      const res = await fetch(`/api/giveaways/${encodeURIComponent(slug)}/my-status`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
+      const data = await getMyGiveawayStatus(user.uid, giveaway.id);
       setMyStatus(data);
     } catch (err) { console.error(err); }
-  }, [slug, isLoggedIn]);
+  }, [slug, isLoggedIn, user, giveaway]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
   useEffect(() => { fetchMyStatus(); }, [fetchMyStatus]);
@@ -115,19 +124,15 @@ export default function GiveawayDetailPage() {
   // Fetch interest count + check if current user is interested (for upcoming giveaways)
   useEffect(() => {
     if (!giveaway || giveaway.status !== "upcoming") return;
-    const encodedSlug = encodeURIComponent(giveaway.slug || slug);
-    const headers = {};
-    if (isLoggedIn) {
-      const token = localStorage.getItem("luvrix_auth_token");
-      if (token) headers.Authorization = `Bearer ${token}`;
-    }
-    fetch(`/api/giveaways/${encodedSlug}/interest`, { headers }).then(r => r.ok ? r.json() : null).then(d => {
-      if (d) {
-        setInterestCount(d.count || 0);
-        setInterested(!!d.interested);
-      }
-    }).catch(() => {});
-  }, [giveaway, slug, isLoggedIn]);
+    const loadInterest = async () => {
+      try {
+        const data = await getGiveawayInterest(giveaway.id, user?.uid || null);
+        setInterestCount(data.count || 0);
+        setInterested(!!data.interested);
+      } catch (err) { console.error(err); }
+    };
+    loadInterest();
+  }, [giveaway, user]);
 
   // Auto-refresh: if upcoming and startDate passes, re-fetch to get the live state
   useEffect(() => {
@@ -149,69 +154,45 @@ export default function GiveawayDetailPage() {
     if (!isLoggedIn) { router.push("/login"); return; }
     setTogglingInterest(true);
     try {
-      const token = localStorage.getItem("luvrix_auth_token");
-      const res = await fetch(`/api/giveaways/${encodeURIComponent(giveaway.slug || slug)}/interest`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setInterested(data.interested);
-        setInterestCount(data.count || 0);
-      }
+      const data = await toggleGiveawayInterest(user.uid, giveaway.id);
+      setInterested(data.interested);
+      setInterestCount(data.count || 0);
     } catch (err) { console.error(err); }
     finally { setTogglingInterest(false); }
   };
 
   // Fetch existing shipping details if winner
   useEffect(() => {
-    if (!giveaway || !isLoggedIn || !myStatus) return;
+    if (!giveaway || !isLoggedIn || !myStatus || !user?.uid) return;
     const isWinner = giveaway.status === "winner_selected" && myStatus?.status === "winner";
     if (!isWinner) return;
-    const token = localStorage.getItem("luvrix_auth_token");
-    if (!token) return;
-    fetch(`/api/giveaways/${giveaway.id}/shipping`, {
-      headers: { Authorization: `Bearer ${token}` },
-    }).then(r => r.ok ? r.json() : null).then(d => {
-      if (d?.shipping) {
-        setShippingForm({
-          fullName: d.shipping.fullName || "",
-          address: d.shipping.address || "",
-          city: d.shipping.city || "",
-          state: d.shipping.state || "",
-          pincode: d.shipping.pincode || "",
-          country: d.shipping.country || "India",
-          phone: d.shipping.phone || "",
-        });
-        setShippingSaved(true);
-      }
-    }).catch(() => {});
-  }, [giveaway, isLoggedIn, myStatus]);
+    const loadShipping = async () => {
+      try {
+        const d = await getGiveawayShipping(user.uid, giveaway.id);
+        if (d?.shipping) {
+          setShippingForm({
+            fullName: d.shipping.fullName || "",
+            address: d.shipping.address || "",
+            city: d.shipping.city || "",
+            state: d.shipping.state || "",
+            pincode: d.shipping.pincode || "",
+            country: d.shipping.country || "India",
+            phone: d.shipping.phone || "",
+          });
+          setShippingSaved(true);
+        }
+      } catch (err) { console.error(err); }
+    };
+    loadShipping();
+  }, [giveaway, isLoggedIn, myStatus, user]);
 
   const handleJoin = async () => {
     if (!isLoggedIn) { router.push("/login"); return; }
     setJoining(true);
     setError("");
     try {
-      const token = localStorage.getItem("luvrix_auth_token");
-      const res = await fetch(`/api/giveaways/${giveaway.id}/join`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
-
-      // Process invite referral if ref param is present
-      const refCode = router.query.ref;
-      if (refCode) {
-        try {
-          await fetch(`/api/giveaways/${giveaway.id}/invite`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-            body: JSON.stringify({ inviteCode: refCode }),
-          });
-        } catch {}
-      }
+      const result = await joinGiveaway(user.uid, giveaway.id);
+      if (!result.success) throw new Error(result.error);
 
       await fetchMyStatus();
       setParticipantCount(c => c + 1);
@@ -325,14 +306,8 @@ export default function GiveawayDetailPage() {
   const handleCompleteTask = async (taskId) => {
     setCompleting(taskId);
     try {
-      const token = localStorage.getItem("luvrix_auth_token");
-      const res = await fetch(`/api/giveaways/${giveaway.id}/complete-task`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ taskId }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
+      const result = await completeGiveawayTask(user.uid, giveaway.id, taskId);
+      if (!result.success) throw new Error(result.error);
       // Clear timer state for this task
       if (taskTimers[taskId]?.intervalId) clearInterval(taskTimers[taskId].intervalId);
       setTaskTimers(prev => { const n = { ...prev }; delete n[taskId]; return n; });
@@ -359,13 +334,7 @@ export default function GiveawayDetailPage() {
     }
     setShippingSaving(true);
     try {
-      const token = localStorage.getItem("luvrix_auth_token");
-      const res = await fetch(`/api/giveaways/${giveaway.id}/shipping`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify(shippingForm),
-      });
-      if (!res.ok) throw new Error((await res.json()).error);
+      await submitGiveawayShipping(user.uid, giveaway.id, shippingForm);
       setShippingSaved(true);
       setShowShipping(false);
     } catch (err) {
@@ -381,23 +350,28 @@ export default function GiveawayDetailPage() {
 
   useEffect(() => {
     if (!giveaway || !isLoggedIn || !user) return;
-    fetch(`/api/favorites/check?userId=${user.uid}&itemId=${giveaway.id}&itemType=giveaway`)
-      .then(r => r.ok ? r.json() : null)
-      .then(d => { if (d) setIsFavorited(d.favorited); })
-      .catch(() => {});
+    const checkFavorite = async () => {
+      try {
+        const { isItemFavorited } = await import("../../lib/firebase-client");
+        const result = await isItemFavorited(user.uid, giveaway.id);
+        setIsFavorited(result);
+      } catch (err) { console.error(err); }
+    };
+    checkFavorite();
   }, [giveaway, isLoggedIn, user]);
 
   const toggleFavorite = async () => {
     if (!isLoggedIn) { router.push("/login"); return; }
     setFavLoading(true);
     try {
-      const res = await fetch("/api/favorites/toggle", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: user.uid, itemId: giveaway.id, itemType: "giveaway" }),
-      });
-      const data = await res.json();
-      if (res.ok) setIsFavorited(data.favorited);
+      const { addToFavorites, removeFromFavorites } = await import("../../lib/firebase-client");
+      if (isFavorited) {
+        await removeFromFavorites(user.uid, giveaway.id);
+        setIsFavorited(false);
+      } else {
+        await addToFavorites(user.uid, giveaway.id, "giveaway");
+        setIsFavorited(true);
+      }
     } catch (err) { console.error(err); }
     finally { setFavLoading(false); }
   };

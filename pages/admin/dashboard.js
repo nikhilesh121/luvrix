@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import Head from "next/head";
 import AdminGuard from "../../components/AdminGuard";
 import AdminSidebar from "../../components/AdminSidebar";
-import { getAllBlogs, getAllUsers, getAllManga, getAllPayments } from "../../lib/firebase-client";
+import { getAllBlogs, getAllUsers, getAllManga, getAllPayments, listGiveaways, getGiveawaySupportData } from "../../lib/firebase-client";
 import { motion } from "framer-motion";
 import { 
   FiFileText, FiUsers, FiBook, FiDollarSign, FiTrendingUp, FiClock,
@@ -59,17 +59,23 @@ function DashboardContent() {
 
         setRecentBlogs(blogs.slice(0, 5));
 
-        // Fetch giveaway donation stats
+        // Fetch giveaway donation stats using Firebase client
         try {
-          const token = localStorage.getItem("luvrix_auth_token");
-          const donRes = await fetch("/api/giveaways/donation-stats", {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          if (donRes.ok) {
-            const donData = await donRes.json();
-            setDonationStats(donData);
+          const giveaways = await listGiveaways();
+          let grandTotal = 0;
+          let grandCount = 0;
+          const perGiveaway = [];
+          
+          for (const g of giveaways) {
+            const supportData = await getGiveawaySupportData(g.id);
+            grandTotal += supportData.total || 0;
+            grandCount += supportData.count || 0;
+            if (supportData.total > 0) {
+              perGiveaway.push({ id: g.id, title: g.title, total: supportData.total, count: supportData.count });
+            }
           }
-        } catch {}
+          setDonationStats({ grandTotal, grandCount, perGiveaway });
+        } catch (err) { console.error("Error fetching donation stats:", err); }
       } catch (error) {
         console.error("Error fetching stats:", error);
       } finally {
