@@ -3,7 +3,7 @@ import Link from "next/link";
 import Layout from "../../components/Layout";
 import { CollectionPageSchema, BreadcrumbSchema } from "../../components/SEOHead";
 import AdRenderer from "../../components/AdRenderer";
-import { getAllManga, getSettings } from "../../lib/api-client";
+import { getAllManga, getSettings } from "../../lib/firebase-client";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   FiBook, FiSearch, FiEye, FiClock,
@@ -477,6 +477,3 @@ export default function MangaList() {
 }
 
 // SSR required for SEO meta tags to be rendered server-side
-export async function getServerSideProps() {
-  return { props: {} };
-}

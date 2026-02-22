@@ -7,7 +7,7 @@ import { BlogCacheProvider } from "../context/BlogCacheContext";
 import { SocketProvider, useSocket } from "../context/SocketContext";
 import { ThemeProvider } from "../context/ThemeContext";
 import { trackPageView, initGA } from "../lib/analytics";
-import { getSettings } from "../lib/api-client";
+import { getSettings } from "../lib/firebase-client";
 import dynamic from "next/dynamic";
 import ErrorBoundary from "../components/ErrorBoundary";
 

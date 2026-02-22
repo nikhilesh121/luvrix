@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import AdminGuard from "../../components/AdminGuard";
 import AdminSidebar from "../../components/AdminSidebar";
-import { getAllPayments, getAllUsers } from "../../lib/api-client";
+import { getAllPayments, getAllUsers } from "../../lib/firebase-client";
 import { motion } from "framer-motion";
 import { FiDollarSign, FiTrendingUp, FiCheckCircle, FiXCircle } from "react-icons/fi";
 

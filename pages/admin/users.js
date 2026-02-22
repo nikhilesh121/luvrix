@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import AdminGuard from "../../components/AdminGuard";
 import AdminSidebar from "../../components/AdminSidebar";
 import Avatar from "../../components/Avatar";
-import { getAllUsers, updateUser, deleteUser, createLog, hideUserPosts, unhideUserPosts } from "../../lib/api-client";
+import { getAllUsers, updateUser, deleteUser, createLog, hideUserPosts, unhideUserPosts } from "../../lib/firebase-client";
 import { auth } from "../../lib/local-auth";
 import { motion } from "framer-motion";
 import { FiSearch, FiUserX, FiUserCheck, FiShield, FiUser, FiTrash2, FiLoader, FiUsers, FiCheckCircle, FiAlertCircle, FiX, FiPlus, FiKey } from "react-icons/fi";

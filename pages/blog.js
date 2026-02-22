@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import Link from "next/link";
 import Head from "next/head";
 import Layout from "../components/Layout";
-import { getBlog, getBlogBySlug, getUser, getSettings, incrementBlogViews, getAllBlogs, likeBlog, unlikeBlog, isBlogLiked, isFollowing, followUser, unfollowUser } from "../lib/api-client";
+import { getBlog, getBlogBySlug, getUser, getSettings, incrementBlogViews, getAllBlogs, likeBlog, unlikeBlog, isBlogLiked, isFollowing, followUser, unfollowUser } from "../lib/firebase-client";
 import { cleanContentForDisplay } from "../components/BlogEditor";
 import { MagazineHero, MinimalHero, CinematicHero, NewsletterHero, BoldHero, VideoHero, MagazineContent, MinimalContent, CinematicContent, NewsletterContent, BoldContent, VideoContent } from "../components/BlogTemplates";
 import { useAuth } from "../context/AuthContext";
@@ -822,66 +822,3 @@ export default function BlogPage({ initialBlog, initialAuthor, initialSettings }
 }
 
 // Server-side data fetching for SEO
-export async function getServerSideProps(context) {
-  const { id } = context.query;
-  
-  if (!id) {
-    return { props: { initialBlog: null, initialAuthor: null, initialSettings: null } };
-  }
-
-  try {
-    const { getBlog, getUser, getSettings } = await import("../lib/db");
-    
-    const blogData = await getBlog(id);
-    
-    if (!blogData || blogData.status !== "approved") {
-      return { props: { initialBlog: null, initialAuthor: null, initialSettings: null } };
-    }
-
-    // Serialize data for SSR - handle timestamps, ObjectIds, and remove _id
-    const serializeData = (obj) => {
-      if (!obj) return null;
-      const serialized = { ...obj };
-      
-      // Remove MongoDB _id field (we use 'id' instead)
-      delete serialized._id;
-      
-      for (const key in serialized) {
-        const value = serialized[key];
-        // Handle date timestamps
-        if (value?.toDate) {
-          serialized[key] = value.toDate().toISOString();
-        } else if (value?.seconds) {
-          serialized[key] = new Date(value.seconds * 1000).toISOString();
-        }
-        // Handle MongoDB ObjectId
-        else if (value && typeof value === "object" && value.constructor?.name === "ObjectId") {
-          serialized[key] = value.toString();
-        }
-        // Handle Date objects
-        else if (value instanceof Date) {
-          serialized[key] = value.toISOString();
-        }
-      }
-      return serialized;
-    };
-
-    let authorData = null;
-    if (blogData.authorId) {
-      authorData = await getUser(blogData.authorId);
-    }
-
-    const settingsData = await getSettings();
-
-    return {
-      props: {
-        initialBlog: serializeData(blogData),
-        initialAuthor: serializeData(authorData),
-        initialSettings: serializeData(settingsData),
-      },
-    };
-  } catch (error) {
-    console.error("SSR Error:", error);
-    return { props: { initialBlog: null, initialAuthor: null, initialSettings: null } };
-  }
-}

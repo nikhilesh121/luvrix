@@ -6,7 +6,7 @@ import {
   getGiveawayTasks, addGiveawayTask, editGiveawayTask, removeGiveawayTask,
   getGiveawayParticipants, selectGiveawayWinner, createLog,
   getGiveawayWinnerInfo,
-} from "../../lib/api-client";
+} from "../../lib/firebase-client";
 import { auth } from "../../lib/local-auth";
 import { motion, AnimatePresence } from "framer-motion";
 import {

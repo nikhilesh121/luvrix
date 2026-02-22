@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import Link from "next/link";
 import Head from "next/head";
 import Layout from "../components/Layout";
-import { getBlog, getUser } from "../lib/api-client";
+import { getBlog, getUser } from "../lib/firebase-client";
 import { cleanContentForDisplay } from "../components/BlogEditor";
 import { useAuth } from "../context/AuthContext";
 import { 

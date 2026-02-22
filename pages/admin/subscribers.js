@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import AdminGuard from "../../components/AdminGuard";
 import AdminSidebar from "../../components/AdminSidebar";
-import { getAllSubscribers, deleteSubscriber, updateSubscriberStatus } from "../../lib/api-client";
+import { getAllSubscribers, deleteSubscriber, updateSubscriberStatus } from "../../lib/firebase-client";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   FiMail, FiTrash2, FiDownload, FiSearch, 

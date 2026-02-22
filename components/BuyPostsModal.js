@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiX, FiCheck, FiShoppingCart, FiCreditCard } from "react-icons/fi";
-import { getSettings, initiatePayment } from "../lib/api-client";
+import { getSettings, initiatePayment } from "../lib/firebase-client";
 import { auth } from "../lib/local-auth";
 
 const POST_PACKAGES = [

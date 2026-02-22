@@ -14,7 +14,7 @@ import {
   FiAlertCircle, FiHeart, FiSend, FiMapPin, FiPhone, FiUser,
   FiExternalLink, FiDollarSign,
 } from "react-icons/fi";
-import { initiatePayment } from "../../lib/api-client";
+import { initiatePayment } from "../../lib/firebase-client";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://luvrix.com";
 

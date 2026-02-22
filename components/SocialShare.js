@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { FiShare2, FiTwitter, FiFacebook, FiLinkedin, FiCopy, FiCheck } from "react-icons/fi";
 import { FaWhatsapp, FaTelegram, FaReddit } from "react-icons/fa";
-import { incrementBlogShares } from "../lib/api-client";
+import { incrementBlogShares } from "../lib/firebase-client";
 
 export default function SocialShare({ url, title, description, blogId }) {
   const [copied, setCopied] = useState(false);

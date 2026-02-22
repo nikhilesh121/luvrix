@@ -5,7 +5,7 @@ import Layout from "../components/Layout";
 import UserGuard from "../components/UserGuard";
 import SeoForm from "../components/SeoForm";
 import ContentValidator from "../components/ContentValidator";
-import { getBlog, updateBlog, getUser, getSettings, createLog } from "../lib/api-client";
+import { getBlog, updateBlog, getUser, getSettings, createLog } from "../lib/firebase-client";
 import { processContent, cleanContentForDisplay } from "../components/BlogEditor";
 import { TemplateSelector } from "../components/BlogTemplates";
 import { calculateSeoScore, MIN_SEO_SCORE } from "../utils/seoScore";

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import Layout from "../components/Layout";
-import { getLeaderboardWithAllUsers } from "../lib/api-client";
+import { getLeaderboardWithAllUsers } from "../lib/firebase-client";
 import { motion } from "framer-motion";
 import { FiAward, FiTrendingUp, FiEye, FiFileText, FiUser, FiStar, FiZap } from "react-icons/fi";
 import Link from "next/link";
@@ -377,6 +377,3 @@ export default function Leaderboard() {
 }
 
 // SSR required for SEO meta tags to be rendered server-side
-export async function getServerSideProps() {
-  return { props: {} };
-}

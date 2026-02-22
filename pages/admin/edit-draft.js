@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import dynamic from "next/dynamic";
 import AdminGuard from "../../components/AdminGuard";
 import AdminSidebar from "../../components/AdminSidebar";
-import { getBlogDraft, updateBlogDraft, publishBlogDraft } from "../../lib/api-client";
+import { getBlogDraft, updateBlogDraft, publishBlogDraft } from "../../lib/firebase-client";
 import { auth } from "../../lib/local-auth";
 import { motion } from "framer-motion";
 import {

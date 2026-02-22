@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiSend, FiMessageCircle, FiCornerDownRight, FiTrash2, FiHeart, FiUser } from "react-icons/fi";
-import { createComment, getComments, deleteComment, likeComment } from "../lib/api-client";
+import { createComment, getComments, deleteComment, likeComment } from "../lib/firebase-client";
 import { useAuth } from "../context/AuthContext";
 import { useSocket } from "../context/SocketContext";
 import Link from "next/link";

@@ -6,7 +6,7 @@ import UserGuard from "../components/UserGuard";
 import SeoForm from "../components/SeoForm";
 import BuyPostsModal from "../components/BuyPostsModal";
 import ContentValidator from "../components/ContentValidator";
-import { createBlog, getUser, incrementFreePostsUsed, decrementExtraPosts, getSettings } from "../lib/api-client";
+import { createBlog, getUser, incrementFreePostsUsed, decrementExtraPosts, getSettings } from "../lib/firebase-client";
 
 import { processContent } from "../components/BlogEditor";
 import { TemplateSelector } from "../components/BlogTemplates";

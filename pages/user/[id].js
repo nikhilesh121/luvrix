@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   getUser, getUserByUniqueId, getUserBlogs, getUserStats, getUserLibraries, getBlog,
   isFollowing, followUser, unfollowUser 
-} from "../../lib/api-client";
+} from "../../lib/firebase-client";
 import { useAuth } from "../../context/AuthContext";
 import { 
   FiUser, FiEye, FiHeart, FiBookOpen, FiCalendar, 

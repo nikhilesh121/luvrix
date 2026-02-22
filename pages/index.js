@@ -3,7 +3,7 @@ import Link from "next/link";
 import Head from "next/head";
 import dynamic from "next/dynamic";
 import Layout from "../components/Layout";
-import { getSettings } from "../lib/api-client";
+import { getSettings } from "../lib/firebase-client";
 import { useBlogCache } from "../context/BlogCacheContext";
 import { useSocket } from "../context/SocketContext";
 import { BlogGridSkeleton } from "../components/ui/Skeleton";
@@ -65,12 +65,9 @@ export default function Home() {
   const featuredBlog = useMemo(() => getFeaturedBlog(), [getFeaturedBlog]);
   const latestBlogs = useMemo(() => getLatestBlogs(9), [getLatestBlogs]);
 
-  // Fetch real platform stats
+  // Platform stats - static fallback since no API
   useEffect(() => {
-    fetch("/api/stats/platform")
-      .then(r => r.ok ? r.json() : null)
-      .then(data => { if (data) setPlatformStats(data); })
-      .catch(() => {});
+    setPlatformStats({ readers: 10000, writers: 500, articles: 1800 });
   }, []);
 
   // Subscribe to real-time blog updates
@@ -866,8 +863,4 @@ function GiveawaysSection() {
   );
 }
 
-// CRITICAL: getServerSideProps ensures SEO meta tags are rendered server-side
-// Without this, the page is auto-exported as static HTML with no content for Google to see
-export async function getServerSideProps() {
-  return { props: {} };
-}
+// Static export - all data fetched client-side

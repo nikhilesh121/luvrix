@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import Link from "next/link";
 import Head from "next/head";
 import Layout from "../../../components/Layout";
-import { getMangaBySlug, getSettings, incrementMangaViews, incrementMangaFavorites, decrementMangaFavorites, addToFavorites, removeFromFavorites, isItemFavorited } from "../../../lib/api-client";
+import { getMangaBySlug, getSettings, incrementMangaViews, addToFavorites, removeFromFavorites, isItemFavorited } from "../../../lib/firebase-client";
 import { useAuth } from "../../../context/AuthContext";
 import { useSocket } from "../../../context/SocketContext";
 import { generateChapterList, generateChapterUrl } from "../../../utils/mangaRedirectGenerator";
@@ -600,55 +600,4 @@ export default function MangaDetail({ initialManga, initialSettings }) {
   );
 }
 
-// Server-side data fetching for SEO
-export async function getServerSideProps(context) {
-  const { slug } = context.params;
-  
-  if (!slug) {
-    return { props: { initialManga: null, initialSettings: null } };
-  }
-
-  try {
-    const { getMangaBySlug, getSettings } = await import("../../../lib/db");
-    
-    const [mangaData, settingsData] = await Promise.all([
-      getMangaBySlug(slug),
-      getSettings()
-    ]);
-    
-    if (!mangaData) {
-      return { notFound: true };
-    }
-
-    // Serialize timestamps for SSR
-    const serializeData = (obj) => {
-      if (!obj) return null;
-      const serialized = { ...obj };
-      for (const key in serialized) {
-        if (serialized[key]?.toDate) {
-          serialized[key] = serialized[key].toDate().toISOString();
-        } else if (serialized[key]?.seconds) {
-          serialized[key] = new Date(serialized[key].seconds * 1000).toISOString();
-        }
-      }
-      return serialized;
-    };
-
-    // Set Last-Modified header so crawlers can skip re-crawling unchanged content
-    const lastMod = mangaData.updatedAt || mangaData.createdAt;
-    if (lastMod) {
-      const lastModDate = lastMod instanceof Date ? lastMod : new Date(lastMod);
-      context.res.setHeader('Last-Modified', lastModDate.toUTCString());
-    }
-
-    return {
-      props: {
-        initialManga: serializeData(mangaData),
-        initialSettings: serializeData(settingsData),
-      },
-    };
-  } catch (error) {
-    console.error("SSR Error:", error);
-    return { notFound: true };
-  }
-}
+// Static export - data fetched client-side

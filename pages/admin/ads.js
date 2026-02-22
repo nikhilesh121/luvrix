@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import AdminGuard from "../../components/AdminGuard";
 import AdminSidebar from "../../components/AdminSidebar";
-import { getSettings, updateSettings, createLog } from "../../lib/api-client";
+import { getSettings, updateSettings, createLog } from "../../lib/firebase-client";
 import { auth } from "../../lib/local-auth";
 import { motion, AnimatePresence } from "framer-motion";
 import { 

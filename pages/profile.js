@@ -8,7 +8,7 @@ import {
   deleteBlog, getUserLibraries, createLibrary, updateLibrary, deleteLibrary,
   addBlogToLibrary, removeBlogFromLibrary, getUserReferrals, getReferralStats,
   generateReferralCode, getMyGiveaways
-} from "../lib/api-client";
+} from "../lib/firebase-client";
 
 import { motion, AnimatePresence } from "framer-motion";
 import { 

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import AdminGuard from "../../components/AdminGuard";
 import AdminSidebar from "../../components/AdminSidebar";
-import { getSettings, updateSettings } from "../../lib/api-client";
+import { getSettings, updateSettings } from "../../lib/firebase-client";
 import { motion } from "framer-motion";
 import { 
   FiMenu, FiPlus, FiTrash2, FiSave, FiChevronDown, FiChevronUp,

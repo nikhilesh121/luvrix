@@ -4,7 +4,7 @@ import Header from "./Header";
 import Footer from "./Footer";
 import AdRenderer from "./AdRenderer";
 import { useEffect, useState } from "react";
-import { getSettings } from "../lib/api-client";
+import { getSettings } from "../lib/firebase-client";
 import { initGA, trackPageView, trackInternalPageView } from "../lib/analytics";
 import { useRouter } from "next/router";
 import useWatchTime from "../hooks/useWatchTime";

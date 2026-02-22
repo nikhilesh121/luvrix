@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
-import { getAllBlogs } from "../lib/api-client";
+import { getAllBlogs } from "../lib/firebase-client";
 
 const BlogCacheContext = createContext();
 

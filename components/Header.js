@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
-import { getSettings } from "../lib/api-client";
+import { getSettings } from "../lib/firebase-client";
 import NotificationBell from "./NotificationBell";
 import { useTheme } from "../context/ThemeContext";
 import { 

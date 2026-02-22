@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import Head from "next/head";
 import AdminGuard from "../../components/AdminGuard";
 import AdminSidebar from "../../components/AdminSidebar";
-import { getAllBlogs, getAllUsers, getAllManga, getAllPayments } from "../../lib/api-client";
+import { getAllBlogs, getAllUsers, getAllManga, getAllPayments } from "../../lib/firebase-client";
 import { motion } from "framer-motion";
 import { 
   FiFileText, FiUsers, FiBook, FiDollarSign, FiTrendingUp, FiClock,

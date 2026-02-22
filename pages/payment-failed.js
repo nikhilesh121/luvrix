@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/router";
 import Layout from "../components/Layout";
-import { updatePayment } from "../lib/api-client";
+import { updatePayment } from "../lib/firebase-client";
 import { motion } from "framer-motion";
 import { FiX, FiArrowRight, FiRefreshCw } from "react-icons/fi";
 import Link from "next/link";

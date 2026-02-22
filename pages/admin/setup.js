@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import { getAllUsers } from "../../lib/api-client";
+import { getAllUsers } from "../../lib/firebase-client";
 import { FiShield, FiCheck, FiAlertCircle } from "react-icons/fi";
 
 export default function AdminSetup() {

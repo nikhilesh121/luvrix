@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import AdminGuard from "../../components/AdminGuard";
 import AdminSidebar from "../../components/AdminSidebar";
-import { getBlogDrafts, deleteBlogDraft, publishBlogDraft } from "../../lib/api-client";
+import { getBlogDrafts, deleteBlogDraft, publishBlogDraft } from "../../lib/firebase-client";
 import { auth } from "../../lib/local-auth";
 import { motion, AnimatePresence } from "framer-motion";
 import {

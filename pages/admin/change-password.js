@@ -1,7 +1,7 @@
 import { useState } from "react";
 import AdminGuard from "../../components/AdminGuard";
 import AdminSidebar from "../../components/AdminSidebar";
-import { createLog } from "../../lib/api-client";
+import { createLog } from "../../lib/firebase-client";
 import { motion } from "framer-motion";
 import { FiSave, FiLock, FiEye, FiEyeOff, FiCheck, FiAlertCircle } from "react-icons/fi";
 

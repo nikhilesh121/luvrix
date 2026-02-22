@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import AdminGuard from "../../components/AdminGuard";
 import AdminSidebar from "../../components/AdminSidebar";
-import { getTrendingTopics, generateBlogDraft } from "../../lib/api-client";
+import { getTrendingTopics, generateBlogDraft } from "../../lib/firebase-client";
 import { auth } from "../../lib/local-auth";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/router";

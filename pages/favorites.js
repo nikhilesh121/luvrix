@@ -4,7 +4,7 @@ import Link from "next/link";
 import Layout from "../components/Layout";
 import BlogCard from "../components/BlogCard";
 import { useAuth } from "../context/AuthContext";
-import { getUserFavorites, getBlog } from "../lib/api-client";
+import { getUserFavorites, getBlog } from "../lib/firebase-client";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   FiHeart, FiBookOpen, FiGrid, FiSearch, 

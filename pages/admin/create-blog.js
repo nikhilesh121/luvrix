@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import dynamic from "next/dynamic";
 import AdminGuard from "../../components/AdminGuard";
 import AdminSidebar from "../../components/AdminSidebar";
-import { createBlog, createLog } from "../../lib/api-client";
+import { createBlog, createLog } from "../../lib/firebase-client";
 import { auth } from "../../lib/local-auth";
 import { motion } from "framer-motion";
 import { FiSave, FiImage, FiTag, FiFileText, FiCheckCircle, FiArrowLeft, FiVideo, FiPlus, FiTrash2, FiX } from "react-icons/fi";

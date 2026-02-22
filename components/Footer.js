@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { getSettings, addSubscriber } from "../lib/api-client";
+import { getSettings, addSubscriber } from "../lib/firebase-client";
 import { 
   FiMail, FiTwitter, FiFacebook, FiInstagram, FiYoutube,
   FiArrowRight, FiHeart, FiZap, FiSend, FiCheck, FiAlertCircle

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import AdminGuard from "../../components/AdminGuard";
 import AdminSidebar from "../../components/AdminSidebar";
-import { getAllManga, createManga, updateManga, deleteManga, createLog, getSettings, updateSettings } from "../../lib/api-client";
+import { getAllManga, createManga, updateManga, deleteManga, createLog, getSettings, updateSettings } from "../../lib/firebase-client";
 import { auth } from "../../lib/local-auth";
 import { slugify } from "../../utils/slugify";
 import { motion } from "framer-motion";

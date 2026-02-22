@@ -151,6 +151,3 @@ export default function GiveawayTerms() {
 }
 
 // SSR required for SEO meta tags to be rendered server-side
-export async function getServerSideProps() {
-  return { props: {} };
-}

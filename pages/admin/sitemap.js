@@ -3,7 +3,7 @@ import AdminGuard from "../../components/AdminGuard";
 import AdminSidebar from "../../components/AdminSidebar";
 import { motion } from "framer-motion";
 import { FiExternalLink, FiGlobe, FiBook, FiFileText, FiLayers, FiGrid, FiCheck, FiZap, FiSend, FiRefreshCw, FiGift, FiToggleLeft, FiToggleRight, FiClock } from "react-icons/fi";
-import { getSettings, updateSettings } from "../../lib/api-client";
+import { getSettings, updateSettings } from "../../lib/firebase-client";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://luvrix.com";
 

@@ -3,9 +3,9 @@ import Link from "next/link";
 import Head from "next/head";
 import Layout from "../components/Layout";
 import { motion } from "framer-motion";
-import { getPublishers } from "../lib/api-client";
+import { getPublishers } from "../lib/firebase-client";
 import { useAuth } from "../context/AuthContext";
-import { followUser, unfollowUser, isFollowing } from "../lib/api-client";
+import { followUser, unfollowUser, isFollowing } from "../lib/firebase-client";
 import { 
   FiUsers, FiUserPlus, FiUserCheck,
   FiFilter, FiSearch, FiStar, FiBookOpen, FiHeart, FiRadio, FiPenTool, FiCamera, FiFilm, FiCpu
@@ -357,6 +357,3 @@ export default function PublishersPage() {
 }
 
 // SSR required for SEO meta tags to be rendered server-side
-export async function getServerSideProps() {
-  return { props: {} };
-}

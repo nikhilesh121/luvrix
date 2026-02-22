@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Layout from "../components/Layout";
 import BlogCard from "../components/BlogCard";
-import { getAllBlogs, getSettings } from "../lib/api-client";
+import { getAllBlogs, getSettings } from "../lib/firebase-client";
 import AdRenderer from "../components/AdRenderer";
 import { CollectionPageSchema, BreadcrumbSchema } from "../components/SEOHead";
 import { motion, AnimatePresence } from "framer-motion";
@@ -532,6 +532,3 @@ export default function Categories() {
 }
 
 // SSR required for SEO meta tags to be rendered server-side
-export async function getServerSideProps() {
-  return { props: {} };
-}
