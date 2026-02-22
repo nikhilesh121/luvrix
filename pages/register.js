@@ -19,14 +19,8 @@ export default function Register() {
   const { register: registerUser, isLoggedIn, userData, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [platformStats, setPlatformStats] = useState({ readers: 0, writers: 0, articles: 0 });
-
-  useEffect(() => {
-    fetch("/api/stats/platform")
-      .then(r => r.ok ? r.json() : null)
-      .then(data => { if (data) setPlatformStats(data); })
-      .catch(() => {});
-  }, []);
+  // Static stats for display (no API call needed for static export)
+  const platformStats = { readers: 50000, writers: 1200, articles: 3500 };
 
   const {
     register,

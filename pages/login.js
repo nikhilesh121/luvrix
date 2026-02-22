@@ -5,81 +5,36 @@ import Layout from "../components/Layout";
 import { useAuth } from "../context/AuthContext";
 import { useForm } from "react-hook-form";
 import { motion, AnimatePresence } from "framer-motion";
-import { FiMail, FiLock, FiAlertCircle, FiArrowRight, FiZap, FiEdit3, FiBook, FiStar, FiKey, FiCheck, FiArrowLeft } from "react-icons/fi";
+import { FiMail, FiLock, FiAlertCircle, FiArrowRight, FiZap, FiEdit3, FiBook, FiStar, FiCheck, FiArrowLeft } from "react-icons/fi";
 
 export default function Login() {
   const router = useRouter();
-  const { login, isLoggedIn, userData, loading: authLoading } = useAuth();
+  const { login, resetPassword, isLoggedIn, userData, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showForgotPassword, setShowForgotPassword] = useState(false);
-  const [resetStep, setResetStep] = useState(1); // 1: email, 2: otp, 3: new password
   const [resetEmail, setResetEmail] = useState("");
-  const [resetOtp, setResetOtp] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [resetLoading, setResetLoading] = useState(false);
   const [resetError, setResetError] = useState("");
   const [resetSuccess, setResetSuccess] = useState("");
 
-  const handleSendOtp = async (e) => {
+  const handleSendResetEmail = async (e) => {
     e.preventDefault();
     setResetLoading(true);
     setResetError("");
-    try {
-      const res = await fetch("/api/auth/forgot-password/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: resetEmail }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setResetStep(2);
-        setResetSuccess("OTP sent to your email");
-      } else {
-        setResetError(data.error || "Failed to send OTP");
-      }
-    } catch (err) {
-      setResetError("Something went wrong");
-    }
-    setResetLoading(false);
-  };
-
-  const handleResetPassword = async (e) => {
-    e.preventDefault();
-    if (newPassword !== confirmPassword) {
-      setResetError("Passwords don't match");
-      return;
-    }
-    if (newPassword.length < 6) {
-      setResetError("Password must be at least 6 characters");
-      return;
-    }
-    setResetLoading(true);
-    setResetError("");
-    try {
-      const res = await fetch("/api/auth/reset-password/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: resetEmail, otp: resetOtp, newPassword }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setResetSuccess("Password reset successfully! You can now login.");
-        setTimeout(() => {
-          setShowForgotPassword(false);
-          setResetStep(1);
-          setResetEmail("");
-          setResetOtp("");
-          setNewPassword("");
-          setConfirmPassword("");
-          setResetSuccess("");
-        }, 2000);
-      } else {
-        setResetError(data.error || "Failed to reset password");
-      }
-    } catch (err) {
-      setResetError("Something went wrong");
+    setResetSuccess("");
+    
+    const result = await resetPassword(resetEmail);
+    
+    if (result.success) {
+      setResetSuccess("Password reset email sent! Check your inbox.");
+      setTimeout(() => {
+        setShowForgotPassword(false);
+        setResetEmail("");
+        setResetSuccess("");
+      }, 3000);
+    } else {
+      setResetError(result.error || "Failed to send reset email");
     }
     setResetLoading(false);
   };
@@ -139,7 +94,7 @@ export default function Login() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
-            onClick={() => { setShowForgotPassword(false); setResetStep(1); setResetError(""); setResetSuccess(""); }}
+            onClick={() => { setShowForgotPassword(false); setResetError(""); setResetSuccess(""); }}
           >
             <motion.div
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -150,17 +105,14 @@ export default function Login() {
             >
               <div className="flex items-center gap-3 mb-6">
                 <button
-                  onClick={() => { setShowForgotPassword(false); setResetStep(1); setResetError(""); setResetSuccess(""); }}
+                  onClick={() => { setShowForgotPassword(false); setResetError(""); setResetSuccess(""); }}
                   className="p-2 hover:bg-white/10 rounded-lg transition-colors"
                 >
                   <FiArrowLeft className="w-5 h-5 text-gray-400" />
                 </button>
                 <div>
                   <h2 className="text-xl font-bold text-white">Reset Password</h2>
-                  <p className="text-sm text-gray-400">
-                    {resetStep === 1 && "Enter your email to receive OTP"}
-                    {resetStep === 2 && "Enter the OTP sent to your email"}
-                  </p>
+                  <p className="text-sm text-gray-400">Enter your email to receive a reset link</p>
                 </div>
               </div>
 
@@ -178,102 +130,33 @@ export default function Login() {
                 </div>
               )}
 
-              {resetStep === 1 && (
-                <form onSubmit={handleSendOtp} className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Email Address</label>
-                    <div className="relative">
-                      <FiMail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
-                      <input
-                        type="email"
-                        value={resetEmail}
-                        onChange={(e) => setResetEmail(e.target.value)}
-                        placeholder="you@example.com"
-                        required
-                        className="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 outline-none transition-all"
-                      />
-                    </div>
+              <form onSubmit={handleSendResetEmail} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">Email Address</label>
+                  <div className="relative">
+                    <FiMail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+                    <input
+                      type="email"
+                      value={resetEmail}
+                      onChange={(e) => setResetEmail(e.target.value)}
+                      placeholder="you@example.com"
+                      required
+                      className="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 outline-none transition-all"
+                    />
                   </div>
-                  <button
-                    type="submit"
-                    disabled={resetLoading}
-                    className="w-full py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-purple-500/30 transition-all disabled:opacity-50"
-                  >
-                    {resetLoading ? (
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    ) : (
-                      <>Send OTP<FiArrowRight className="w-5 h-5" /></>
-                    )}
-                  </button>
-                </form>
-              )}
-
-              {resetStep === 2 && (
-                <form onSubmit={handleResetPassword} className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">OTP Code</label>
-                    <div className="relative">
-                      <FiKey className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
-                      <input
-                        type="text"
-                        value={resetOtp}
-                        onChange={(e) => setResetOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                        placeholder="Enter 6-digit OTP"
-                        required
-                        maxLength={6}
-                        className="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 outline-none transition-all text-center text-xl tracking-widest"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">New Password</label>
-                    <div className="relative">
-                      <FiLock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
-                      <input
-                        type="password"
-                        value={newPassword}
-                        onChange={(e) => setNewPassword(e.target.value)}
-                        placeholder="Min 6 characters"
-                        required
-                        minLength={6}
-                        className="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 outline-none transition-all"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Confirm Password</label>
-                    <div className="relative">
-                      <FiLock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
-                      <input
-                        type="password"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        placeholder="Confirm new password"
-                        required
-                        className="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 outline-none transition-all"
-                      />
-                    </div>
-                  </div>
-                  <button
-                    type="submit"
-                    disabled={resetLoading}
-                    className="w-full py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-purple-500/30 transition-all disabled:opacity-50"
-                  >
-                    {resetLoading ? (
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    ) : (
-                      <>Reset Password<FiCheck className="w-5 h-5" /></>
-                    )}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => { setResetStep(1); setResetError(""); }}
-                    className="w-full py-2 text-gray-400 hover:text-white text-sm transition-colors"
-                  >
-                    ← Back to email
-                  </button>
-                </form>
-              )}
+                </div>
+                <button
+                  type="submit"
+                  disabled={resetLoading}
+                  className="w-full py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-purple-500/30 transition-all disabled:opacity-50"
+                >
+                  {resetLoading ? (
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <>Send Reset Link<FiArrowRight className="w-5 h-5" /></>
+                  )}
+                </button>
+              </form>
             </motion.div>
           </motion.div>
         )}

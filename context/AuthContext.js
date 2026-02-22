@@ -1,121 +1,197 @@
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
-import { updateAuthUser } from "../lib/local-auth";
+import { auth, db } from "../lib/firebase";
+import {
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signOut,
+  onAuthStateChanged,
+  sendPasswordResetEmail,
+} from "firebase/auth";
+import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 
 const AuthContext = createContext({});
-
-const TOKEN_KEY = 'luvrix_auth_token';
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Check auth status on mount
+  // Listen to Firebase auth state changes
   useEffect(() => {
-    checkAuthStatus();
-  }, []);
-
-  // Sync user with local-auth module whenever user changes
-  useEffect(() => {
-    updateAuthUser(user);
-  }, [user]);
-
-  const checkAuthStatus = async () => {
-    try {
-      const token = localStorage.getItem(TOKEN_KEY);
-      if (!token) {
-        setLoading(false);
-        return;
-      }
-
-      const response = await fetch('/api/auth/me', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setUser(data.user);
-        setUserData(data.user);
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        setUser(firebaseUser);
+        // Fetch additional user data from Firestore
+        try {
+          const userDocRef = doc(db, "users", firebaseUser.uid);
+          const userDoc = await getDoc(userDocRef);
+          if (userDoc.exists()) {
+            const data = userDoc.data();
+            setUserData({
+              id: firebaseUser.uid,
+              uid: firebaseUser.uid,
+              email: firebaseUser.email,
+              ...data,
+            });
+          } else {
+            // User exists in Auth but not in Firestore — create basic profile
+            setUserData({
+              id: firebaseUser.uid,
+              uid: firebaseUser.uid,
+              email: firebaseUser.email,
+              role: "user",
+            });
+          }
+        } catch (error) {
+          console.error("Error fetching user data:", error);
+          setUserData({
+            id: firebaseUser.uid,
+            uid: firebaseUser.uid,
+            email: firebaseUser.email,
+            role: "user",
+          });
+        }
       } else {
-        // Token invalid, remove it
-        localStorage.removeItem(TOKEN_KEY);
         setUser(null);
         setUserData(null);
       }
-    } catch (error) {
-      console.error("Error checking auth status:", error);
-      localStorage.removeItem(TOKEN_KEY);
-      setUser(null);
-      setUserData(null);
-    } finally {
       setLoading(false);
-    }
-  };
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   const login = useCallback(async (email, password) => {
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        localStorage.setItem(TOKEN_KEY, data.token);
-        setUser(data.user);
-        setUserData(data.user);
-        return { success: true, user: data.user };
-      } else {
-        return { success: false, error: data.error };
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const firebaseUser = userCredential.user;
+      
+      // Fetch user data from Firestore
+      const userDocRef = doc(db, "users", firebaseUser.uid);
+      const userDoc = await getDoc(userDocRef);
+      
+      let userInfo = {
+        id: firebaseUser.uid,
+        uid: firebaseUser.uid,
+        email: firebaseUser.email,
+        role: "user",
+      };
+      
+      if (userDoc.exists()) {
+        userInfo = { ...userInfo, ...userDoc.data() };
       }
+      
+      return { success: true, user: userInfo };
     } catch (error) {
       console.error("Login error:", error);
-      return { success: false, error: error.message };
+      let errorMessage = "Invalid email or password";
+      if (error.code === "auth/user-not-found") {
+        errorMessage = "No account found with this email";
+      } else if (error.code === "auth/wrong-password") {
+        errorMessage = "Incorrect password";
+      } else if (error.code === "auth/invalid-email") {
+        errorMessage = "Invalid email address";
+      } else if (error.code === "auth/too-many-requests") {
+        errorMessage = "Too many failed attempts. Please try again later.";
+      }
+      return { success: false, error: errorMessage };
     }
   }, []);
 
   const register = useCallback(async (email, password, additionalData = {}) => {
     try {
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, ...additionalData }),
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        localStorage.setItem(TOKEN_KEY, data.token);
-        setUser(data.user);
-        setUserData(data.user);
-        return { success: true, user: data.user };
-      } else {
-        return { success: false, error: data.error };
-      }
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const firebaseUser = userCredential.user;
+      
+      // Create user document in Firestore
+      const userDocRef = doc(db, "users", firebaseUser.uid);
+      const userProfile = {
+        email: firebaseUser.email.toLowerCase(),
+        name: additionalData.name || "",
+        role: "user",
+        createdAt: serverTimestamp(),
+        points: 0,
+        freePostsUsed: 0,
+        extraPosts: 0,
+      };
+      
+      await setDoc(userDocRef, userProfile);
+      
+      return {
+        success: true,
+        user: {
+          id: firebaseUser.uid,
+          uid: firebaseUser.uid,
+          ...userProfile,
+        },
+      };
     } catch (error) {
       console.error("Register error:", error);
-      return { success: false, error: error.message };
+      let errorMessage = "Registration failed. Please try again.";
+      if (error.code === "auth/email-already-in-use") {
+        errorMessage = "An account with this email already exists";
+      } else if (error.code === "auth/invalid-email") {
+        errorMessage = "Invalid email address";
+      } else if (error.code === "auth/weak-password") {
+        errorMessage = "Password should be at least 6 characters";
+      }
+      return { success: false, error: errorMessage };
     }
   }, []);
 
   const logout = useCallback(async () => {
-    localStorage.removeItem(TOKEN_KEY);
-    setUser(null);
-    setUserData(null);
-    return { success: true };
+    try {
+      await signOut(auth);
+      return { success: true };
+    } catch (error) {
+      console.error("Logout error:", error);
+      return { success: false, error: error.message };
+    }
+  }, []);
+
+  const resetPassword = useCallback(async (email) => {
+    try {
+      await sendPasswordResetEmail(auth, email);
+      return { success: true };
+    } catch (error) {
+      console.error("Reset password error:", error);
+      let errorMessage = "Failed to send reset email";
+      if (error.code === "auth/user-not-found") {
+        errorMessage = "No account found with this email";
+      } else if (error.code === "auth/invalid-email") {
+        errorMessage = "Invalid email address";
+      }
+      return { success: false, error: errorMessage };
+    }
   }, []);
 
   const refreshUserData = useCallback(async () => {
-    await checkAuthStatus();
-  }, []);
+    if (!user) return;
+    try {
+      const userDocRef = doc(db, "users", user.uid);
+      const userDoc = await getDoc(userDocRef);
+      if (userDoc.exists()) {
+        setUserData({
+          id: user.uid,
+          uid: user.uid,
+          email: user.email,
+          ...userDoc.data(),
+        });
+      }
+    } catch (error) {
+      console.error("Error refreshing user data:", error);
+    }
+  }, [user]);
 
-  const getToken = useCallback(() => {
-    return localStorage.getItem(TOKEN_KEY);
-  }, []);
+  const getToken = useCallback(async () => {
+    if (!user) return null;
+    try {
+      return await user.getIdToken();
+    } catch (error) {
+      console.error("Error getting token:", error);
+      return null;
+    }
+  }, [user]);
 
   const value = {
     user,
@@ -126,6 +202,7 @@ export function AuthProvider({ children }) {
     login,
     register,
     logout,
+    resetPassword,
     refreshUserData,
     getToken,
   };
