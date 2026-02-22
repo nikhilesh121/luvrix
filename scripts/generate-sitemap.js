@@ -44,6 +44,12 @@ const staticPages = [
   { url: "/register", changefreq: "monthly", priority: 0.3 },
 ];
 
+// Blog categories
+const categories = [
+  "technology", "lifestyle", "entertainment", "gaming", "anime",
+  "manga", "news", "tutorials", "reviews", "stories"
+];
+
 async function fetchBlogs(db) {
   if (!db) return [];
   try {
@@ -54,6 +60,7 @@ async function fetchBlogs(db) {
       if (data.slug) {
         blogs.push({
           slug: data.slug,
+          category: data.category || "general",
           updatedAt: data.updatedAt?.toDate() || data.createdAt?.toDate() || new Date(),
         });
       }
@@ -88,6 +95,28 @@ async function fetchManga(db) {
   }
 }
 
+async function fetchGiveaways(db) {
+  if (!db) return [];
+  try {
+    const snapshot = await db.collection("giveaways").get();
+    const giveaways = [];
+    snapshot.forEach((doc) => {
+      const data = doc.data();
+      if (data.slug) {
+        giveaways.push({
+          slug: data.slug,
+          updatedAt: data.updatedAt?.toDate() || data.createdAt?.toDate() || new Date(),
+        });
+      }
+    });
+    console.log(`✓ Fetched ${giveaways.length} giveaways`);
+    return giveaways;
+  } catch (error) {
+    console.error("Error fetching giveaways:", error.message);
+    return [];
+  }
+}
+
 async function generateSitemapFile(filename, urls) {
   const stream = new SitemapStream({ hostname: SITE_URL });
   const data = await streamToPromise(Readable.from(urls).pipe(stream));
@@ -99,9 +128,11 @@ async function generateSitemapFile(filename, urls) {
 async function generateSitemapIndex() {
   const now = new Date().toISOString();
   const sitemaps = [
-    { loc: `${SITE_URL}/sitemap.xml`, lastmod: now },
-    { loc: `${SITE_URL}/sitemap-blog.xml`, lastmod: now },
+    { loc: `${SITE_URL}/sitemap-pages.xml`, lastmod: now },
+    { loc: `${SITE_URL}/sitemap-posts.xml`, lastmod: now },
     { loc: `${SITE_URL}/sitemap-manga.xml`, lastmod: now },
+    { loc: `${SITE_URL}/sitemap-categories.xml`, lastmod: now },
+    { loc: `${SITE_URL}/sitemap-giveaways.xml`, lastmod: now },
   ];
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
@@ -112,9 +143,9 @@ ${sitemaps.map((s) => `  <sitemap>
   </sitemap>`).join("\n")}
 </sitemapindex>`;
 
-  const filepath = path.join(PUBLIC_DIR, "sitemap-index.xml");
+  const filepath = path.join(PUBLIC_DIR, "sitemap.xml");
   await fs.writeFile(filepath, xml);
-  console.log("✓ Generated sitemap-index.xml");
+  console.log("✓ Generated sitemap.xml (sitemap index)");
 }
 
 async function generateSitemaps() {
@@ -127,29 +158,33 @@ async function generateSitemaps() {
   const db = initFirebase();
 
   // Fetch dynamic content
-  const [blogs, manga] = await Promise.all([fetchBlogs(db), fetchManga(db)]);
+  const [blogs, manga, giveaways] = await Promise.all([
+    fetchBlogs(db),
+    fetchManga(db),
+    fetchGiveaways(db),
+  ]);
 
   const now = new Date().toISOString();
 
-  // Generate main sitemap (static pages)
+  // Generate static pages sitemap (sitemap-pages.xml)
   const staticUrls = staticPages.map((page) => ({
     url: page.url,
     lastmod: now,
     changefreq: page.changefreq,
     priority: page.priority,
   }));
-  await generateSitemapFile("sitemap.xml", staticUrls);
+  await generateSitemapFile("sitemap-pages.xml", staticUrls);
 
-  // Generate blog sitemap
+  // Generate blog posts sitemap (sitemap-posts.xml)
   const blogUrls = blogs.map((blog) => ({
     url: `/blog/${blog.slug}`,
     lastmod: blog.updatedAt.toISOString(),
     changefreq: "weekly",
     priority: 0.7,
   }));
-  await generateSitemapFile("sitemap-blog.xml", blogUrls.length > 0 ? blogUrls : [{ url: "/blog", lastmod: now, changefreq: "daily", priority: 0.8 }]);
+  await generateSitemapFile("sitemap-posts.xml", blogUrls.length > 0 ? blogUrls : [{ url: "/blog", lastmod: now, changefreq: "daily", priority: 0.8 }]);
 
-  // Generate manga sitemap
+  // Generate manga sitemap (sitemap-manga.xml)
   const mangaUrls = manga.map((m) => ({
     url: `/manga/${m.slug}`,
     lastmod: m.updatedAt.toISOString(),
@@ -158,8 +193,38 @@ async function generateSitemaps() {
   }));
   await generateSitemapFile("sitemap-manga.xml", mangaUrls.length > 0 ? mangaUrls : [{ url: "/manga", lastmod: now, changefreq: "daily", priority: 0.8 }]);
 
-  // Generate sitemap index
+  // Generate categories sitemap (sitemap-categories.xml)
+  const categoryUrls = categories.map((cat) => ({
+    url: `/categories?category=${cat}`,
+    lastmod: now,
+    changefreq: "weekly",
+    priority: 0.6,
+  }));
+  categoryUrls.unshift({ url: "/categories", lastmod: now, changefreq: "weekly", priority: 0.7 });
+  await generateSitemapFile("sitemap-categories.xml", categoryUrls);
+
+  // Generate giveaways sitemap (sitemap-giveaways.xml)
+  const giveawayUrls = giveaways.map((g) => ({
+    url: `/giveaway/${g.slug}`,
+    lastmod: g.updatedAt.toISOString(),
+    changefreq: "weekly",
+    priority: 0.6,
+  }));
+  giveawayUrls.unshift({ url: "/giveaway", lastmod: now, changefreq: "weekly", priority: 0.7 });
+  await generateSitemapFile("sitemap-giveaways.xml", giveawayUrls);
+
+  // Generate sitemap index (sitemap.xml)
   await generateSitemapIndex();
+
+  // Clean up old sitemap files
+  const oldFiles = ["sitemap-blog.xml", "sitemap-index.xml"];
+  for (const file of oldFiles) {
+    const filepath = path.join(PUBLIC_DIR, file);
+    if (await fs.pathExists(filepath)) {
+      await fs.remove(filepath);
+      console.log(`✓ Removed old ${file}`);
+    }
+  }
 
   console.log("\n✅ All sitemaps generated successfully!\n");
 }
